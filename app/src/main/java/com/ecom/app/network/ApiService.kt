@@ -4,6 +4,7 @@ import com.ecom.app.model.ProductListResponse
 import com.ecom.app.model.SearchSuggestionResponse
 import com.ecom.app.model.ProductDetailResponse
 import com.ecom.app.model.CartCountResponse
+import com.ecom.app.model.AuthStepResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -15,6 +16,22 @@ import retrofit2.http.Header
 
 
 interface ApiService {
+
+    @FormUrlEncoded
+    @POST("accounts/login/")
+    suspend fun loginContact(
+        @Query("format") format: String = "json",
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("contact") contact: String
+    ): AuthStepResponse
+
+    @FormUrlEncoded
+    @POST("accounts/login/password/")
+    suspend fun loginPassword(
+        @Query("format") format: String = "json",
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("password") password: String
+    ): AuthStepResponse
 
     @GET("/")
     suspend fun getProducts(

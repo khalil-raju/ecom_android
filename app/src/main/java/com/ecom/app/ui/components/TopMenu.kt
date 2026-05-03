@@ -35,7 +35,8 @@ fun TopMenu(
     cartCount: Int = 0,
     onMenuClick: () -> Unit,
     onSearchClick: () -> Unit,
-    onLogoClick: () -> Unit
+    onLogoClick: () -> Unit,
+    onProfileClick: () -> Unit
 ) {
 
     val logoUrl = BuildConfig.LOGO_FULL_IMAGE
@@ -77,7 +78,9 @@ fun TopMenu(
             painter = painterResource(id = R.drawable.ic_profile),
             contentDescription = "Profile",
             tint = Color.Unspecified,
-            modifier = Modifier.size(27.dp)
+            modifier = Modifier
+                .size(27.dp)
+                .clickable { onProfileClick() }
         )
 
         BadgedBox(

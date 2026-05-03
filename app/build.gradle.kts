@@ -48,6 +48,7 @@ android {
             dimension = "brand"
             applicationId = "com.abitomoda.app.local"
             resValue("string", "app_name", "ABITOMODA Local")
+            buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
             buildConfigField("String", "HERO_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_hero_image.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_white.png\"")
@@ -57,6 +58,7 @@ android {
             dimension = "brand"
             applicationId = "com.abitomoda.app"
             resValue("string", "app_name", "ABITOMODA")
+            buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"https://abitomoda.com/\"")
             buildConfigField("String", "HERO_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_hero_image.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_brand_logo_white.png\"")

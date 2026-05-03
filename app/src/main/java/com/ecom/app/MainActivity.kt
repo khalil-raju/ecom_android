@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.material3.Text
 
 import com.ecom.app.model.Product
 import com.ecom.app.network.RetrofitClient
@@ -28,9 +29,10 @@ import com.ecom.app.ui.components.SearchMenu
 import com.ecom.app.ui.components.SideMenu
 import com.ecom.app.ui.components.TopMenu
 import com.ecom.app.ui.screens.ProductListScreen
-
 import com.ecom.app.model.ProductDetailResponse
 import com.ecom.app.ui.screens.ProductDetailScreen
+import com.ecom.app.ui.screens.auth.LoginContactScreen
+import com.ecom.app.ui.screens.auth.LoginPasswordScreen
 
 import kotlinx.coroutines.launch
 
@@ -43,6 +45,8 @@ enum class DrawerContentType {
 sealed class AppScreen {
     data object Home : AppScreen()
     data class ProductDetail(val detail: ProductDetailResponse) : AppScreen()
+    data object LoginContact : AppScreen()
+    data class LoginPassword(val contact: String) : AppScreen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -59,6 +63,9 @@ class MainActivity : ComponentActivity() {
             var products by remember { mutableStateOf<List<Product>>(emptyList()) }
             var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
             var cartCount by remember { mutableIntStateOf(0) }
+            var loginContactError by remember { mutableStateOf<String?>(null) }
+            var loginPasswordError by remember { mutableStateOf<String?>(null) }
+            var loginAttemptsLeft by remember { mutableStateOf<Int?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
@@ -121,6 +128,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onLogoClick = {
                                     currentScreen = AppScreen.Home
+                                },
+                                onProfileClick = {
+                                    currentScreen = AppScreen.LoginContact
                                 }
                             )
                         }
@@ -171,6 +181,111 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onCartCountChange = { newCount ->
                                         cartCount = newCount
+                                    }
+                                )
+                            }
+
+                            AppScreen.LoginContact -> {
+                                LoginContactScreen(
+                                    error = loginContactError,
+                                    onContinue = { contact ->
+                                        scope.launch {
+                                            try {
+                                                loginContactError = null
+
+                                                val csrfToken = RetrofitClient.getCsrfToken()
+
+                                                if (csrfToken == null) {
+                                                    loginContactError = "Session not ready. Please try again."
+                                                    return@launch
+                                                }
+
+                                                val response = RetrofitClient.apiService.loginContact(
+                                                    csrfToken = csrfToken,
+                                                    contact = contact
+                                                )
+
+                                                if (response.success) {
+                                                    when (response.nextStep) {
+                                                        "login_password" -> {
+                                                            currentScreen = AppScreen.LoginPassword(
+                                                                response.contact ?: contact
+                                                            )
+                                                        }
+
+                                                        "products:product_list",
+                                                        "product_list",
+                                                        "home" -> {
+                                                            currentScreen = AppScreen.Home
+                                                        }
+
+                                                        else -> {
+                                                            loginContactError = "Unexpected next step: ${response.nextStep}"
+                                                        }
+                                                    }
+                                                } else {
+                                                    loginContactError =
+                                                        response.error ?: response.errorMsg ?: "Login failed"
+                                                }
+                                            } catch (e: Exception) {
+                                                loginContactError = e.message ?: "Login failed"
+                                            }
+                                        }
+                                    },
+                                    onSignupClick = {
+                                        // Signup screen next
+                                    }
+                                )
+                            }
+
+                            is AppScreen.LoginPassword -> {
+                                LoginPasswordScreen(
+                                    contact = screen.contact,
+                                    error = loginPasswordError,
+                                    attemptsLeft = loginAttemptsLeft,
+                                    onLogin = { password ->
+                                        scope.launch {
+                                            try {
+                                                loginPasswordError = null
+
+                                                val csrfToken = RetrofitClient.getCsrfToken()
+                                                if (csrfToken == null) {
+                                                    loginPasswordError = "Session not ready"
+                                                    return@launch
+                                                }
+
+                                                val response = RetrofitClient.apiService.loginPassword(
+                                                    csrfToken = csrfToken,
+                                                    password = password
+                                                )
+
+                                                if (response.success) {
+                                                    when (response.nextStep) {
+                                                        "products:product_list",
+                                                        "product_list",
+                                                        "home" -> {
+                                                            currentScreen = AppScreen.Home
+                                                        }
+
+                                                        else -> {
+                                                            loginPasswordError =
+                                                                "Unexpected next step: ${response.nextStep}"
+                                                        }
+                                                    }
+                                                } else {
+                                                    loginPasswordError =
+                                                        response.error ?: response.errorMsg ?: "Login failed"
+
+                                                    loginAttemptsLeft = response.loginAttemptsLeft
+                                                }
+
+                                            } catch (e: Exception) {
+                                                loginPasswordError = e.message ?: "Login failed"
+                                            }
+                                        }
+                                    },
+                                    onOtpLogin = {
+                                        // later → AppScreen.LoginOtp
                                     }
                                 )
                             }
