@@ -5,6 +5,7 @@ import com.ecom.app.model.SearchSuggestionResponse
 import com.ecom.app.model.ProductDetailResponse
 import com.ecom.app.model.CartCountResponse
 import com.ecom.app.model.AuthStepResponse
+import com.ecom.app.model.ProfileResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -32,6 +33,16 @@ interface ApiService {
         @Header("X-CSRFToken") csrfToken: String,
         @Field("password") password: String
     ): AuthStepResponse
+
+    @POST("accounts/logout/")
+    suspend fun logout(
+        @Query("format") format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/profile/")
+    suspend fun getProfile(
+        @Query("format") format: String = "json"
+    ): ProfileResponse
 
     @GET("/")
     suspend fun getProducts(

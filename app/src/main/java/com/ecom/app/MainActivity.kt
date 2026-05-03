@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.material3.Text
 
 import com.ecom.app.model.Product
 import com.ecom.app.network.RetrofitClient
@@ -33,6 +32,8 @@ import com.ecom.app.model.ProductDetailResponse
 import com.ecom.app.ui.screens.ProductDetailScreen
 import com.ecom.app.ui.screens.auth.LoginContactScreen
 import com.ecom.app.ui.screens.auth.LoginPasswordScreen
+import com.ecom.app.model.ProfileResponse
+import com.ecom.app.ui.screens.ProfileScreen
 
 import kotlinx.coroutines.launch
 
@@ -47,6 +48,7 @@ sealed class AppScreen {
     data class ProductDetail(val detail: ProductDetailResponse) : AppScreen()
     data object LoginContact : AppScreen()
     data class LoginPassword(val contact: String) : AppScreen()
+    data object Profile : AppScreen()
 }
 
 class MainActivity : ComponentActivity() {
@@ -66,6 +68,9 @@ class MainActivity : ComponentActivity() {
             var loginContactError by remember { mutableStateOf<String?>(null) }
             var loginPasswordError by remember { mutableStateOf<String?>(null) }
             var loginAttemptsLeft by remember { mutableStateOf<Int?>(null) }
+            var isAuthenticated by remember { mutableStateOf(false) }
+            var profileResponse by remember { mutableStateOf<ProfileResponse?>(null) }
+            var profileError by remember { mutableStateOf<String?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
@@ -130,7 +135,19 @@ class MainActivity : ComponentActivity() {
                                     currentScreen = AppScreen.Home
                                 },
                                 onProfileClick = {
-                                    currentScreen = AppScreen.LoginContact
+                                    scope.launch {
+                                        try {
+                                            profileError = null
+
+                                            val response = RetrofitClient.apiService.getProfile()
+                                            profileResponse = response
+                                            isAuthenticated = response.success
+                                            currentScreen = AppScreen.Profile
+                                        } catch (e: Exception) {
+                                            isAuthenticated = false
+                                            currentScreen = AppScreen.LoginContact
+                                        }
+                                    }
                                 }
                             )
                         }
@@ -181,6 +198,31 @@ class MainActivity : ComponentActivity() {
                                     },
                                     onCartCountChange = { newCount ->
                                         cartCount = newCount
+                                    }
+                                )
+                            }
+
+                            AppScreen.Profile -> {
+                                ProfileScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    profile = profileResponse,
+                                    error = profileError,
+                                    onBack = {
+                                        currentScreen = AppScreen.Home
+                                    },
+                                    onLogout = {
+                                        scope.launch {
+                                            try {
+                                                RetrofitClient.apiService.logout()
+
+                                                isAuthenticated = false
+                                                profileResponse = null
+                                                currentScreen = AppScreen.LoginContact
+
+                                            } catch (e: Exception) {
+                                                // optional: show error
+                                            }
+                                        }
                                     }
                                 )
                             }
@@ -259,7 +301,8 @@ class MainActivity : ComponentActivity() {
                                                     password = password
                                                 )
 
-                                                if (response.success) {
+                                                if (response.success && response.authenticated == true) {
+                                                    isAuthenticated = true
                                                     when (response.nextStep) {
                                                         "products:product_list",
                                                         "product_list",
@@ -268,11 +311,11 @@ class MainActivity : ComponentActivity() {
                                                         }
 
                                                         else -> {
-                                                            loginPasswordError =
-                                                                "Unexpected next step: ${response.nextStep}"
+                                                            loginPasswordError = "Unexpected next step: ${response.nextStep}"
                                                         }
                                                     }
                                                 } else {
+                                                    isAuthenticated = false
                                                     loginPasswordError =
                                                         response.error ?: response.errorMsg ?: "Login failed"
 
@@ -280,6 +323,7 @@ class MainActivity : ComponentActivity() {
                                                 }
 
                                             } catch (e: Exception) {
+                                                isAuthenticated = false
                                                 loginPasswordError = e.message ?: "Login failed"
                                             }
                                         }
