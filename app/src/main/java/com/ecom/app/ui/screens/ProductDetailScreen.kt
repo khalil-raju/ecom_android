@@ -130,17 +130,9 @@ fun ProductDetailScreen(
                         val variant = selectedVariant ?: return@AddToBagButton
                         val csrfToken = RetrofitClient.getCsrfToken() ?: return@AddToBagButton
 
-                        println("ADD_TO_BAG: clicked")
-
-                        println("ADD_TO_BAG: productId=${detail.product.id}")
-
-                        println("ADD_TO_BAG: variantId=${variant.id}")
-
-                        println("ADD_TO_BAG: csrf=${RetrofitClient.getCsrfToken()}")
-
                         scope.launch {
                             try {
-                                val response = RetrofitClient.apiService.addToBag(
+                                val response = RetrofitClient.apiService.addToCart(
                                     csrfToken = csrfToken,
                                     productId = detail.product.id,
                                     variantId = variant.id
@@ -149,7 +141,6 @@ fun ProductDetailScreen(
                                 onCartCountChange(response.cartCount)
 
                             } catch (e: Exception) {
-                                println("ADD_TO_BAG: failed ${e.message}")
                                 e.printStackTrace()
                             }
                         }

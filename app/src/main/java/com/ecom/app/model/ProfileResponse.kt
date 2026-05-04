@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class ProfileResponse(
     val success: Boolean,
+    val authenticated: Boolean,
     val user: ProfileUser
 )
 

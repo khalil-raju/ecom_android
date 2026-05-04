@@ -36,7 +36,8 @@ fun TopMenu(
     onMenuClick: () -> Unit,
     onSearchClick: () -> Unit,
     onLogoClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    onCartClick: () -> Unit
 ) {
 
     val logoUrl = BuildConfig.LOGO_FULL_IMAGE
@@ -101,7 +102,7 @@ fun TopMenu(
                 painter = painterResource(id = R.drawable.ic_bag),
                 contentDescription = "Cart",
                 tint = Color.Unspecified,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(28.dp).clickable { onCartClick() }
             )
         }
     }

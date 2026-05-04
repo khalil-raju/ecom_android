@@ -21,6 +21,14 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
+import android.app.Activity
+
+/*
+import com.razorpay.Checkout
+import com.razorpay.PaymentData
+import com.razorpay.PaymentResultWithDataListener
+import org.json.JSONObject
+*/
 
 import com.ecom.app.model.Product
 import com.ecom.app.network.RetrofitClient
@@ -33,7 +41,12 @@ import com.ecom.app.ui.screens.ProductDetailScreen
 import com.ecom.app.ui.screens.auth.LoginContactScreen
 import com.ecom.app.ui.screens.auth.LoginPasswordScreen
 import com.ecom.app.model.ProfileResponse
+import com.ecom.app.ui.screens.CartScreen
 import com.ecom.app.ui.screens.ProfileScreen
+import com.ecom.app.model.BasketResponse
+import com.ecom.app.model.CheckoutResponse
+import com.ecom.app.model.RzpPayload
+import com.ecom.app.ui.screens.CheckoutScreen
 
 import kotlinx.coroutines.launch
 
@@ -49,11 +62,17 @@ sealed class AppScreen {
     data object LoginContact : AppScreen()
     data class LoginPassword(val contact: String) : AppScreen()
     data object Profile : AppScreen()
+    data object Cart : AppScreen()
+    data object Checkout : AppScreen()
 }
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        /* Checkout.preload(applicationContext) */
+
+        RetrofitClient.init(applicationContext)
 
         WindowCompat.getInsetsController(window, window.decorView).apply {
             isAppearanceLightStatusBars = true
@@ -71,6 +90,8 @@ class MainActivity : ComponentActivity() {
             var isAuthenticated by remember { mutableStateOf(false) }
             var profileResponse by remember { mutableStateOf<ProfileResponse?>(null) }
             var profileError by remember { mutableStateOf<String?>(null) }
+            var basketResponse by remember { mutableStateOf<BasketResponse?>(null) }
+            var checkoutResponse by remember { mutableStateOf<CheckoutResponse?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
@@ -79,6 +100,10 @@ class MainActivity : ComponentActivity() {
                 try {
                     val response = RetrofitClient.apiService.getProducts()
                     products = response.products
+
+                    val basketResponseFromApi = RetrofitClient.apiService.getBasket()
+                    basketResponse = basketResponseFromApi
+                    cartCount = basketResponseFromApi.cartCount
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
@@ -141,13 +166,22 @@ class MainActivity : ComponentActivity() {
 
                                             val response = RetrofitClient.apiService.getProfile()
                                             profileResponse = response
-                                            isAuthenticated = response.success
-                                            currentScreen = AppScreen.Profile
+                                            isAuthenticated =
+                                                response.success && response.authenticated
+                                            currentScreen = if (isAuthenticated) {
+                                                AppScreen.Profile
+                                            } else {
+                                                AppScreen.LoginContact
+                                            }
+
                                         } catch (e: Exception) {
                                             isAuthenticated = false
                                             currentScreen = AppScreen.LoginContact
                                         }
                                     }
+                                },
+                                onCartClick = {
+                                    currentScreen = AppScreen.Cart
                                 }
                             )
                         }
@@ -160,11 +194,6 @@ class MainActivity : ComponentActivity() {
                                     modifier = Modifier.padding(innerPadding),
                                     onProductClick = { product ->
 
-                                        Log.d(
-                                            "PRODUCT_CLICK",
-                                            "Clicked: ${product.name}, ${product.variantId}, ${product.slug}"
-                                        )
-
                                         scope.launch {
                                             try {
                                                 val detail =
@@ -172,17 +201,10 @@ class MainActivity : ComponentActivity() {
                                                         variantId = product.variantId,
                                                         slug = product.slug
                                                     )
-
                                                 currentScreen = AppScreen.ProductDetail(detail)
 
-                                                Log.d("PRODUCT_CLICK", "Detail loaded")
                                             } catch (e: Exception) {
                                                 e.printStackTrace()
-                                                Log.e(
-                                                    "PRODUCT_CLICK",
-                                                    "Detail failed: ${e.message}",
-                                                    e
-                                                )
                                             }
                                         }
                                     }
@@ -227,6 +249,131 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+                            AppScreen.Cart -> {
+                                LaunchedEffect(Unit) {
+                                    try {
+                                        val response = RetrofitClient.apiService.getBasket()
+                                        basketResponse = response
+                                        cartCount = response.cartCount
+                                    } catch (e: Exception) {
+
+                                    }
+                                }
+
+                                CartScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    basket = basketResponse,
+                                    onBack = {
+                                        currentScreen = AppScreen.Home
+                                    },
+                                    onNavigateToProduct = { variantId, slug ->
+                                        scope.launch {
+                                            try {
+                                                val detail =
+                                                    RetrofitClient.apiService.getProductDetail(
+                                                        variantId = variantId,
+                                                        slug = slug
+                                                    )
+
+                                                currentScreen = AppScreen.ProductDetail(detail)
+                                            } catch (e: Exception) {
+                                                Log.e("CART_PRODUCT", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    },
+                                    onQuantityChange = { basketItem, quantity ->
+                                        scope.launch {
+                                            try {
+                                                val csrfToken =
+                                                    RetrofitClient.getCsrfToken() ?: return@launch
+                                                val variantId =
+                                                    basketItem.variantId ?: return@launch
+
+                                                val response =
+                                                    RetrofitClient.apiService.updateCartQuantity(
+                                                        csrfToken = csrfToken,
+                                                        productId = basketItem.productId,
+                                                        variantId = variantId,
+                                                        quantity = quantity
+                                                    )
+
+                                                basketResponse = response
+                                                cartCount = response.cartCount
+                                            } catch (e: Exception) {
+                                                Log.e("CART_QTY", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    },
+                                    onCheckoutClick = {
+                                        scope.launch {
+                                            try {
+                                                val response =
+                                                    RetrofitClient.apiService.getCheckout()
+                                                checkoutResponse = response
+                                                currentScreen = AppScreen.Checkout
+                                            } catch (e: Exception) {
+                                                Log.e("CHECKOUT", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            AppScreen.Checkout -> {
+                                CheckoutScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    checkout = checkoutResponse,
+                                    onBack = {
+                                        currentScreen = AppScreen.Cart
+                                    },
+                                    onAddAddressClick = {
+                                        // later: currentScreen = AppScreen.AddAddress
+                                    },
+                                    onProceedToPayment = { shippingAddressId, billingAddressId, useWallet, paymentMethod ->
+                                        scope.launch {
+                                            try {
+                                                val csrfToken =
+                                                    RetrofitClient.getCsrfToken() ?: return@launch
+                                                val orderToken = checkoutResponse?.order?.orderToken
+                                                    ?: return@launch
+
+                                                val response =
+                                                    RetrofitClient.apiService.initiateOrder(
+                                                        csrfToken = csrfToken,
+                                                        orderToken = orderToken,
+                                                        shippingAddressId = shippingAddressId,
+                                                        billingAddressId = billingAddressId,
+                                                        useWallet = if (useWallet) "1" else "0",
+                                                        paymentMethod = paymentMethod
+                                                    )
+
+                                                when (response.nextStep) {
+                                                    "initiate_rzp_payment" -> {
+                                                        val rzpResponse =
+                                                            RetrofitClient.apiService.initiateRzpPayment(
+                                                                orderToken = response.orderToken
+                                                                    ?: return@launch
+                                                            )
+
+                                                        // next: open Razorpay SDK with rzpResponse.razorpay
+                                                    }
+
+                                                    "finalize_order" -> {
+                                                        // later: currentScreen = AppScreen.OrderSuccess
+                                                    }
+
+                                                    "basket_detail" -> {
+                                                        currentScreen = AppScreen.Cart
+                                                    }
+                                                }
+                                            } catch (e: Exception) {
+                                                Log.e("CHECKOUT_PAY", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
                             AppScreen.LoginContact -> {
                                 LoginContactScreen(
                                     error = loginContactError,
@@ -238,14 +385,16 @@ class MainActivity : ComponentActivity() {
                                                 val csrfToken = RetrofitClient.getCsrfToken()
 
                                                 if (csrfToken == null) {
-                                                    loginContactError = "Session not ready. Please try again."
+                                                    loginContactError =
+                                                        "Session not ready. Please try again."
                                                     return@launch
                                                 }
 
-                                                val response = RetrofitClient.apiService.loginContact(
-                                                    csrfToken = csrfToken,
-                                                    contact = contact
-                                                )
+                                                val response =
+                                                    RetrofitClient.apiService.loginContact(
+                                                        csrfToken = csrfToken,
+                                                        contact = contact
+                                                    )
 
                                                 if (response.success) {
                                                     when (response.nextStep) {
@@ -262,12 +411,14 @@ class MainActivity : ComponentActivity() {
                                                         }
 
                                                         else -> {
-                                                            loginContactError = "Unexpected next step: ${response.nextStep}"
+                                                            loginContactError =
+                                                                "Unexpected next step: ${response.nextStep}"
                                                         }
                                                     }
                                                 } else {
                                                     loginContactError =
-                                                        response.error ?: response.errorMsg ?: "Login failed"
+                                                        response.error ?: response.errorMsg
+                                                                ?: "Login failed"
                                                 }
                                             } catch (e: Exception) {
                                                 loginContactError = e.message ?: "Login failed"
@@ -296,28 +447,20 @@ class MainActivity : ComponentActivity() {
                                                     return@launch
                                                 }
 
-                                                val response = RetrofitClient.apiService.loginPassword(
-                                                    csrfToken = csrfToken,
-                                                    password = password
-                                                )
+                                                val response =
+                                                    RetrofitClient.apiService.loginPassword(
+                                                        csrfToken = csrfToken,
+                                                        password = password
+                                                    )
 
                                                 if (response.success && response.authenticated == true) {
                                                     isAuthenticated = true
-                                                    when (response.nextStep) {
-                                                        "products:product_list",
-                                                        "product_list",
-                                                        "home" -> {
-                                                            currentScreen = AppScreen.Home
-                                                        }
-
-                                                        else -> {
-                                                            loginPasswordError = "Unexpected next step: ${response.nextStep}"
-                                                        }
-                                                    }
+                                                    currentScreen = AppScreen.Home
                                                 } else {
                                                     isAuthenticated = false
                                                     loginPasswordError =
-                                                        response.error ?: response.errorMsg ?: "Login failed"
+                                                        response.error ?: response.errorMsg
+                                                                ?: "Login failed"
 
                                                     loginAttemptsLeft = response.loginAttemptsLeft
                                                 }
@@ -339,4 +482,51 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    /*
+    private fun openRazorpay(payload: RzpPayload) {
+        val checkout = Checkout()
+        checkout.setKeyID(payload.key)
+
+        val options = JSONObject().apply {
+            put("name", payload.storeName)
+            put("description", payload.description)
+            put("currency", payload.currency)
+            put("amount", payload.amountMinor)
+            put("order_id", payload.rzpOrderId)
+
+            put("prefill", JSONObject().apply {
+                put("email", payload.userEmail)
+                put("contact", payload.userPhone)
+            })
+
+            put("theme", JSONObject().apply {
+                put("color", "#000000")
+            })
+        }
+
+        checkout.open(this, options)
+    }
+
+    override fun onPaymentSuccess(
+        razorpayPaymentId: String?,
+        paymentData: PaymentData?
+    ) {
+        Log.d("RZP_SUCCESS", "paymentId=$razorpayPaymentId")
+        Log.d("RZP_SUCCESS", "orderId=${paymentData?.orderId}")
+        Log.d("RZP_SUCCESS", "signature=${paymentData?.signature}")
+
+        // next: call verify_rzp_payment API
+    }
+
+    override fun onPaymentError(
+        code: Int,
+        response: String?,
+        paymentData: PaymentData?
+    ) {
+        Log.e("RZP_ERROR", "code=$code response=$response")
+    }
+
+     */
+
 }
