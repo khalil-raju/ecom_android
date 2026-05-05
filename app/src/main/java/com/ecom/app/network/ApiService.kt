@@ -13,6 +13,8 @@ import com.ecom.app.model.InitiateOrderResponse
 import com.ecom.app.model.OrderDetailResponse
 import com.ecom.app.model.OrderItemDetailResponse
 import com.ecom.app.model.OrderItemHistoryResponse
+import com.ecom.app.model.ReturnOrderItemResponse
+import com.ecom.app.model.ReviewOrderItemResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -152,5 +154,52 @@ interface ApiService {
 
         @Query("format") format: String = "json"
     ): CancelOrderResponse
+
+    @GET("orders/return/order/item/{itemToken}/")
+    suspend fun getReturnOrderItem(
+        @Path("itemToken") itemToken: String,
+        @Query("format") format: String = "json"
+    ): ReturnOrderItemResponse
+
+    @FormUrlEncoded
+    @POST("orders/return/order/item/{itemToken}/")
+    suspend fun submitReturnOrderItem(
+        @Path("itemToken") itemToken: String,
+
+        @Field("return_reason")
+        returnReason: String,
+
+        @Field("refund_account")
+        refundAccount: String? = null,
+
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Query("format")
+        format: String = "json"
+    ): ReturnOrderItemResponse
+
+    @GET("reviews/rate/{itemToken}/")
+    suspend fun getReviewOrderItem(
+        @Path("itemToken") itemToken: String,
+        @Query("format") format: String = "json"
+    ): ReviewOrderItemResponse
+
+    @FormUrlEncoded
+    @POST("reviews/rate/{itemToken}/")
+    suspend fun submitReviewOrderItem(
+        @Path("itemToken") itemToken: String,
+
+        @Field("rating")
+        rating: Int,
+
+        @Field("review")
+        review: String? = null,
+
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Query("format") format: String = "json"
+    ): ReviewOrderItemResponse
 
 }

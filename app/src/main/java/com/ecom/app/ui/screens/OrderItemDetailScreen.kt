@@ -36,9 +36,10 @@ fun OrderItemDetailScreen(
     response: OrderItemDetailResponse?,
     onBack: () -> Unit,
     onOrderDetailClick: (String) -> Unit,
-    onReturnClick: (String) -> Unit = {},
-    onReviewClick: (String) -> Unit = {},
-    onTrackClick: (String) -> Unit = {},
+    onReturnItemClick: (String) -> Unit = {},
+    onReviewItemClick: (String) -> Unit = {},
+    onTrackItemClick: (String) -> Unit = {},
+    onSupportClick: (String) -> Unit = {},
     onProductClick: (variantId: Int, slug: String) -> Unit
 ) {
     val item = response?.item
@@ -74,12 +75,23 @@ fun OrderItemDetailScreen(
 
             PriceDetailsCard(item = item)
 
-            HelpCard(
-                item = item,
-                onReturnClick = onReturnClick,
-                onReviewClick = onReviewClick,
-                onTrackClick = onTrackClick
+            ReviewItemCard(
+                itemToken = item.itemToken,
+                canUserReview = item.canUserReview,
+                onReviewItemClick = onReviewItemClick
             )
+
+            ReturnItemCard(
+                itemToken = item.itemToken,
+                canUserReturn = item.canUserReturn,
+                onReturnItemClick = onReturnItemClick
+            )
+
+            HelpCard(
+                itemToken = item.itemToken,
+                onSupportClick = onSupportClick
+            )
+
 
             Spacer(Modifier.height(20.dp))
         }
@@ -248,14 +260,53 @@ private fun PriceDetailsCard(item: OrderItem) {
         }
     }
 }
+@Composable
+private fun ReviewItemCard(
+    itemToken: String?,
+    canUserReview: Boolean?,
+    onReviewItemClick: (String) -> Unit
+) {
+    if (canUserReview != true || itemToken.isNullOrBlank()) return
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onReviewItemClick(itemToken) },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        ActionRow(title = "Review Item")
+    }
+}
+
+@Composable
+private fun ReturnItemCard(
+    itemToken: String?,
+    canUserReturn: Boolean?,
+    onReturnItemClick: (String) -> Unit
+) {
+    if (canUserReturn != true || itemToken.isNullOrBlank()) return
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onReturnItemClick(itemToken) },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        ActionRow(title = "Return Item")
+    }
+}
 
 @Composable
 private fun HelpCard(
-    item: OrderItem,
-    onReturnClick: (String) -> Unit,
-    onReviewClick: (String) -> Unit,
-    onTrackClick: (String) -> Unit
+    itemToken: String?,
+    onSupportClick: (String) -> Unit
 ) {
+    if (itemToken.isNullOrBlank()) return
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -263,49 +314,43 @@ private fun HelpCard(
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text("Need Help?", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text("Need Help?", fontSize = 20.sp, fontWeight = FontWeight.Bold)
 
             Spacer(Modifier.height(14.dp))
 
-            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                OutlinedButton(
-                    onClick = {},
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Contact Support")
-                }
-
-                if (item.canUserReturn == true) {
-                    OutlinedButton(
-                        onClick = { item.itemToken?.let { onReturnClick(it) } },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Request Return")
-                    }
-                } else if (item.canUserReview == true) {
-                    OutlinedButton(
-                        onClick = { item.itemToken?.let { onReviewClick(it) } },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Review Item")
-                    }
-                } else if (item.canUserTrack == true) {
-                    OutlinedButton(
-                        onClick = { item.itemToken?.let { onTrackClick(it) } },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text("Track Order")
-                    }
-                }
+            OutlinedButton(
+                onClick = { onSupportClick(itemToken) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp)
+            ) {
+                Text("Contact Support")
             }
         }
     }
 }
 
+@Composable
+private fun ActionRow(title: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 18.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = title,
+            fontSize = 18.sp,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.weight(1f)
+        )
+
+        Text(
+            text = "›",
+            fontSize = 32.sp,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
 @Composable
 private fun DetailRow(
     label: String,

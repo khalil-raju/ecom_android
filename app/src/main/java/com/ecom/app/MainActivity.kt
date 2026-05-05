@@ -55,7 +55,11 @@ import com.ecom.app.ui.screens.OrderItemDetailScreen
 import com.ecom.app.ui.screens.OrderItemHistoryScreen
 import com.ecom.app.ui.screens.PaymentWebViewScreen
 import com.ecom.app.model.CancelOrderResponse
+import com.ecom.app.model.ReturnOrderItemResponse
+import com.ecom.app.model.ReviewOrderItemResponse
 import com.ecom.app.ui.screens.CancelOrderScreen
+import com.ecom.app.ui.screens.ReturnOrderItemScreen
+import com.ecom.app.ui.screens.ReviewOrderItemScreen
 import com.ecom.app.util.downloadFileAndOpen
 
 import kotlinx.coroutines.launch
@@ -85,6 +89,8 @@ sealed class AppScreen {
     data object OrderItemDetail : AppScreen()
     data object OrderDetail : AppScreen()
     data object CancelOrder : AppScreen()
+    data object ReturnOrderItem : AppScreen()
+    data object ReviewOrderItem : AppScreen()
 }
 
 private fun fullUrl(path: String?): String? {
@@ -125,6 +131,10 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
             var orderDetailResponse by remember { mutableStateOf<OrderDetailResponse?>(null) }
             var cancelOrderResponse by remember { mutableStateOf<CancelOrderResponse?>(null) }
             var cancelOrderError by remember { mutableStateOf<String?>(null) }
+            var returnOrderItemResponse by remember { mutableStateOf<ReturnOrderItemResponse?>(null) }
+            var returnOrderItemError by remember { mutableStateOf<String?>(null) }
+            var reviewOrderItemResponse by remember { mutableStateOf<ReviewOrderItemResponse?>(null) }
+            var reviewOrderItemError by remember { mutableStateOf<String?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
@@ -133,10 +143,8 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
 
             LaunchedEffect(Unit) {
 
-                currentScreen = AppScreen.OrderDetail
-                orderDetailResponse = RetrofitClient.apiService.getOrderDetail("2bcf3391a0bc4425ad9e93ad64ecfe4e28")
-                println("ADDRESS DEBUG: $orderDetailResponse.shippingAddress")
-
+                currentScreen = AppScreen.OrderItemDetail
+                orderItemDetailResponse = RetrofitClient.apiService.getOrderItemDetail("c62977e92dab46fc9287a4b7b90a0d76")
 
                 try {
                     val productResponse = RetrofitClient.apiService.getProducts()
@@ -556,14 +564,39 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                             }
                                         }
                                     },
-                                    onReturnClick = { itemToken ->
-                                        // later
+                                    onReturnItemClick = { itemToken ->
+                                        scope.launch {
+                                            try {
+                                                returnOrderItemError = null
+
+                                                val response = RetrofitClient.apiService.getReturnOrderItem(itemToken)
+                                                returnOrderItemResponse = response
+
+                                                currentScreen = AppScreen.ReturnOrderItem
+                                            } catch (e: Exception) {
+                                                Log.e("RETURN_ITEM", "failed: ${e.message}", e)
+                                            }
+                                        }
                                     },
-                                    onReviewClick = { itemToken ->
-                                        // later
+                                    onReviewItemClick = { itemToken ->
+                                        scope.launch {
+                                            try {
+                                                reviewOrderItemError = null
+
+                                                val response = RetrofitClient.apiService.getReviewOrderItem(itemToken)
+                                                reviewOrderItemResponse = response
+
+                                                currentScreen = AppScreen.ReviewOrderItem
+                                            } catch (e: Exception) {
+                                                Log.e("REVIEW_ITEM", "failed: ${e.message}", e)
+                                            }
+                                        }
                                     },
-                                    onTrackClick = { itemToken ->
-                                        // later
+                                    onTrackItemClick = { itemToken ->
+                                        // later: track item screen
+                                    },
+                                    onSupportClick = { itemToken ->
+                                        // later: support screen
                                     },
                                     onProductClick = { variantId, slug ->
                                         scope.launch {
@@ -651,6 +684,88 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                             } catch (e: Exception) {
                                                 cancelOrderError = e.message ?: "Unable to cancel order."
                                                 Log.e("CANCEL_SUBMIT", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            AppScreen.ReturnOrderItem -> {
+                                ReturnOrderItemScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = returnOrderItemResponse,
+                                    error = returnOrderItemError,
+                                    onBack = {
+                                        currentScreen = AppScreen.OrderItemDetail
+                                    },
+                                    onSubmitReturn = { returnReason, refundAccount ->
+                                        scope.launch {
+                                            try {
+                                                val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+                                                val itemToken = returnOrderItemResponse?.orderItem?.itemToken ?: return@launch
+
+                                                val response = RetrofitClient.apiService.submitReturnOrderItem(
+                                                    csrfToken = csrfToken,
+                                                    itemToken = itemToken,
+                                                    returnReason = returnReason,
+                                                    refundAccount = refundAccount
+                                                )
+
+                                                if (response.success && response.nextStep == "order_item_details") {
+                                                    val detail = RetrofitClient.apiService.getOrderItemDetail(
+                                                        response.itemToken ?: itemToken
+                                                    )
+
+                                                    orderItemDetailResponse = detail
+                                                    returnOrderItemError = null
+                                                    currentScreen = AppScreen.OrderItemDetail
+                                                } else {
+                                                    returnOrderItemError = response.error ?: "Unable to submit return request."
+                                                }
+                                            } catch (e: Exception) {
+                                                returnOrderItemError = e.message ?: "Unable to submit return request."
+                                                Log.e("RETURN_SUBMIT", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            AppScreen.ReviewOrderItem -> {
+                                ReviewOrderItemScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = reviewOrderItemResponse,
+                                    error = reviewOrderItemError,
+                                    onBack = {
+                                        currentScreen = AppScreen.OrderItemDetail
+                                    },
+                                    onSubmitReview = { rating, review ->
+                                        scope.launch {
+                                            try {
+                                                val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+                                                val itemToken = reviewOrderItemResponse?.item?.itemToken ?: return@launch
+
+                                                val response = RetrofitClient.apiService.submitReviewOrderItem(
+                                                    csrfToken = csrfToken,
+                                                    itemToken = itemToken,
+                                                    rating = rating,
+                                                    review = review
+                                                )
+
+                                                if (response.success && response.nextStep == "order_item_details") {
+                                                    val detail = RetrofitClient.apiService.getOrderItemDetail(
+                                                        response.itemToken ?: itemToken
+                                                    )
+
+                                                    orderItemDetailResponse = detail
+                                                    reviewOrderItemError = null
+                                                    currentScreen = AppScreen.OrderItemDetail
+                                                } else {
+                                                    reviewOrderItemError = response.error ?: "Unable to submit review."
+                                                }
+                                            } catch (e: Exception) {
+                                                reviewOrderItemError = e.message ?: "Unable to submit review."
+                                                Log.e("REVIEW_SUBMIT", "failed: ${e.message}", e)
                                             }
                                         }
                                     }
