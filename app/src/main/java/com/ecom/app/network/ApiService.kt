@@ -9,6 +9,9 @@ import com.ecom.app.model.ProfileResponse
 import com.ecom.app.model.BasketResponse
 import com.ecom.app.model.CheckoutResponse
 import com.ecom.app.model.InitiateOrderResponse
+import com.ecom.app.model.OrderDetailResponse
+import com.ecom.app.model.OrderItemDetailResponse
+import com.ecom.app.model.OrderItemHistoryResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -108,5 +111,22 @@ interface ApiService {
         @Field("use_wallet") useWallet: String,
         @Field("payment_method") paymentMethod: String
     ): InitiateOrderResponse
+
+    @GET("orders/order/details/{orderToken}/")
+    suspend fun getOrderDetail(
+        @Path("orderToken") orderToken: String,
+        @Query("format") format: String = "json"
+    ): OrderDetailResponse
+
+    @GET("orders/order/item/history/")
+    suspend fun getOrderItemHistory(
+        @Query("format") format: String = "json"
+    ): OrderItemHistoryResponse
+
+    @GET("orders/order/item/details/{itemToken}/")
+    suspend fun getOrderItemDetail(
+        @Path("itemToken") itemToken: String,
+        @Query("format") format: String = "json"
+    ): OrderItemDetailResponse
 
 }

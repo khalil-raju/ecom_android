@@ -6,12 +6,39 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
+data class SideMenuCategory(
+    val name: String,
+    val slug: String,
+    val children: List<SideMenuCategoryChild> = emptyList()
+)
+
+data class SideMenuCategoryChild(
+    val name: String,
+    val slug: String
+)
+
 @Composable
 fun SideMenu(
-    onClose: () -> Unit
+    parentCategories: List<SideMenuCategory>,
+    isAuthenticated: Boolean,
+    onClose: () -> Unit,
+    onHomeClick: () -> Unit,
+    onLoginClick: () -> Unit,
+    onSignupClick: () -> Unit,
+    onCategoryClick: (parentSlug: String, childSlug: String?) -> Unit,
+    onProfileClick: () -> Unit,
+    onOrdersClick: () -> Unit,
+    onWalletClick: () -> Unit,
+    onWishlistClick: () -> Unit,
+    onLogoutClick: () -> Unit,
+    onTermsClick: () -> Unit,
+    onPrivacyClick: () -> Unit,
+    onReturnsClick: () -> Unit,
+    onContactClick: () -> Unit
 ) {
     Column(
         modifier = Modifier
@@ -32,31 +59,107 @@ fun SideMenu(
             )
         }
 
-        MenuItem("Home")
+        MenuItem("Home") {
+            onClose()
+            onHomeClick()
+        }
+
+        parentCategories
+            .filter { it.children.isNotEmpty() }
+            .forEach { category ->
+                ExpandableMenuGroup(
+                    title = category.name,
+                    items = buildList {
+                        add("▹ All" to {
+                            onClose()
+                            onCategoryClick(category.slug, null)
+                        })
+
+                        category.children.forEach { child ->
+                            add("▹ ${child.name}" to {
+                                onClose()
+                                onCategoryClick(category.slug, child.slug)
+                            })
+                        }
+                    }
+                )
+            }
+
+        if (isAuthenticated) {
+            ExpandableMenuGroup(
+                title = "My Account",
+                items = listOf(
+                    "▹ Profile" to {
+                        onClose()
+                        onProfileClick()
+                    },
+                    "▹ Orders" to {
+                        onClose()
+                        onOrdersClick()
+                    },
+                    "▹ Wallet" to {
+                        onClose()
+                        onWalletClick()
+                    },
+                    "▹ Wishlist" to {
+                        onClose()
+                        onWishlistClick()
+                    },
+                    "▹ Logout" to {
+                        onClose()
+                        onLogoutClick()
+                    }
+                )
+            )
+        } else {
+            MenuItem("Login") {
+                onClose()
+                onLoginClick()
+            }
+
+            MenuItem("Sign Up") {
+                onClose()
+                onSignupClick()
+            }
+        }
+
         ExpandableMenuGroup(
             title = "About Us",
             items = listOf(
-                "▹ Terms & Conditions",
-                "▹ Privacy Policy",
-                "▹ Returns & Shipping Policy",
-                "▹ Contact Us"
+                "▹ Terms & Conditions" to {
+                    onClose()
+                    onTermsClick()
+                },
+                "▹ Privacy Policy" to {
+                    onClose()
+                    onPrivacyClick()
+                },
+                "▹ Returns & Shipping Policy" to {
+                    onClose()
+                    onReturnsClick()
+                },
+                "▹ Contact Us" to {
+                    onClose()
+                    onContactClick()
+                }
             )
         )
-
-        MenuItem("Login")
-        MenuItem("Sign Up")
     }
 }
 
 @Composable
-private fun MenuItem(text: String) {
+private fun MenuItem(
+    text: String,
+    onClick: () -> Unit
+) {
     Column {
         Text(
             text = text,
             fontSize = 16.sp,
+            fontWeight = FontWeight.Normal,
             modifier = Modifier
                 .fillMaxWidth()
-                .clickable { }
+                .clickable { onClick() }
                 .padding(horizontal = 24.dp, vertical = 12.dp)
         )
         HorizontalDivider(thickness = 1.dp)
@@ -64,7 +167,10 @@ private fun MenuItem(text: String) {
 }
 
 @Composable
-private fun ExpandableMenuGroup(title: String, items: List<String>) {
+private fun ExpandableMenuGroup(
+    title: String,
+    items: List<Pair<String, () -> Unit>>
+) {
     var open by remember { mutableStateOf(false) }
 
     Column {
@@ -76,16 +182,17 @@ private fun ExpandableMenuGroup(title: String, items: List<String>) {
                 .clickable { open = !open }
                 .padding(horizontal = 24.dp, vertical = 12.dp)
         )
+
         HorizontalDivider(thickness = 1.dp)
 
         if (open) {
-            items.forEach {
+            items.forEach { item ->
                 Text(
-                    text = it,
+                    text = item.first,
                     fontSize = 15.sp,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { }
+                        .clickable { item.second() }
                         .padding(horizontal = 42.dp, vertical = 10.dp)
                 )
                 HorizontalDivider(thickness = 1.dp)

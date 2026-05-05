@@ -45,7 +45,13 @@ import com.ecom.app.ui.screens.CartScreen
 import com.ecom.app.ui.screens.ProfileScreen
 import com.ecom.app.model.BasketResponse
 import com.ecom.app.model.CheckoutResponse
+import com.ecom.app.model.OrderDetailResponse
+import com.ecom.app.model.OrderItemDetailResponse
+import com.ecom.app.model.OrderItemHistoryResponse
 import com.ecom.app.ui.screens.CheckoutScreen
+import com.ecom.app.ui.screens.OrderDetailScreen
+import com.ecom.app.ui.screens.OrderItemDetailScreen
+import com.ecom.app.ui.screens.OrderItemHistoryScreen
 import com.ecom.app.ui.screens.PaymentWebViewScreen
 
 import kotlinx.coroutines.launch
@@ -65,6 +71,9 @@ sealed class AppScreen {
     data object Cart : AppScreen()
     data object Checkout : AppScreen()
     data class PaymentWeb(val url: String) : AppScreen()
+    data object OrderItemHistory : AppScreen()
+    data object OrderItemDetail : AppScreen()
+    data object OrderDetail : AppScreen()
 }
 
 class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
@@ -93,20 +102,37 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
             var profileError by remember { mutableStateOf<String?>(null) }
             var basketResponse by remember { mutableStateOf<BasketResponse?>(null) }
             var checkoutResponse by remember { mutableStateOf<CheckoutResponse?>(null) }
+            var orderItemHistoryResponse by remember { mutableStateOf<OrderItemHistoryResponse?>(null) }
+            var orderItemDetailResponse by remember { mutableStateOf<OrderItemDetailResponse?>(null) }
+            var orderDetailResponse by remember { mutableStateOf<OrderDetailResponse?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
 
             LaunchedEffect(Unit) {
                 try {
-                    val response = RetrofitClient.apiService.getProducts()
-                    products = response.products
+                    val productResponse = RetrofitClient.apiService.getProducts()
+                    products = productResponse.products
+                } catch (e: Exception) {
+                    Log.e("INIT_PRODUCTS", "failed: ${e.message}", e)
+                }
 
+                try {
                     val basketResponseFromApi = RetrofitClient.apiService.getBasket()
                     basketResponse = basketResponseFromApi
                     cartCount = basketResponseFromApi.cartCount
                 } catch (e: Exception) {
-                    e.printStackTrace()
+                    Log.e("INIT_BASKET", "failed: ${e.message}", e)
+                }
+
+                try {
+                    val profile = RetrofitClient.apiService.getProfile()
+                    profileResponse = profile
+                    isAuthenticated = profile.success && profile.authenticated
+                } catch (e: Exception) {
+                    isAuthenticated = false
+                    profileResponse = null
+                    Log.e("INIT_AUTH", "failed: ${e.message}", e)
                 }
             }
 
@@ -120,10 +146,66 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                             when (drawerContentType) {
                                 DrawerContentType.SIDE_MENU -> {
                                     SideMenu(
+                                        parentCategories = emptyList(), // replace with backend categories later
+                                        isAuthenticated = isAuthenticated,
                                         onClose = {
+                                            scope.launch { drawerState.close() }
+                                        },
+                                        onHomeClick = {
+                                            currentScreen = AppScreen.Home
+                                        },
+                                        onLoginClick = {
+                                            currentScreen = AppScreen.LoginContact
+                                        },
+                                        onSignupClick = {
+                                            // later: currentScreen = AppScreen.SignupContact
+                                        },
+                                        onCategoryClick = { parentSlug, childSlug ->
+                                            // later: load category product list
+                                        },
+                                        onProfileClick = {
+                                            currentScreen = AppScreen.Profile
+                                        },
+                                        onOrdersClick = {
                                             scope.launch {
-                                                drawerState.close()
+                                                try {
+                                                    val response = RetrofitClient.apiService.getOrderItemHistory()
+                                                    orderItemHistoryResponse = response
+                                                    currentScreen = AppScreen.OrderItemHistory
+                                                } catch (e: Exception) {
+                                                    Log.e("ORDER_HISTORY", "failed: ${e.message}", e)
+                                                }
                                             }
+                                        },
+                                        onWalletClick = {
+                                            // later: currentScreen = AppScreen.Wallet
+                                        },
+                                        onWishlistClick = {
+                                            currentScreen = AppScreen.Cart
+                                        },
+                                        onLogoutClick = {
+                                            scope.launch {
+                                                try {
+                                                    RetrofitClient.apiService.logout()
+                                                    isAuthenticated = false
+                                                    profileResponse = null
+                                                    currentScreen = AppScreen.LoginContact
+                                                } catch (e: Exception) {
+                                                    Log.e("SIDE_MENU_LOGOUT", "failed: ${e.message}", e)
+                                                }
+                                            }
+                                        },
+                                        onTermsClick = {
+                                            // later: open web/static page
+                                        },
+                                        onPrivacyClick = {
+                                            // later: open web/static page
+                                        },
+                                        onReturnsClick = {
+                                            // later: open web/static page
+                                        },
+                                        onContactClick = {
+                                            // later: open contact page
                                         }
                                     )
                                 }
@@ -387,6 +469,83 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                         } else {
                                             currentScreen = AppScreen.Cart
                                         }
+                                    }
+                                )
+                            }
+
+                            AppScreen.OrderItemHistory -> {
+                                OrderItemHistoryScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = orderItemHistoryResponse,
+                                    onBack = {
+                                        currentScreen = AppScreen.Home
+                                    },
+                                    onItemClick = { item ->
+                                        scope.launch {
+                                            try {
+                                                val token = item.itemToken ?: return@launch
+
+                                                val response = RetrofitClient.apiService.getOrderItemDetail(token)
+                                                orderItemDetailResponse = response
+
+                                                currentScreen = AppScreen.OrderItemDetail
+                                            } catch (e: Exception) {
+                                                Log.e("ORDER_ITEM_DETAIL", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            AppScreen.OrderItemDetail -> {
+                                OrderItemDetailScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = orderItemDetailResponse,
+                                    onBack = {
+                                        currentScreen = AppScreen.OrderItemHistory
+                                    },
+                                    onOrderDetailClick = { orderToken ->
+                                        scope.launch {
+                                            try {
+                                                val response = RetrofitClient.apiService.getOrderDetail(orderToken)
+                                                orderDetailResponse = response
+                                                currentScreen = AppScreen.OrderDetail
+                                            } catch (e: Exception) {
+                                                Log.e("ORDER_DETAIL", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    },
+                                    onReturnClick = { itemToken ->
+                                        // later
+                                    },
+                                    onReviewClick = { itemToken ->
+                                        // later
+                                    },
+                                    onTrackClick = { itemToken ->
+                                        // later
+                                    },
+                                    onProductClick = { variantId, slug ->
+                                        scope.launch {
+                                            try {
+                                                val detail = RetrofitClient.apiService.getProductDetail(
+                                                    variantId = variantId,
+                                                    slug = slug
+                                                )
+                                                currentScreen = AppScreen.ProductDetail(detail)
+                                            } catch (e: Exception) {
+                                                Log.e("ITEM_PRODUCT", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    }
+                                )
+                            }
+
+                            AppScreen.OrderDetail -> {
+                                OrderDetailScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = orderDetailResponse,
+                                    onBack = {
+                                        currentScreen = AppScreen.OrderItemDetail
                                     }
                                 )
                             }
