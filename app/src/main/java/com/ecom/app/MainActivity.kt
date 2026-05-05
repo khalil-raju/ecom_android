@@ -22,6 +22,7 @@ import androidx.core.view.WindowCompat
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
 import android.app.Activity
+import androidx.compose.ui.platform.LocalContext
 
 /*
 import com.razorpay.Checkout
@@ -53,6 +54,9 @@ import com.ecom.app.ui.screens.OrderDetailScreen
 import com.ecom.app.ui.screens.OrderItemDetailScreen
 import com.ecom.app.ui.screens.OrderItemHistoryScreen
 import com.ecom.app.ui.screens.PaymentWebViewScreen
+import com.ecom.app.model.CancelOrderResponse
+import com.ecom.app.ui.screens.CancelOrderScreen
+import com.ecom.app.util.downloadFileAndOpen
 
 import kotlinx.coroutines.launch
 
@@ -63,6 +67,12 @@ enum class DrawerContentType {
 }
 
 sealed class AppScreen {
+    fun isFullScreen(): Boolean {
+        return this is AppScreen.PaymentWeb ||
+                this is AppScreen.LoginContact ||
+                this is AppScreen.LoginPassword
+    }
+
     data object Home : AppScreen()
     data class ProductDetail(val detail: ProductDetailResponse) : AppScreen()
     data object LoginContact : AppScreen()
@@ -74,6 +84,14 @@ sealed class AppScreen {
     data object OrderItemHistory : AppScreen()
     data object OrderItemDetail : AppScreen()
     data object OrderDetail : AppScreen()
+    data object CancelOrder : AppScreen()
+}
+
+private fun fullUrl(path: String?): String? {
+    return path?.let {
+        if (it.startsWith("http")) it
+        else BuildConfig.BASE_URL.trimEnd('/') + it
+    }
 }
 
 class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
@@ -105,11 +123,21 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
             var orderItemHistoryResponse by remember { mutableStateOf<OrderItemHistoryResponse?>(null) }
             var orderItemDetailResponse by remember { mutableStateOf<OrderItemDetailResponse?>(null) }
             var orderDetailResponse by remember { mutableStateOf<OrderDetailResponse?>(null) }
+            var cancelOrderResponse by remember { mutableStateOf<CancelOrderResponse?>(null) }
+            var cancelOrderError by remember { mutableStateOf<String?>(null) }
 
             val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
             val scope = rememberCoroutineScope()
 
+            val context = LocalContext.current
+
             LaunchedEffect(Unit) {
+
+                currentScreen = AppScreen.OrderDetail
+                orderDetailResponse = RetrofitClient.apiService.getOrderDetail("2bcf3391a0bc4425ad9e93ad64ecfe4e28")
+                println("ADDRESS DEBUG: $orderDetailResponse.shippingAddress")
+
+
                 try {
                     val productResponse = RetrofitClient.apiService.getProducts()
                     products = productResponse.products
@@ -225,7 +253,7 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                 ) {
                     Scaffold(
                         topBar = {
-                            if (currentScreen !is AppScreen.PaymentWeb) {
+                            if (!currentScreen.isFullScreen()) {
                                 TopMenu(
                                     cartCount = cartCount,
                                     onMenuClick = {
@@ -440,9 +468,22 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                                         currentScreen = AppScreen.PaymentWeb(paymentUrl)
                                                     }
 
+                                                    "initiate_cod_payment" -> {
+                                                        val token = response.orderToken ?: return@launch
+
+                                                        val paymentUrl =
+                                                            "${BuildConfig.BASE_URL.trimEnd('/')}/payments/initiate/cod/payment/$token/"
+
+                                                        currentScreen = AppScreen.PaymentWeb(paymentUrl)
+                                                    }
+
                                                     "finalize_order" -> {
-                                                        // later → success screen
-                                                        currentScreen = AppScreen.Home
+                                                        val token = response.orderToken ?: return@launch
+
+                                                        val paymentUrl =
+                                                            "${BuildConfig.BASE_URL.trimEnd('/')}/orders/finalize/order/$token"
+
+                                                        currentScreen = AppScreen.PaymentWeb(paymentUrl)
                                                     }
 
                                                     "basket_detail" -> {
@@ -546,12 +587,81 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                     response = orderDetailResponse,
                                     onBack = {
                                         currentScreen = AppScreen.OrderItemDetail
+                                    },
+                                    onCancelOrderClick = {
+                                        scope.launch {
+                                            try {
+                                                val orderToken = orderDetailResponse?.order?.orderToken ?: return@launch
+
+                                                cancelOrderError = null
+                                                val response = RetrofitClient.apiService.getCancelOrder(orderToken)
+
+                                                cancelOrderResponse = response
+                                                currentScreen = AppScreen.CancelOrder
+                                            } catch (e: Exception) {
+                                                Log.e("CANCEL_ORDER", "failed: ${e.message}", e)
+                                            }
+                                        }
+                                    },
+                                    onInvoiceClick = {
+                                        val invoiceUrl = orderDetailResponse?.invoice?.pdfUrl ?: return@OrderDetailScreen
+                                        val url = fullUrl(invoiceUrl) ?: return@OrderDetailScreen
+                                        downloadFileAndOpen(
+                                            context = context,
+                                            url = url,
+                                            title = "Invoice",
+                                            mimeType = "application/pdf"
+                                        )
+                                    }
+                                )
+                            }
+
+                            AppScreen.CancelOrder -> {
+                                CancelOrderScreen(
+                                    modifier = Modifier.padding(innerPadding),
+                                    response = cancelOrderResponse,
+                                    error = cancelOrderError,
+                                    onBack = {
+                                        currentScreen = AppScreen.OrderDetail
+                                    },
+                                    onConfirmCancel = { reason, refundAccount ->
+                                        scope.launch {
+                                            try {
+                                                val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+                                                val orderToken = cancelOrderResponse?.order?.orderToken ?: return@launch
+
+                                                val response = RetrofitClient.apiService.submitCancelOrder(
+                                                    csrfToken = csrfToken,
+                                                    orderToken = orderToken,
+                                                    cancelReason = reason,
+                                                    refundAccount = refundAccount
+                                                )
+
+                                                if (response.success && response.nextStep == "order_details") {
+                                                    val detail = RetrofitClient.apiService.getOrderDetail(
+                                                        response.orderToken ?: orderToken
+                                                    )
+
+                                                    orderDetailResponse = detail
+                                                    cancelOrderError = null
+                                                    currentScreen = AppScreen.OrderDetail
+                                                } else {
+                                                    cancelOrderError = response.error ?: "Unable to cancel order."
+                                                }
+                                            } catch (e: Exception) {
+                                                cancelOrderError = e.message ?: "Unable to cancel order."
+                                                Log.e("CANCEL_SUBMIT", "failed: ${e.message}", e)
+                                            }
+                                        }
                                     }
                                 )
                             }
 
                             AppScreen.LoginContact -> {
                                 LoginContactScreen(
+                                    onLogoClick = {
+                                        currentScreen = AppScreen.Home
+                                    },
                                     error = loginContactError,
                                     onContinue = { contact ->
                                         scope.launch {
@@ -609,6 +719,9 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
 
                             is AppScreen.LoginPassword -> {
                                 LoginPasswordScreen(
+                                    onLogoClick = {
+                                        currentScreen = AppScreen.Home
+                                    },
                                     contact = screen.contact,
                                     error = loginPasswordError,
                                     attemptsLeft = loginAttemptsLeft,

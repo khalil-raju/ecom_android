@@ -226,7 +226,7 @@ private fun buildAddressText(address: Address?): String {
     return listOfNotNull(
         address.addressLine1,
         address.addressLine2,
-        "${address.city}, ${address.state} - ${address.pincode}"
+        "${address.city}, ${address.state} - ${address.postalCode}"
     )
         .filter { it.isNotBlank() }
         .joinToString("\n")

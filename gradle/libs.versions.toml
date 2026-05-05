@@ -39,6 +39,7 @@ okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-urlconnection = { module = "com.squareup.okhttp3:okhttp-urlconnection", version.ref = "okhttp" }
 persistent-cookie-jar = { module = "com.github.franmontiel:PersistentCookieJar", version.ref = "persistentCookieJar" }
 #razorpay-checkout = { module = "com.razorpay:checkout", version.ref = "razorpay" }
+logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 
 
 [plugins]

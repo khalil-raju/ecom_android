@@ -65,9 +65,9 @@ fun OrderItemHistoryScreen(
                     OrderItemHistoryCard(
                         item = item,
                         onClick = {
-                            //if (item.canShowDetails != false) {
+                            if (item.canShowDetails != false) {
                                 onItemClick(item)
-                            //}
+                            }
                         }
                     )
                 }
@@ -136,52 +136,31 @@ private fun OrderItemHistoryCard(
             ) {
                 Text(
                     text = item.variantName,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(
-                    text = buildMeta(item),
-                    fontSize = 14.sp,
-                    color = Color.DarkGray
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Text(
-                    text = "₹${formatAmount(item.totalAmt)}",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                item.orderId?.let {
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Order ID: $it",
-                        fontSize = 13.sp,
-                        color = Color.Gray
-                    )
-                }
+                Spacer(modifier = Modifier.height(20.dp))
 
                 item.statusSummary?.let {
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = it,
-                        fontSize = 13.sp,
+                        fontSize = 16.sp,
                         color = statusColor(it),
                         fontWeight = FontWeight.SemiBold
                     )
                 }
             }
 
-            Text(
-                text = "›",
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
+            if (item.canShowDetails == true) {
+                Text(
+                    text = "›",
+                    fontSize = 34.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+            }
         }
     }
 }

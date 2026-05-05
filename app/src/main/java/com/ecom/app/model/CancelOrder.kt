@@ -1,8 +1,10 @@
+// model/CancelOrder.kt
 package com.ecom.app.model
 
 import com.google.gson.annotations.SerializedName
 
-data class Order(
+data class CancelOrder(
+
     @SerializedName("order_token")
     val orderToken: String,
 
@@ -14,24 +16,18 @@ data class Order(
     @SerializedName("placed_at")
     val placedAt: String?,
 
-    @SerializedName("cancelled_at")
-    val cancelledAt: String?,
-
-    @SerializedName("items_total_base_amt")
-    val itemsTotalBaseAmt: Double,
-
-    @SerializedName("items_total_gst_amt")
-    val itemsTotalGstAmt: Double,
-
-    @SerializedName("items_total_amt")
-    val itemsTotalAmt: Double,
-
-    @SerializedName("shipping_cost")
-    val shippingCost: Double,
-
     @SerializedName("total_amount")
     val totalAmount: Double,
 
     @SerializedName("can_user_cancel")
     val canUserCancel: Boolean,
+
+    @SerializedName("total_paid_amt")
+    val totalPaidAmt: Double,
+
+    @SerializedName("online_paid_amt")
+    val onlinePaidAmt: Double,
+
+    @SerializedName("wallet_paid_amt")
+    val walletPaidAmt: Double
 )

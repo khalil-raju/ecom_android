@@ -70,7 +70,6 @@ fun TopMenu(
             contentDescription = "BrandLogo",
             modifier = Modifier
                 .width(150.dp)
-                .height(42.dp)
                 .clickable { onLogoClick() },
             contentScale = ContentScale.Fit
         )

@@ -7,6 +7,7 @@ import com.ecom.app.model.CartCountResponse
 import com.ecom.app.model.AuthStepResponse
 import com.ecom.app.model.ProfileResponse
 import com.ecom.app.model.BasketResponse
+import com.ecom.app.model.CancelOrderResponse
 import com.ecom.app.model.CheckoutResponse
 import com.ecom.app.model.InitiateOrderResponse
 import com.ecom.app.model.OrderDetailResponse
@@ -128,5 +129,28 @@ interface ApiService {
         @Path("itemToken") itemToken: String,
         @Query("format") format: String = "json"
     ): OrderItemDetailResponse
+
+    @GET("orders/cancel/order/{order_token}/")
+    suspend fun getCancelOrder(
+        @Path("order_token") orderToken: String,
+        @Query("format") format: String = "json"
+    ): CancelOrderResponse
+
+    @FormUrlEncoded
+    @POST("orders/cancel/order/{order_token}/")
+    suspend fun submitCancelOrder(
+        @Path("order_token") orderToken: String,
+
+        @Field("cancel_reason")
+        cancelReason: String,
+
+        @Field("refund_account")
+        refundAccount: String? = null,
+
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Query("format") format: String = "json"
+    ): CancelOrderResponse
 
 }

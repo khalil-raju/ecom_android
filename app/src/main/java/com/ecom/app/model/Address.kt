@@ -9,15 +9,18 @@ data class Address(
     val fullName: String,
     val phone: String,
 
-    @SerializedName("address_line_1")
+    @SerializedName("line_1")
     val addressLine1: String,
 
-    @SerializedName("address_line_2")
+    @SerializedName("line_2")
     val addressLine2: String?,
 
     val city: String,
     val state: String,
-    val pincode: String,
+
+    @SerializedName("postal_code")
+    val postalCode: String,
+
     val country: String,
 
     @SerializedName("is_default")

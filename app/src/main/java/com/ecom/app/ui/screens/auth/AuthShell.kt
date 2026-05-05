@@ -1,8 +1,10 @@
 package com.ecom.app.ui.screens.auth
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -21,16 +23,31 @@ import com.ecom.app.BuildConfig
 
 @Composable
 fun AuthShell(
+    onLogoClick: () -> Unit,
     content: @Composable () -> Unit
 ) {
+
+    val logoUrl = BuildConfig.LOGO_FULL_IMAGE
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
             .padding(horizontal = 34.dp)
-            .padding(top = 200.dp),
+            .padding(top = 100.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+
+        AsyncImage(
+            model = logoUrl,
+            contentDescription = "BrandLogo",
+            modifier = Modifier
+                .width(200.dp)
+                .clickable { onLogoClick() },
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(modifier = Modifier.height(42.dp))
 
         Card(
             modifier = Modifier.width(340.dp),

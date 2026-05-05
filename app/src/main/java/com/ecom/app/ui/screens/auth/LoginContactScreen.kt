@@ -19,6 +19,7 @@ import com.ecom.app.R
 
 @Composable
 fun LoginContactScreen(
+    onLogoClick: () -> Unit,
     onContinue: (String) -> Unit,
     onSignupClick: () -> Unit,
     error: String? = null
@@ -27,7 +28,9 @@ fun LoginContactScreen(
 
     val brandName = BuildConfig.BRAND_NAME
 
-    AuthShell {
+    AuthShell(
+        onLogoClick = onLogoClick
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally

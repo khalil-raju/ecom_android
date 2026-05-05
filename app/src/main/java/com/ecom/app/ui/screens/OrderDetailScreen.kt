@@ -15,6 +15,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -25,6 +26,8 @@ import com.ecom.app.R
 import com.ecom.app.model.OrderDetailResponse
 import com.ecom.app.model.OrderItem
 import com.ecom.app.model.Address
+import com.ecom.app.util.downloadFile
+import com.ecom.app.util.downloadFileAndOpen
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -40,14 +43,16 @@ fun OrderDetailScreen(
     modifier: Modifier = Modifier,
     response: OrderDetailResponse?,
     onBack: () -> Unit,
-    onInvoiceClick: () -> Unit = {},
+    onInvoiceClick: () -> Unit,
     onSupportClick: () -> Unit = {},
-    onReturnClick: () -> Unit = {}
+    onCancelOrderClick: () -> Unit = {}
 ) {
     val order = response?.order
     val items = response?.orderItems.orEmpty()
     val payment = response?.payment
     val shippingAddress = response?.shippingAddress
+
+    val context = LocalContext.current
 
     Column(
         modifier = modifier
@@ -63,23 +68,20 @@ fun OrderDetailScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item {
-                Text("Order Details", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-                Spacer(Modifier.height(6.dp))
-                Text("Order ID: ${order?.orderId ?: ""}", fontSize = 15.sp, color = Color.DarkGray)
-                Text("Placed on ${formatDate(order?.placedAt)}", fontSize = 14.sp, color = Color.Gray)
+                OrderInfoCard(
+                    orderId = order?.orderId.orEmpty(),
+                    placedAt = order?.placedAt,
+                    cancelledAt = order?.cancelledAt
+                )
             }
 
             item {
-                StatusCard(
-                    state = order?.state.orEmpty(),
-                    placedAt = order?.placedAt
-                )
+                AddressCard(address = shippingAddress)
             }
 
             item {
                 ItemsCard(
                     items = items,
-                    onInvoiceClick = onInvoiceClick
                 )
             }
 
@@ -96,13 +98,22 @@ fun OrderDetailScreen(
             }
 
             item {
-                AddressCard(address = shippingAddress)
+                InvoiceCard(
+                    invoiceUrl = response?.invoice?.pdfUrl,
+                    onInvoiceClick = onInvoiceClick
+                )
+            }
+
+            item {
+                CancelOrderCard(
+                    canUserCancel = order?.canUserCancel,
+                    onCancelOrderClick = onCancelOrderClick
+                )
             }
 
             item {
                 HelpCard(
-                    onSupportClick = onSupportClick,
-                    onReturnClick = onReturnClick
+                    onSupportClick = onSupportClick
                 )
             }
 
@@ -142,59 +153,70 @@ private fun OrderDetailHeader(onBack: () -> Unit) {
 }
 
 @Composable
-private fun StatusCard(
-    state: String,
-    placedAt: String?
+private fun OrderInfoCard(
+    orderId: String,
+    placedAt: String?,
+    cancelledAt: String?
 ) {
-    val delivered = state.equals("delivered", ignoreCase = true) ||
-            state.equals("DELIVERED", ignoreCase = true)
-
     Card(
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        Row(
-            modifier = Modifier.padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically
+        Column(
+            modifier = Modifier.padding(18.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(54.dp)
-                    .clip(CircleShape)
-                    .background(if (delivered) Color(0xFF0B8F3A) else Color.Black),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("✓", color = Color.White, fontSize = 26.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Order Details",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(18.dp))
+
+            InfoRow("Order ID:", orderId)
+
+            if (!placedAt.isNullOrBlank()) {
+                Spacer(Modifier.height(12.dp))
+                InfoRow("Order Placed:", formatDateOnly(placedAt))
             }
 
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = if (delivered) "Delivered" else state.ifBlank { "Order Placed" },
-                    color = if (delivered) Color(0xFF0B8F3A) else Color.Black,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Text(
-                    text = if (delivered) "Your order has been delivered successfully."
-                    else "Placed on ${formatDate(placedAt)}",
-                    color = Color.DarkGray,
-                    fontSize = 15.sp
-                )
+            if (!cancelledAt.isNullOrBlank()) {
+                Spacer(Modifier.height(12.dp))
+                InfoRow("Order Cancelled:", formatDateOnly(cancelledAt))
             }
-
-            Text("›", fontSize = 34.sp, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+@Composable
+private fun InfoRow(
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = label,
+            fontSize = 17.sp,
+            color = Color.Black,
+            modifier = Modifier.width(150.dp)
+        )
+
+        Text(
+            text = value,
+            fontSize = 17.sp,
+            color = Color.Black,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 
 @Composable
 private fun ItemsCard(
     items: List<OrderItem>,
-    onInvoiceClick: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(14.dp),
@@ -208,13 +230,6 @@ private fun ItemsCard(
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
-                )
-
-                Text(
-                    text = "View Invoice",
-                    color = Color(0xFF0A73E8),
-                    fontSize = 15.sp,
-                    modifier = Modifier.clickable { onInvoiceClick() }
                 )
             }
 
@@ -335,54 +350,137 @@ private fun SummaryRow(label: String, value: Double) {
 @Composable
 private fun AddressCard(address: Address?) {
     Card(
+        modifier = Modifier.fillMaxWidth(), // ✅ FIX: full width
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Row(
-            modifier = Modifier.padding(18.dp),
-            verticalAlignment = Alignment.CenterVertically
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(18.dp),
+            verticalAlignment = Alignment.Top
         ) {
-            Box(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(CircleShape)
-                    .background(Color(0xFFF0F0F0)),
-                contentAlignment = Alignment.Center
+
+            Column(
+                modifier = Modifier.weight(1f)
             ) {
-                Text("●", fontSize = 24.sp)
-            }
-
-            Spacer(Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Delivery Address", fontSize = 20.sp, fontWeight = FontWeight.Bold)
-
-                Spacer(Modifier.height(12.dp))
-
                 Text(
-                    text = address?.fullName.orEmpty(),
-                    fontSize = 17.sp,
+                    text = "Delivery Address",
+                    fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Text(
-                    text = buildAddress(address),
-                    fontSize = 15.sp,
-                    color = Color.DarkGray,
-                    lineHeight = 22.sp
-                )
-            }
+                Spacer(Modifier.height(10.dp))
 
-            Text("›", fontSize = 34.sp, fontWeight = FontWeight.Bold)
+                Text(
+                    text = address?.fullName.orEmpty(),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(Modifier.height(6.dp))
+
+                Text(
+                    text = buildAddressLines(address),
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 20.sp
+                )
+
+                address?.phone?.takeIf { it.isNotBlank() }?.let {
+                    Spacer(Modifier.height(6.dp))
+                    Text(
+                        text = it,
+                        fontSize = 14.sp,
+                        color = Color.DarkGray
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun InvoiceCard(
+    invoiceUrl: String?,
+    onInvoiceClick: () -> Unit
+) {
+    if (invoiceUrl.isNullOrBlank()) return
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onInvoiceClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .padding(vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Download Invoice",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                text = "›",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+private fun CancelOrderCard(
+    canUserCancel: Boolean?,
+    onCancelOrderClick: () -> Unit
+) {
+
+    if (canUserCancel != true) return
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { onCancelOrderClick() },
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 18.dp)
+                .padding(vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "Cancel Order",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.weight(1f)
+            )
+
+            Text(
+                text = "›",
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
 
 @Composable
 private fun HelpCard(
-    onSupportClick: () -> Unit,
-    onReturnClick: () -> Unit
+    onSupportClick: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(14.dp),
@@ -402,29 +500,30 @@ private fun HelpCard(
                 ) {
                     Text("Contact Support")
                 }
-
-                OutlinedButton(
-                    onClick = onReturnClick,
-                    modifier = Modifier.weight(1f),
-                    shape = RoundedCornerShape(8.dp)
-                ) {
-                    Text("Request Return")
-                }
             }
         }
     }
 }
 
-private fun buildAddress(address: Address?): String {
+private fun buildAddressLines(address: Address?): String {
     if (address == null) return ""
 
-    return listOf(
+    val line1 = listOfNotNull(
         address.addressLine1,
-        address.addressLine2,
-        "${address.city}, ${address.state} - ${address.pincode}",
+        address.addressLine2
+    ).joinToString(", ")
+
+    val line2 = listOfNotNull(
+        address.city,
+        address.state
+    ).joinToString(", ")
+
+    val line3 = listOfNotNull(
+        address.postalCode,
         address.country
-    )
-        .filterNotNull()
+    ).joinToString(", ")
+
+    return listOf(line1, line2, line3)
         .filter { it.isNotBlank() }
         .joinToString("\n")
 }
@@ -445,13 +544,15 @@ private fun formatAmount(value: Double): String {
     else "%.2f".format(value)
 }
 
-private fun formatDate(value: String?): String {
+private fun formatDateOnly(value: String?): String {
     if (value.isNullOrBlank()) return ""
 
     return try {
-        val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH)
-        val output = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH)
-        val date = input.parse(value)
+        val cleaned = value.replace(Regex("\\.\\d+"), "")
+        val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", java.util.Locale.ENGLISH)
+        val output = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.ENGLISH)
+
+        val date = input.parse(cleaned)
         if (date != null) output.format(date) else value
     } catch (e: Exception) {
         value

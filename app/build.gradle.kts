@@ -83,6 +83,8 @@ dependencies {
     implementation(libs.okhttp.urlconnection)
     implementation(libs.persistent.cookie.jar)
     /* implementation(libs.razorpay.checkout) */
+    implementation(libs.logging.interceptor)
+
     testImplementation(libs.junit)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)

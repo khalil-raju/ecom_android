@@ -21,6 +21,7 @@ import com.ecom.app.R
 
 @Composable
 fun LoginPasswordScreen(
+    onLogoClick: () -> Unit,
     contact: String,
     error: String? = null,
     attemptsLeft: Int? = null,
@@ -30,7 +31,9 @@ fun LoginPasswordScreen(
     var password by remember { mutableStateOf("") }
     var showPassword by remember { mutableStateOf(false) }
 
-    AuthShell {
+    AuthShell(
+        onLogoClick = onLogoClick
+    ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally
