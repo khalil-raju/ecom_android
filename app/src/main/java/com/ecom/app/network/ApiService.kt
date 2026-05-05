@@ -9,7 +9,6 @@ import com.ecom.app.model.ProfileResponse
 import com.ecom.app.model.BasketResponse
 import com.ecom.app.model.CheckoutResponse
 import com.ecom.app.model.InitiateOrderResponse
-import com.ecom.app.model.RzpPaymentResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -110,9 +109,4 @@ interface ApiService {
         @Field("payment_method") paymentMethod: String
     ): InitiateOrderResponse
 
-    @GET("payments/initiate/rzp/payment/{orderToken}/")
-    suspend fun initiateRzpPayment(
-        @Path("orderToken") orderToken: String,
-        @Query("format") format: String = "json"
-    ): RzpPaymentResponse
 }

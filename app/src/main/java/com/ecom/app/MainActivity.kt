@@ -45,8 +45,8 @@ import com.ecom.app.ui.screens.CartScreen
 import com.ecom.app.ui.screens.ProfileScreen
 import com.ecom.app.model.BasketResponse
 import com.ecom.app.model.CheckoutResponse
-import com.ecom.app.model.RzpPayload
 import com.ecom.app.ui.screens.CheckoutScreen
+import com.ecom.app.ui.screens.PaymentWebViewScreen
 
 import kotlinx.coroutines.launch
 
@@ -64,6 +64,7 @@ sealed class AppScreen {
     data object Profile : AppScreen()
     data object Cart : AppScreen()
     data object Checkout : AppScreen()
+    data class PaymentWeb(val url: String) : AppScreen()
 }
 
 class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
@@ -142,48 +143,50 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                 ) {
                     Scaffold(
                         topBar = {
-                            TopMenu(
-                                cartCount = cartCount,
-                                onMenuClick = {
-                                    drawerContentType = DrawerContentType.SIDE_MENU
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                },
-                                onSearchClick = {
-                                    drawerContentType = DrawerContentType.SEARCH_MENU
-                                    scope.launch {
-                                        drawerState.open()
-                                    }
-                                },
-                                onLogoClick = {
-                                    currentScreen = AppScreen.Home
-                                },
-                                onProfileClick = {
-                                    scope.launch {
-                                        try {
-                                            profileError = null
-
-                                            val response = RetrofitClient.apiService.getProfile()
-                                            profileResponse = response
-                                            isAuthenticated =
-                                                response.success && response.authenticated
-                                            currentScreen = if (isAuthenticated) {
-                                                AppScreen.Profile
-                                            } else {
-                                                AppScreen.LoginContact
-                                            }
-
-                                        } catch (e: Exception) {
-                                            isAuthenticated = false
-                                            currentScreen = AppScreen.LoginContact
+                            if (currentScreen !is AppScreen.PaymentWeb) {
+                                TopMenu(
+                                    cartCount = cartCount,
+                                    onMenuClick = {
+                                        drawerContentType = DrawerContentType.SIDE_MENU
+                                        scope.launch {
+                                            drawerState.open()
                                         }
+                                    },
+                                    onSearchClick = {
+                                        drawerContentType = DrawerContentType.SEARCH_MENU
+                                        scope.launch {
+                                            drawerState.open()
+                                        }
+                                    },
+                                    onLogoClick = {
+                                        currentScreen = AppScreen.Home
+                                    },
+                                    onProfileClick = {
+                                        scope.launch {
+                                            try {
+                                                profileError = null
+
+                                                val response = RetrofitClient.apiService.getProfile()
+                                                profileResponse = response
+                                                isAuthenticated =
+                                                    response.success && response.authenticated
+                                                currentScreen = if (isAuthenticated) {
+                                                    AppScreen.Profile
+                                                } else {
+                                                    AppScreen.LoginContact
+                                                }
+
+                                            } catch (e: Exception) {
+                                                isAuthenticated = false
+                                                currentScreen = AppScreen.LoginContact
+                                            }
+                                        }
+                                    },
+                                    onCartClick = {
+                                        currentScreen = AppScreen.Cart
                                     }
-                                },
-                                onCartClick = {
-                                    currentScreen = AppScreen.Cart
-                                }
-                            )
+                                )
+                            }
                         }
                     ) { innerPadding ->
 
@@ -332,43 +335,57 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                                     onProceedToPayment = { shippingAddressId, billingAddressId, useWallet, paymentMethod ->
                                         scope.launch {
                                             try {
-                                                val csrfToken =
-                                                    RetrofitClient.getCsrfToken() ?: return@launch
-                                                val orderToken = checkoutResponse?.order?.orderToken
-                                                    ?: return@launch
+                                                val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+                                                val orderToken = checkoutResponse?.order?.orderToken ?: return@launch
 
-                                                val response =
-                                                    RetrofitClient.apiService.initiateOrder(
-                                                        csrfToken = csrfToken,
-                                                        orderToken = orderToken,
-                                                        shippingAddressId = shippingAddressId,
-                                                        billingAddressId = billingAddressId,
-                                                        useWallet = if (useWallet) "1" else "0",
-                                                        paymentMethod = paymentMethod
-                                                    )
+                                                val response = RetrofitClient.apiService.initiateOrder(
+                                                    csrfToken = csrfToken,
+                                                    orderToken = orderToken,
+                                                    shippingAddressId = shippingAddressId,
+                                                    billingAddressId = billingAddressId,
+                                                    useWallet = if (useWallet) "1" else "0",
+                                                    paymentMethod = paymentMethod
+                                                )
 
                                                 when (response.nextStep) {
-                                                    "initiate_rzp_payment" -> {
-                                                        val rzpResponse =
-                                                            RetrofitClient.apiService.initiateRzpPayment(
-                                                                orderToken = response.orderToken
-                                                                    ?: return@launch
-                                                            )
 
-                                                        // next: open Razorpay SDK with rzpResponse.razorpay
+                                                    "initiate_rzp_payment" -> {
+                                                        val token = response.orderToken ?: return@launch
+
+                                                        val paymentUrl =
+                                                            "${BuildConfig.BASE_URL.trimEnd('/')}/payments/initiate/rzp/payment/$token/"
+
+                                                        currentScreen = AppScreen.PaymentWeb(paymentUrl)
                                                     }
 
                                                     "finalize_order" -> {
-                                                        // later: currentScreen = AppScreen.OrderSuccess
+                                                        // later → success screen
+                                                        currentScreen = AppScreen.Home
                                                     }
 
                                                     "basket_detail" -> {
                                                         currentScreen = AppScreen.Cart
                                                     }
                                                 }
+
                                             } catch (e: Exception) {
                                                 Log.e("CHECKOUT_PAY", "failed: ${e.message}", e)
                                             }
+                                        }
+                                    }
+                                )
+                            }
+
+                            is AppScreen.PaymentWeb -> {
+                                println("RETROFIT COOKIE: ${RetrofitClient.getCookieHeader()}")
+                                PaymentWebViewScreen(
+                                    url = screen.url,
+                                    onPaymentFinished = { success ->
+
+                                        if (success) {
+                                            currentScreen = AppScreen.Home // later → OrderSuccess
+                                        } else {
+                                            currentScreen = AppScreen.Cart
                                         }
                                     }
                                 )
