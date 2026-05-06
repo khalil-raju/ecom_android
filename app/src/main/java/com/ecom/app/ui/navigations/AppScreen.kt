@@ -11,6 +11,7 @@ import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.routes.account.AddAddressRoute
 import com.ecom.app.ui.routes.account.LoginContactRoute
 import com.ecom.app.ui.routes.account.LoginPasswordRoute
+import com.ecom.app.ui.routes.account.OtpVerifyRoute
 import com.ecom.app.ui.routes.account.ProfileRoute
 import com.ecom.app.ui.routes.account.SavedAddressesRoute
 import com.ecom.app.ui.routes.basket.CartRoute
@@ -26,11 +27,19 @@ import com.ecom.app.ui.routes.product.ProductListRoute
 import com.ecom.app.ui.routes.review.ReviewOrderItemRoute
 import kotlinx.coroutines.CoroutineScope
 
+enum class OtpPurpose {
+    LOGIN,
+    SIGNUP,
+    VERIFY_PHONE,
+    VERIFY_EMAIL
+}
+
 sealed interface AppScreen {
     fun isFullScreen(): Boolean {
         return this is AppScreen.PaymentWeb ||
                 this is AppScreen.LoginContact ||
-                this is AppScreen.LoginPassword
+                this is AppScreen.LoginPassword ||
+                this is AppScreen.OtpVerify
     }
 
     data object Home : AppScreen
@@ -47,6 +56,7 @@ sealed interface AppScreen {
     data object Profile : AppScreen
     data object LoginContact : AppScreen
     data class LoginPassword(val contact: String) : AppScreen
+    data class OtpVerify(val contact: String, val purpose: OtpPurpose) : AppScreen
     data object SavedAddresses : AppScreen
     data class AddAddress(val addressId: Int? = null) : AppScreen
 }
@@ -177,8 +187,31 @@ fun AppRouter(
                 setAuthenticated(true)
                 setScreen(AppScreen.Home)
             },
-            onUnauthenticated = { setAuthenticated(false) },
-            navigateOtpLogin = { }
+            onUnauthenticated = {
+                setAuthenticated(false)
+            },
+            navigateOtpLogin = {
+                setScreen(
+                    AppScreen.OtpVerify(
+                        contact = currentScreen.contact,
+                        purpose = OtpPurpose.LOGIN
+                    )
+                )
+            }
+        )
+
+        is AppScreen.OtpVerify -> OtpVerifyRoute(
+            scope = scope,
+            contact = currentScreen.contact,
+            purpose = currentScreen.purpose,
+            navigateHome = { setScreen(AppScreen.Home) },
+            navigateLoginPassword = { contact ->
+                setScreen(AppScreen.LoginPassword(contact))
+            },
+            onVerified = {
+                setAuthenticated(true)
+                setScreen(AppScreen.Home)
+            }
         )
 
         AppScreen.Profile -> ProfileRoute(

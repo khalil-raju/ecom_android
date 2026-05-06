@@ -50,6 +50,72 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): AuthStepResponse
 
+    @FormUrlEncoded
+    @POST("accounts/login/otp/")
+    suspend fun loginOtp(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("otp")
+        otp: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/login/otp/")
+    suspend fun resendLoginOtp(
+        @Query("resend")
+        resend: String = "1",
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @FormUrlEncoded
+    @POST("accounts/signup/otp/")
+    suspend fun signupOtp(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("otp")
+        otp: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/signup/otp/")
+    suspend fun resendSignupOtp(
+        @Query("resend")
+        resend: String = "1",
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @FormUrlEncoded
+    @POST("accounts/verify/contact/otp")
+    suspend fun verifyContactOtp(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("otp")
+        otp: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/verify/contact/otp")
+    suspend fun resendVerifyContactOtp(
+        @Query("resend")
+        resend: String = "1",
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
     @GET("accounts/profile/")
     suspend fun getProfile(
         @Query("format") format: String = "json"
