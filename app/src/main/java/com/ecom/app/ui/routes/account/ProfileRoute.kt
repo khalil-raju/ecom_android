@@ -21,6 +21,9 @@ fun ProfileRoute(
     navigateBack: () -> Unit,
     navigateSavedAddresses: () -> Unit,
     navigateAddAddress: () -> Unit,
+    navigateChangeName: () -> Unit,
+    navigateChangeEmail: () -> Unit,
+    navigateChangePhone: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
     ProfileScreen(
@@ -30,6 +33,9 @@ fun ProfileRoute(
         onBack = navigateBack,
         onSavedAddressesClick = navigateSavedAddresses,
         onAddAddressClick = navigateAddAddress,
+        onChangeNameClick = navigateChangeName,
+        onChangeEmailClick = navigateChangeEmail,
+        onChangePhoneClick = navigateChangePhone,
         onLogout = {
             scope.launch {
                 try {

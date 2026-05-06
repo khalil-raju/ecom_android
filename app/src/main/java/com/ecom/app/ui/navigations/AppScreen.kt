@@ -9,6 +9,9 @@ import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.Product
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.routes.account.AddAddressRoute
+import com.ecom.app.ui.routes.account.ChangeContactRoute
+import com.ecom.app.ui.routes.account.ChangeNameRoute
+import com.ecom.app.ui.routes.account.ContactChangeType
 import com.ecom.app.ui.routes.account.LoginContactRoute
 import com.ecom.app.ui.routes.account.LoginPasswordRoute
 import com.ecom.app.ui.routes.account.OtpVerifyRoute
@@ -30,8 +33,8 @@ import kotlinx.coroutines.CoroutineScope
 enum class OtpPurpose {
     LOGIN,
     SIGNUP,
-    VERIFY_PHONE,
-    VERIFY_EMAIL
+    CHANGE_PHONE,
+    CHANGE_EMAIL
 }
 
 sealed interface AppScreen {
@@ -54,6 +57,9 @@ sealed interface AppScreen {
     data class ReviewOrderItem(val itemToken: String) : AppScreen
     data class PaymentWeb(val url: String) : AppScreen
     data object Profile : AppScreen
+    data object ChangeName : AppScreen
+    data object ChangeEmail : AppScreen
+    data object ChangePhone : AppScreen
     data object LoginContact : AppScreen
     data class LoginPassword(val contact: String) : AppScreen
     data class OtpVerify(val contact: String, val purpose: OtpPurpose) : AppScreen
@@ -204,13 +210,25 @@ fun AppRouter(
             scope = scope,
             contact = currentScreen.contact,
             purpose = currentScreen.purpose,
-            navigateHome = { setScreen(AppScreen.Home) },
-            navigateLoginPassword = { contact ->
-                setScreen(AppScreen.LoginPassword(contact))
+            navigateHome = {
+                setScreen(AppScreen.Home)
             },
             onVerified = {
-                setAuthenticated(true)
-                setScreen(AppScreen.Home)
+                when (currentScreen.purpose) {
+                    OtpPurpose.LOGIN,
+                    OtpPurpose.SIGNUP -> {
+                        setAuthenticated(true)
+                        setScreen(AppScreen.Home)
+                    }
+
+                    OtpPurpose.CHANGE_PHONE,
+                    OtpPurpose.CHANGE_EMAIL -> {
+                        setScreen(AppScreen.Profile)
+                    }
+                }
+            },
+            onProfileUpdated = {
+                setProfileResponse(it)
             }
         )
 
@@ -226,10 +244,53 @@ fun AppRouter(
             navigateAddAddress = {
                 setScreen(AppScreen.AddAddress())
             },
+            navigateChangeName = {
+                setScreen(AppScreen.ChangeName)
+            },
+            navigateChangeEmail = {
+                setScreen(AppScreen.ChangeEmail)
+            },
+            navigateChangePhone = {
+                setScreen(AppScreen.ChangePhone)
+            },
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
                 setScreen(AppScreen.LoginContact)
+            }
+        )
+
+        AppScreen.ChangeName -> ChangeNameRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateBack = {
+                setScreen(AppScreen.Profile)
+            },
+            navigateProfile = {
+                setScreen(AppScreen.Profile)
+            },
+            onProfileUpdated = {
+                setProfileResponse(it)
+            }
+        )
+
+        AppScreen.ChangeEmail -> ChangeContactRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            type = ContactChangeType.EMAIL,
+            navigateBack = { setScreen(AppScreen.Profile) },
+            navigateOtp = { contact, purpose ->
+                setScreen(AppScreen.OtpVerify(contact, purpose))
+            }
+        )
+
+        AppScreen.ChangePhone -> ChangeContactRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            type = ContactChangeType.PHONE,
+            navigateBack = { setScreen(AppScreen.Profile) },
+            navigateOtp = { contact, purpose ->
+                setScreen(AppScreen.OtpVerify(contact, purpose))
             }
         )
 

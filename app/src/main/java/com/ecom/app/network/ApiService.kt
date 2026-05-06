@@ -6,6 +6,8 @@ import com.ecom.app.model.product.SearchSuggestionResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.basket.CartCountResponse
 import com.ecom.app.model.account.AuthStepResponse
+import com.ecom.app.model.account.ChangeContactResponse
+import com.ecom.app.model.account.ChangeNameResponse
 import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.basket.BasketResponse
@@ -50,15 +52,9 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): AuthStepResponse
 
-    @FormUrlEncoded
-    @POST("accounts/login/otp/")
-    suspend fun loginOtp(
-        @Header("X-CSRFToken")
-        csrfToken: String,
-
-        @Field("otp")
-        otp: String,
-
+    // ---------------- OTP: Login ----------------
+    @GET("accounts/login/otp/")
+    suspend fun startLoginOtp(
         @Query("format")
         format: String = "json"
     ): AuthStepResponse
@@ -73,14 +69,22 @@ interface ApiService {
     ): AuthStepResponse
 
     @FormUrlEncoded
-    @POST("accounts/signup/otp/")
-    suspend fun signupOtp(
+    @POST("accounts/login/otp/")
+    suspend fun submitLoginOtp(
         @Header("X-CSRFToken")
         csrfToken: String,
 
         @Field("otp")
         otp: String,
 
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+
+    // ---------------- OTP: Signup ----------------
+    @GET("accounts/signup/otp/")
+    suspend fun startSignupOtp(
         @Query("format")
         format: String = "json"
     ): AuthStepResponse
@@ -95,8 +99,8 @@ interface ApiService {
     ): AuthStepResponse
 
     @FormUrlEncoded
-    @POST("accounts/verify/contact/otp")
-    suspend fun verifyContactOtp(
+    @POST("accounts/signup/otp/")
+    suspend fun submitSignupOtp(
         @Header("X-CSRFToken")
         csrfToken: String,
 
@@ -107,8 +111,22 @@ interface ApiService {
         format: String = "json"
     ): AuthStepResponse
 
+
+    // ---------------- OTP: Verify Contact ----------------
+    @GET("accounts/verify/contact/otp")
+    suspend fun startVerifyContactOtp(
+        @Query("contact_type")
+        contactType: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
     @GET("accounts/verify/contact/otp")
     suspend fun resendVerifyContactOtp(
+        @Query("contact_type")
+        contactType: String,
+
         @Query("resend")
         resend: String = "1",
 
@@ -116,10 +134,92 @@ interface ApiService {
         format: String = "json"
     ): AuthStepResponse
 
+    @FormUrlEncoded
+    @POST("accounts/verify/contact/otp")
+    suspend fun submitVerifyContactOtp(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("otp")
+        otp: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    // ---------------- OTP: Change Contact ----------------
+    @GET("accounts/change/contact/otp")
+    suspend fun startChangeContactOtp(
+        @Query("format") format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/change/contact/otp")
+    suspend fun resendChangeContactOtp(
+        @Query("resend") resend: String = "1",
+        @Query("format") format: String = "json"
+    ): AuthStepResponse
+
+    @FormUrlEncoded
+    @POST("accounts/change/contact/otp")
+    suspend fun submitChangeContactOtp(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("otp") otp: String,
+        @Query("format") format: String = "json"
+    ): AuthStepResponse
+
+    // ---------------- Profile ----------------
     @GET("accounts/profile/")
     suspend fun getProfile(
         @Query("format") format: String = "json"
     ): ProfileResponse
+
+    @GET("accounts/change_name/")
+    suspend fun getChangeName(
+        @Query("format")
+        format: String = "json"
+    ): ChangeNameResponse
+
+    @FormUrlEncoded
+    @POST("accounts/change_name/")
+    suspend fun submitChangeName(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("new_firstname")
+        newFirstname: String,
+
+        @Field("new_lastname")
+        newLastname: String,
+
+        @Query("format")
+        format: String = "json"
+    ): ChangeNameResponse
+
+    @GET("accounts/change_email/")
+    suspend fun getChangeEmail(
+        @Query("format") format: String = "json"
+    ): ChangeContactResponse
+
+    @FormUrlEncoded
+    @POST("accounts/change_email/")
+    suspend fun submitChangeEmail(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("new_email") newEmail: String,
+        @Query("format") format: String = "json"
+    ): ChangeContactResponse
+
+    @GET("accounts/change_phone/")
+    suspend fun getChangePhone(
+        @Query("format") format: String = "json"
+    ): ChangeContactResponse
+
+    @FormUrlEncoded
+    @POST("accounts/change_phone/")
+    suspend fun submitChangePhone(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("new_phone") newPhone: String,
+        @Query("format") format: String = "json"
+    ): ChangeContactResponse
 
     @GET("/")
     suspend fun getProducts(

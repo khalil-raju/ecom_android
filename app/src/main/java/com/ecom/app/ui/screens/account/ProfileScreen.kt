@@ -1,18 +1,17 @@
 package com.ecom.app.ui.screens.account
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -21,9 +20,13 @@ import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.ProfileResponse
 
-private data class ProfileRowItem(
+private data class ProfileActionItem(
+    val iconText: String,
     val title: String,
+    val subtitle: String? = null,
     val actionText: String? = null,
+    val verified: Boolean = false,
+    val danger: Boolean = false,
     val onClick: () -> Unit = {}
 )
 
@@ -35,186 +38,356 @@ fun ProfileScreen(
     onBack: () -> Unit,
     onSavedAddressesClick: () -> Unit,
     onAddAddressClick: () -> Unit,
+    onChangeNameClick: () -> Unit,
+    onChangePhoneClick: () -> Unit,
+    onChangeEmailClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val user = profile?.user
+    val fullName = listOf(
+        user?.firstName.orEmpty(),
+        user?.lastName.orEmpty()
+    ).joinToString(" ").trim().ifBlank { "NoName" }
 
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(Color(0xFFF7F7F7))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_back),
-                contentDescription = "Back",
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Text(
-                text = "Profile",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-
-        if (error != null) {
-            Text(
-                text = error,
-                color = Color.Red,
-                modifier = Modifier.padding(12.dp)
-            )
-        }
+        ProfileHeader(onBack = onBack)
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            if (!error.isNullOrBlank()) {
+                item {
+                    Text(
+                        text = error,
+                        color = Color.Red,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
             item {
-                ProfileSection(
+                ProfileHeroCard(
+                    name = fullName,
+                    email = user?.email?.takeIf { it.isNotBlank() } ?: "Email not added"
+                )
+            }
+
+            item {
+                ProfileSectionCard(
                     title = "Personal Information",
                     items = listOf(
-                        ProfileRowItem(
-                            title = "Name: ${user?.firstName?.ifBlank { "NoName" } ?: "NoName"} ${user?.lastName ?: ""}",
-                            actionText = "Change Name"
+                        ProfileActionItem(
+                            iconText = "👤",
+                            title = "Name",
+                            subtitle = fullName,
+                            actionText = "Change Name",
+                            onClick = onChangeNameClick
                         ),
-                        ProfileRowItem(
-                            title = "Phone: ${user?.phone?.ifBlank { "Not added" } ?: "Not added"}",
-                            actionText = "Change Phone"
+                        ProfileActionItem(
+                            iconText = "☎",
+                            title = "Phone",
+                            subtitle = user?.phone?.takeIf { it.isNotBlank() } ?: "Not added",
+                            actionText = "Change Phone",
+                            verified = user?.isPhoneVerified == true,
+                            onClick = onChangePhoneClick
                         ),
-                        ProfileRowItem(
-                            title = "Email: ${user?.email?.ifBlank { "Not added" } ?: "Not added"}",
-                            actionText = "Change Email"
+                        ProfileActionItem(
+                            iconText = "✉",
+                            title = "Email",
+                            subtitle = user?.email?.takeIf { it.isNotBlank() } ?: "Not added",
+                            actionText = "Change Email",
+                            verified = user?.isEmailVerified == true,
+                            onClick = onChangeEmailClick
                         ),
-                        ProfileRowItem(title = "Change Password")
-                    )
-                )
-            }
-
-            item {
-                ProfileSection(
-                    title = "Saved Addresses",
-                    items = listOf(
-                        ProfileRowItem(
-                            title = "Saved Addresses",
-                            onClick = {
-                                onSavedAddressesClick()
-                            }
-                        ),
-                        ProfileRowItem(
-                            title = "Add Address",
-                            onClick = {
-                                onAddAddressClick()
-                            }
+                        ProfileActionItem(
+                            iconText = "🔒",
+                            title = "Change Password"
                         )
                     )
                 )
             }
 
             item {
-                ProfileSection(
+                ProfileSectionCard(
+                    title = "Addresses",
+                    items = listOf(
+                        ProfileActionItem(
+                            iconText = "⌂",
+                            title = "Saved Addresses",
+                            subtitle = "View and manage your saved addresses",
+                            onClick = onSavedAddressesClick
+                        ),
+                        ProfileActionItem(
+                            iconText = "+",
+                            title = "Add Address",
+                            subtitle = "Add a new delivery address",
+                            onClick = onAddAddressClick
+                        )
+                    )
+                )
+            }
+
+            item {
+                ProfileSectionCard(
                     title = "Basket",
                     items = listOf(
-                        ProfileRowItem("View Wishlist"),
-                        ProfileRowItem("View Saved Items"),
-                        ProfileRowItem("View Shopping Bag")
+                        ProfileActionItem("♡", "View Wishlist", "Items you saved for later"),
+                        ProfileActionItem("🛍", "View Shopping Bag", "Items in your cart")
                     )
                 )
             }
 
             item {
-                ProfileSection(
-                    title = "Order History",
+                ProfileSectionCard(
+                    title = "Order & Wallet",
                     items = listOf(
-                        ProfileRowItem("View Orders")
+                        ProfileActionItem("▣", "View Orders", "Track and view your orders"),
+                        ProfileActionItem("▰", "Wallet", "View balance and transactions")
                     )
                 )
             }
 
             item {
-                ProfileSection(
-                    title = "Wallet",
+                ProfileSectionCard(
+                    title = null,
                     items = listOf(
-                        ProfileRowItem("Wallet Detail")
-                    )
-                )
-            }
-
-            item {
-                ProfileSection(
-                    title = "Logout",
-                    items = listOf(
-                        ProfileRowItem(
+                        ProfileActionItem(
+                            iconText = "↪",
                             title = "Logout",
+                            subtitle = "Sign out from your account",
+                            danger = true,
                             onClick = onLogout
                         )
-                    ),
-                    isDanger = true
+                    )
                 )
+            }
+
+            item {
+                Spacer(Modifier.height(12.dp))
             }
         }
     }
 }
 
 @Composable
-private fun ProfileSection(
-    title: String,
-    items: List<ProfileRowItem>,
-    isDanger: Boolean = false
-) {
-    Column {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(bottom = 6.dp)
+private fun ProfileHeader(onBack: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            painter = painterResource(id = R.drawable.ic_back),
+            contentDescription = "Back",
+            modifier = Modifier
+                .size(26.dp)
+                .clickable { onBack() },
+            tint = Color.Black
         )
 
-        Card(
-            shape = RoundedCornerShape(10.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White)
+        Spacer(modifier = Modifier.width(14.dp))
+
+        Column {
+            Text(
+                text = "My Profile",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF1F2430)
+            )
+
+            Text(
+                text = "Manage your account and preferences",
+                fontSize = 13.sp,
+                color = Color.DarkGray
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileHeroCard(
+    name: String,
+    email: String
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0FF)),
+        border = BorderStroke(1.dp, Color(0xFFE7E7FF))
+    ) {
+        Row(
+            modifier = Modifier.padding(18.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
-                items.forEachIndexed { index, item ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable { item.onClick() }
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = item.title,
-                            color = if (isDanger) Color.Red else Color.Black,
-                            fontSize = 15.sp
-                        )
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(CircleShape)
+                    .background(Color(0xFFE2E2FF)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text("👤", fontSize = 34.sp)
+            }
 
-                        item.actionText?.let {
-                            Text(
-                                text = it,
-                                color = Color.Blue,
-                                fontSize = 14.sp
-                            )
-                        }
-                    }
+            Spacer(Modifier.width(16.dp))
 
-                    if (index != items.lastIndex) {
-                        HorizontalDivider()
-                    }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = name,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F2430)
+                )
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = email,
+                    fontSize = 14.sp,
+                    color = Color.DarkGray
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                Surface(
+                    color = Color(0xFFE3E4FF),
+                    shape = RoundedCornerShape(20.dp)
+                ) {
+                    Text(
+                        text = "Member",
+                        fontSize = 12.sp,
+                        color = Color(0xFF2835C7),
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
+                    )
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ProfileSectionCard(
+    title: String?,
+    items: List<ProfileActionItem>
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE7E7E7))
+    ) {
+        Column {
+            if (!title.isNullOrBlank()) {
+                Text(
+                    text = title,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1F2430),
+                    modifier = Modifier.padding(start = 18.dp, top = 18.dp, bottom = 4.dp)
+                )
+            }
+
+            items.forEachIndexed { index, item ->
+                ProfileRow(item = item)
+
+                if (index != items.lastIndex) {
+                    HorizontalDivider(color = Color(0xFFEDEDED))
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileRow(item: ProfileActionItem) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable { item.onClick() }
+            .padding(horizontal = 18.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(if (item.danger) Color(0xFFFFEEEE) else Color(0xFFF0F0FF)),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = item.iconText,
+                fontSize = 21.sp,
+                color = if (item.danger) Color.Red else Color(0xFF2835C7)
+            )
+        }
+
+        Spacer(Modifier.width(14.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = item.title,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = if (item.danger) Color.Red else Color(0xFF1F2430)
+            )
+
+            if (!item.subtitle.isNullOrBlank()) {
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = item.subtitle,
+                    fontSize = 14.sp,
+                    color = Color.DarkGray
+                )
+            }
+        }
+
+        if (item.verified) {
+            VerifiedBadge()
+            Spacer(Modifier.width(10.dp))
+        }
+
+        if (!item.actionText.isNullOrBlank()) {
+            Text(
+                text = item.actionText,
+                fontSize = 14.sp,
+                color = Color(0xFF0018D4),
+                fontWeight = FontWeight.SemiBold
+            )
+
+            Spacer(Modifier.width(8.dp))
+        }
+
+        Text(
+            text = "›",
+            fontSize = 28.sp,
+            color = if (item.danger) Color.Red else Color.Black
+        )
+    }
+}
+
+@Composable
+private fun VerifiedBadge() {
+    Surface(
+        color = Color(0xFFE8F8EC),
+        shape = RoundedCornerShape(18.dp)
+    ) {
+        Text(
+            text = "✓ Verified",
+            fontSize = 12.sp,
+            color = Color(0xFF0A8F2E),
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp)
+        )
     }
 }
