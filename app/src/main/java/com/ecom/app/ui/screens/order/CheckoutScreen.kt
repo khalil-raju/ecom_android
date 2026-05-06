@@ -223,8 +223,8 @@ private fun buildAddressText(address: Address?): String {
     if (address == null) return ""
 
     return listOfNotNull(
-        address.addressLine1,
-        address.addressLine2,
+        address.line1,
+        address.line2,
         "${address.city}, ${address.state} - ${address.postalCode}"
     )
         .filter { it.isNotBlank() }

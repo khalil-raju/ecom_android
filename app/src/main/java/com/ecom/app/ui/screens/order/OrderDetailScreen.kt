@@ -506,8 +506,8 @@ private fun buildAddressLines(address: Address?): String {
     if (address == null) return ""
 
     val line1 = listOfNotNull(
-        address.addressLine1,
-        address.addressLine2
+        address.line1,
+        address.line2
     ).joinToString(", ")
 
     val line2 = listOfNotNull(

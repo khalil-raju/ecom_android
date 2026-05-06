@@ -8,9 +8,11 @@ import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.Product
 import com.ecom.app.model.product.ProductDetailResponse
+import com.ecom.app.ui.routes.account.AddAddressRoute
 import com.ecom.app.ui.routes.account.LoginContactRoute
 import com.ecom.app.ui.routes.account.LoginPasswordRoute
 import com.ecom.app.ui.routes.account.ProfileRoute
+import com.ecom.app.ui.routes.account.SavedAddressesRoute
 import com.ecom.app.ui.routes.basket.CartRoute
 import com.ecom.app.ui.routes.order.CancelOrderRoute
 import com.ecom.app.ui.routes.order.CheckoutRoute
@@ -32,12 +34,9 @@ sealed interface AppScreen {
     }
 
     data object Home : AppScreen
+    data class ProductDetail(val detail: ProductDetailResponse) : AppScreen
     data object Cart : AppScreen
     data object Checkout : AppScreen
-    data object Profile : AppScreen
-    data object LoginContact : AppScreen
-    data class LoginPassword(val contact: String) : AppScreen
-    data class ProductDetail(val detail: ProductDetailResponse) : AppScreen
     data object OrderItemHistory : AppScreen
     data class OrderItemDetail(val itemToken: String) : AppScreen
     data class OrderDetail(val orderToken: String) : AppScreen
@@ -45,6 +44,11 @@ sealed interface AppScreen {
     data class ReturnOrderItem(val itemToken: String) : AppScreen
     data class ReviewOrderItem(val itemToken: String) : AppScreen
     data class PaymentWeb(val url: String) : AppScreen
+    data object Profile : AppScreen
+    data object LoginContact : AppScreen
+    data class LoginPassword(val contact: String) : AppScreen
+    data object SavedAddresses : AppScreen
+    data class AddAddress(val addressId: Int? = null) : AppScreen
 }
 
 @Composable
@@ -65,6 +69,7 @@ fun AppRouter(
     setAuthenticated: (Boolean) -> Unit,
     setProfileResponse: (ProfileResponse?) -> Unit
 ) {
+
     when (currentScreen) {
         AppScreen.Home -> ProductListRoute(
             innerPadding = innerPadding,
@@ -182,11 +187,47 @@ fun AppRouter(
             profileResponse = profileResponse,
             profileError = profileError,
             navigateBack = { setScreen(AppScreen.Home) },
+            navigateSavedAddresses = {
+                setScreen(AppScreen.SavedAddresses)
+            },
+            navigateAddAddress = {
+                setScreen(AppScreen.AddAddress())
+            },
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
                 setScreen(AppScreen.LoginContact)
             }
         )
+
+        is AppScreen.AddAddress -> {
+            AddAddressRoute(
+                innerPadding = innerPadding,
+                scope = scope,
+                addressId = currentScreen.addressId,
+                navigateBack = {
+                    setScreen(AppScreen.SavedAddresses)
+                },
+                navigateSavedAddresses = {
+                    setScreen(AppScreen.SavedAddresses)
+                }
+            )
+        }
+
+        AppScreen.SavedAddresses -> {
+            SavedAddressesRoute(
+                innerPadding = innerPadding,
+                scope = scope,
+                navigateBack = {
+                    setScreen(AppScreen.Profile)
+                },
+                navigateAddAddress = {
+                    setScreen(AppScreen.AddAddress())
+                },
+                navigateEditAddress = { addressId ->
+                    setScreen(AppScreen.AddAddress(addressId))
+                }
+            )
+        }
     }
 }

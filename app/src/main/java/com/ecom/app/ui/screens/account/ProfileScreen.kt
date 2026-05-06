@@ -33,6 +33,8 @@ fun ProfileScreen(
     profile: ProfileResponse?,
     error: String?,
     onBack: () -> Unit,
+    onSavedAddressesClick: () -> Unit,
+    onAddAddressClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val user = profile?.user
@@ -105,8 +107,18 @@ fun ProfileScreen(
                 ProfileSection(
                     title = "Saved Addresses",
                     items = listOf(
-                        ProfileRowItem("Saved Addresses"),
-                        ProfileRowItem("Add Address")
+                        ProfileRowItem(
+                            title = "Saved Addresses",
+                            onClick = {
+                                onSavedAddressesClick()
+                            }
+                        ),
+                        ProfileRowItem(
+                            title = "Add Address",
+                            onClick = {
+                                onAddAddressClick()
+                            }
+                        )
                     )
                 )
             }

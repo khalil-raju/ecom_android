@@ -1,10 +1,12 @@
 package com.ecom.app.network
 
+import com.ecom.app.model.account.AddressFormResponse
 import com.ecom.app.model.product.ProductListResponse
 import com.ecom.app.model.product.SearchSuggestionResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.basket.CartCountResponse
 import com.ecom.app.model.account.AuthStepResponse
+import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CancelOrderResponse
@@ -197,5 +199,141 @@ interface ApiService {
         csrfToken: String,
         @Query("format") format: String = "json"
     ): ReviewOrderItemResponse
+
+    // ---------------- Address ----------------
+
+    @GET("accounts/add-address/")
+    suspend fun getAddAddress(
+        @Query("format") format: String = "json",
+        @Query("from") from: String? = null
+    ): AddressFormResponse
+
+
+    @FormUrlEncoded
+    @POST("accounts/add-address/")
+    suspend fun submitAddAddress(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("full_name")
+        fullName: String,
+
+        @Field("phone")
+        phone: String,
+
+        @Field("line_1")
+        line1: String,
+
+        @Field("line_2")
+        line2: String? = "",
+
+        @Field("postal_code")
+        postalCode: String,
+
+        @Field("city")
+        city: String,
+
+        @Field("state")
+        state: String,
+
+        @Field("country")
+        country: String = "India",
+
+        @Field("label")
+        label: String = "Home",
+
+        @Field("is_default")
+        isDefault: String? = null,
+
+        @Field("consent_pp_tc")
+        consentPpTc: String? = null,
+
+        @Query("format")
+        format: String = "json",
+
+        @Query("from")
+        from: String? = null
+    ): AddressFormResponse
+
+
+    @GET("accounts/edit-address/{addressId}/")
+    suspend fun getEditAddress(
+        @Path("addressId")
+        addressId: Int,
+
+        @Query("format")
+        format: String = "json"
+    ): AddressFormResponse
+
+
+    @FormUrlEncoded
+    @POST("accounts/edit-address/{addressId}/")
+    suspend fun submitEditAddress(
+        @Path("addressId")
+        addressId: Int,
+
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("full_name")
+        fullName: String,
+
+        @Field("phone")
+        phone: String,
+
+        @Field("line_1")
+        line1: String,
+
+        @Field("line_2")
+        line2: String? = "",
+
+        @Field("postal_code")
+        postalCode: String,
+
+        @Field("city")
+        city: String,
+
+        @Field("state")
+        state: String,
+
+        @Field("country")
+        country: String = "India",
+
+        @Field("label")
+        label: String = "Home",
+
+        @Field("is_default")
+        isDefault: String? = null,
+
+        @Query("format")
+        format: String = "json"
+    ): AddressFormResponse
+
+
+    @GET("accounts/saved-address/")
+    suspend fun getSavedAddresses(
+        @Query("format")
+        format: String = "json"
+    ): AddressFormResponse
+
+
+    @POST("accounts/delete-address/{addressId}/")
+    suspend fun deleteAddress(
+        @Path("addressId")
+        addressId: Int,
+
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Query("format")
+        format: String = "json"
+    ): AddressFormResponse
+
+
+    @GET("accounts/get/pincode/details/")
+    suspend fun getPinCodeDetails(
+        @Query("pincode")
+        pincode: String
+    ): PinCodeResponse
 
 }

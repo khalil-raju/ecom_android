@@ -19,6 +19,8 @@ fun ProfileRoute(
     profileResponse: ProfileResponse?,
     profileError: String?,
     navigateBack: () -> Unit,
+    navigateSavedAddresses: () -> Unit,
+    navigateAddAddress: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
     ProfileScreen(
@@ -26,6 +28,8 @@ fun ProfileRoute(
         profile = profileResponse,
         error = profileError,
         onBack = navigateBack,
+        onSavedAddressesClick = navigateSavedAddresses,
+        onAddAddressClick = navigateAddAddress,
         onLogout = {
             scope.launch {
                 try {
