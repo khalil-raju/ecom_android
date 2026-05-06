@@ -146,6 +146,8 @@ class MainActivity : ComponentActivity() /* , PaymentResultWithDataListener */ {
                 currentScreen = AppScreen.OrderItemDetail
                 orderItemDetailResponse = RetrofitClient.apiService.getOrderItemDetail("c62977e92dab46fc9287a4b7b90a0d76")
 
+                Log.d("orderItemDetailResponse", "$orderItemDetailResponse")
+
                 try {
                     val productResponse = RetrofitClient.apiService.getProducts()
                     products = productResponse.products

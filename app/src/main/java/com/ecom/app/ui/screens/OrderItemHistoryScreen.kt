@@ -134,16 +134,27 @@ private fun OrderItemHistoryCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
+                // Product Name
                 Text(
                     text = item.variantName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                item.statusSummary?.let {
+                // Order ID
+                item.orderId?.takeIf { it.isNotBlank() }?.let {
                     Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Order ID: $it",
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                // Status
+                item.statusSummary?.let {
                     Text(
                         text = it,
                         fontSize = 16.sp,

@@ -78,6 +78,7 @@ fun OrderItemDetailScreen(
             ReviewItemCard(
                 itemToken = item.itemToken,
                 canUserReview = item.canUserReview,
+                alreadyReviewed = item.alreadyReviewed,
                 onReviewItemClick = onReviewItemClick
             )
 
@@ -264,9 +265,17 @@ private fun PriceDetailsCard(item: OrderItem) {
 private fun ReviewItemCard(
     itemToken: String?,
     canUserReview: Boolean?,
+    alreadyReviewed: Boolean?,
     onReviewItemClick: (String) -> Unit
 ) {
-    if (canUserReview != true || itemToken.isNullOrBlank()) return
+    if (itemToken.isNullOrBlank()) return
+    if (canUserReview != true && alreadyReviewed != true) return
+
+    val title = if (alreadyReviewed == true) {
+        "View Review"
+    } else {
+        "Review Item"
+    }
 
     Card(
         modifier = Modifier
@@ -276,7 +285,7 @@ private fun ReviewItemCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        ActionRow(title = "Review Item")
+        ActionRow(title = title)
     }
 }
 

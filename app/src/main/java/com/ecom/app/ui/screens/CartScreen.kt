@@ -50,24 +50,64 @@ fun CartScreen(
     ) {
         CartHeader(onBack = onBack)
 
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
+        if (cartItems.isEmpty()) {
 
-            items(cartItems) { item ->
-                CartItemCard(
-                    item = item,
-                    onProductClick = { variantId, slug ->
-                        if (variantId != null) {
-                            onNavigateToProduct(variantId, slug)
-                        }
-                    },
-                    onQuantityChange = onQuantityChange,
-                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+
+                    Text(
+                        text = "🛍",
+                        fontSize = 64.sp
+                    )
+
+                    Spacer(modifier = Modifier.height(18.dp))
+
+                    Text(
+                        text = "Your Shopping Bag is Empty",
+                        fontSize = 22.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = "Looks like you haven’t added anything yet.",
+                        fontSize = 15.sp,
+                        color = Color.Gray
+                    )
+                }
+            }
+
+        } else {
+
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp)
+            ) {
+
+                items(cartItems) { item ->
+                    CartItemCard(
+                        item = item,
+                        onProductClick = { variantId, slug ->
+                            if (variantId != null) {
+                                onNavigateToProduct(variantId, slug)
+                            }
+                        },
+                        onQuantityChange = onQuantityChange,
+                    )
+                }
             }
         }
 

@@ -59,5 +59,8 @@ data class OrderItem(
     val canUserReview: Boolean? = null,
 
     @SerializedName("can_user_track")
-    val canUserTrack: Boolean? = null
+    val canUserTrack: Boolean? = null,
+
+    @SerializedName("already_reviewed")
+    val alreadyReviewed: Boolean = false,
 )

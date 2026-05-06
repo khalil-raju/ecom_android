@@ -71,7 +71,7 @@ fun ReturnOrderItemScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            InfoBanner()
+            //InfoBanner()
 
             ReturnItemTopCard(item = item)
 

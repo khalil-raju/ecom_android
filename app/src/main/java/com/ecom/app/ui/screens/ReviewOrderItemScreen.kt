@@ -58,7 +58,10 @@ fun ReviewOrderItemScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        ReviewItemHeader(onBack = onBack)
+        ReviewItemHeader(
+            onBack = onBack,
+            alreadyReviewed = alreadyReviewed
+        )
 
         if (item == null) {
             EmptyState()
@@ -79,12 +82,14 @@ fun ReviewOrderItemScreen(
             RatingCard(
                 rating = rating,
                 enabled = !alreadyReviewed,
+                alreadyReviewed = alreadyReviewed,
                 onRatingChange = { rating = it }
             )
 
             ReviewTextCard(
                 value = reviewText,
                 enabled = !alreadyReviewed,
+                alreadyReviewed = alreadyReviewed,
                 onValueChange = {
                     if (it.length <= 1000) reviewText = it
                 }
@@ -117,7 +122,10 @@ fun ReviewOrderItemScreen(
 }
 
 @Composable
-private fun ReviewItemHeader(onBack: () -> Unit) {
+private fun ReviewItemHeader(
+    onBack: () -> Unit,
+    alreadyReviewed: Boolean
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -137,7 +145,7 @@ private fun ReviewItemHeader(onBack: () -> Unit) {
         Spacer(Modifier.width(18.dp))
 
         Text(
-            text = "Review Item",
+            text = if (alreadyReviewed) "Your Review" else "Review Item",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -232,11 +240,11 @@ private fun ReviewItemTopCard(item: OrderItem) {
         }
     }
 }
-
 @Composable
 private fun RatingCard(
     rating: Int,
     enabled: Boolean,
+    alreadyReviewed: Boolean,
     onRatingChange: (Int) -> Unit
 ) {
     Card(
@@ -247,7 +255,7 @@ private fun RatingCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "Rate this product",
+                text = if (alreadyReviewed) "Your Rating" else "Rate this product",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -255,7 +263,11 @@ private fun RatingCard(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = if (rating > 0) "$rating out of 5" else "Tap to rate",
+                text = when {
+                    rating > 0 && alreadyReviewed -> "You rated this item $rating out of 5"
+                    rating > 0 -> "$rating out of 5"
+                    else -> "Tap to rate"
+                },
                 fontSize = 14.sp,
                 color = Color.Gray
             )
@@ -280,11 +292,11 @@ private fun RatingCard(
         }
     }
 }
-
 @Composable
 private fun ReviewTextCard(
     value: String,
     enabled: Boolean,
+    alreadyReviewed: Boolean,
     onValueChange: (String) -> Unit
 ) {
     Card(
@@ -295,7 +307,7 @@ private fun ReviewTextCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "Write your review",
+                text = if (alreadyReviewed) "Your Review" else "Write your review",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -303,7 +315,11 @@ private fun ReviewTextCard(
             Spacer(Modifier.height(4.dp))
 
             Text(
-                text = "Tell others about your experience with this product.",
+                text = if (alreadyReviewed) {
+                    "This is the review you submitted for this item."
+                } else {
+                    "Tell others about your experience with this product."
+                },
                 fontSize = 14.sp,
                 color = Color.DarkGray
             )
@@ -316,20 +332,28 @@ private fun ReviewTextCard(
                 enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text("Write your review here...")
+                    Text(
+                        if (alreadyReviewed) {
+                            "No written review submitted."
+                        } else {
+                            "Write your review here..."
+                        }
+                    )
                 },
                 minLines = 5,
                 shape = RoundedCornerShape(10.dp)
             )
 
-            Spacer(Modifier.height(6.dp))
+            if (!alreadyReviewed) {
+                Spacer(Modifier.height(6.dp))
 
-            Text(
-                text = "${value.length}/1000",
-                modifier = Modifier.align(Alignment.End),
-                fontSize = 13.sp,
-                color = Color.Gray
-            )
+                Text(
+                    text = "${value.length}/1000",
+                    modifier = Modifier.align(Alignment.End),
+                    fontSize = 13.sp,
+                    color = Color.Gray
+                )
+            }
         }
     }
 }
