@@ -1,8 +1,9 @@
-package com.ecom.app.ui.screens
+package com.ecom.app.ui.screens.payment
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
+import android.os.Message
 import android.view.ViewGroup
 import android.webkit.*
 import android.widget.FrameLayout
@@ -17,7 +18,7 @@ import com.ecom.app.network.RetrofitClient
 @Composable
 fun PaymentWebViewScreen(
     url: String,
-    onPaymentFinished: (Boolean) -> Unit
+    onPaymentFinished: (success: Boolean, orderToken: String?) -> Unit
 ) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
@@ -61,12 +62,17 @@ fun PaymentWebViewScreen(
                         }
 
                         if (requestUrl.contains("/orders/order/details/")) {
-                            onPaymentFinished(true)
+                            val orderToken = requestUrl
+                                .substringAfter("/orders/order/details/")
+                                .substringBefore("/")
+                                .substringBefore("?")
+
+                            onPaymentFinished(true, orderToken)
                             return true
                         }
 
                         if (requestUrl.contains("/baskets/")) {
-                            onPaymentFinished(false)
+                            onPaymentFinished(false, null)
                             return true
                         }
 
@@ -79,7 +85,7 @@ fun PaymentWebViewScreen(
                         view: WebView?,
                         isDialog: Boolean,
                         isUserGesture: Boolean,
-                        resultMsg: android.os.Message?
+                        resultMsg: Message?
                     ): Boolean {
                         val popupWebView = WebView(context)
                         setupWebView(popupWebView)

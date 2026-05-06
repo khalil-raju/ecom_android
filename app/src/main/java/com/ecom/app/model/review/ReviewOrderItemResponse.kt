@@ -1,5 +1,6 @@
-package com.ecom.app.model.order
+package com.ecom.app.model.review
 
+import com.ecom.app.model.order.OrderItem
 import com.google.gson.annotations.SerializedName
 
 data class ReviewOrderItemResponse(

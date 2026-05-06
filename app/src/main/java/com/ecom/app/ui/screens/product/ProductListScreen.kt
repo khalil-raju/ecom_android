@@ -1,4 +1,4 @@
-package com.ecom.app.ui.screens
+package com.ecom.app.ui.screens.product
 
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items

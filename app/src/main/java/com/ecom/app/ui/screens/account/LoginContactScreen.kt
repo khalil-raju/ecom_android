@@ -1,4 +1,4 @@
-package com.ecom.app.ui.screens.auth
+package com.ecom.app.ui.screens.account
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +15,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 import com.ecom.app.BuildConfig
-import com.ecom.app.R
 
 @Composable
 fun LoginContactScreen(

@@ -1,5 +1,5 @@
 // ui/screens/OrderDetailScreen.kt
-package com.ecom.app.ui.screens
+package com.ecom.app.ui.screens.order
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -25,6 +25,8 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.account.Address
 import com.ecom.app.model.order.OrderPayment
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -544,8 +546,8 @@ private fun formatDateOnly(value: String?): String {
 
     return try {
         val cleaned = value.replace(Regex("\\.\\d+"), "")
-        val input = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", java.util.Locale.ENGLISH)
-        val output = java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.ENGLISH)
+        val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH)
+        val output = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
 
         val date = input.parse(cleaned)
         if (date != null) output.format(date) else value

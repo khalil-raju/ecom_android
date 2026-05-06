@@ -1,4 +1,4 @@
-package com.ecom.app.ui.screens
+package com.ecom.app.ui.screens.account
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

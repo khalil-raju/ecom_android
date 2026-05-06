@@ -1,4 +1,4 @@
-package com.ecom.app.ui.screens.auth
+package com.ecom.app.ui.screens.account
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,7 +15,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.clickable
 
 import com.ecom.app.R
 

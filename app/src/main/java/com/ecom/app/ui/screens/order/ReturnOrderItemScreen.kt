@@ -1,10 +1,11 @@
-package com.ecom.app.ui.screens
+package com.ecom.app.ui.screens.order
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -21,7 +22,7 @@ import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
-import com.ecom.app.model.order.ReviewOrderItemResponse
+import com.ecom.app.model.order.ReturnOrderItemResponse
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -31,39 +32,34 @@ private fun fullUrl(path: String?): String? {
 }
 
 @Composable
-fun ReviewOrderItemScreen(
+fun ReturnOrderItemScreen(
     modifier: Modifier = Modifier,
-    response: ReviewOrderItemResponse?,
+    response: ReturnOrderItemResponse?,
     error: String?,
     onBack: () -> Unit,
-    onSubmitReview: (
-        rating: Int,
-        review: String
+    onSubmitReturn: (
+        returnReason: String,
+        refundAccount: String?
     ) -> Unit
 ) {
-    val item = response?.item
+    val order = response?.order
+    val item = response?.orderItem
 
-    var rating by remember(response) {
-        mutableIntStateOf(response?.review?.rating ?: 0)
+    var returnReason by remember { mutableStateOf("") }
+    var refundAccount by remember {
+        mutableStateOf(
+            if (response?.refundRequired == true) "wallet_account" else null
+        )
     }
-
-    var reviewText by remember(response) {
-        mutableStateOf(response?.review?.review.orEmpty())
-    }
-
-    val alreadyReviewed = response?.alreadyReviewed == true
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        ReviewItemHeader(
-            onBack = onBack,
-            alreadyReviewed = alreadyReviewed
-        )
+        ReturnItemHeader(onBack = onBack)
 
-        if (item == null) {
+        if (item == null || order == null) {
             EmptyState()
             return@Column
         }
@@ -75,24 +71,26 @@ fun ReviewOrderItemScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            InfoBanner(alreadyReviewed = alreadyReviewed)
+            //InfoBanner()
 
-            ReviewItemTopCard(item = item)
+            ReturnItemTopCard(item = item)
 
-            RatingCard(
-                rating = rating,
-                enabled = !alreadyReviewed,
-                alreadyReviewed = alreadyReviewed,
-                onRatingChange = { rating = it }
-            )
+            ItemSummaryCard(item = item)
 
-            ReviewTextCard(
-                value = reviewText,
-                enabled = !alreadyReviewed,
-                alreadyReviewed = alreadyReviewed,
-                onValueChange = {
-                    if (it.length <= 1000) reviewText = it
-                }
+            if (response.refundRequired) {
+                RefundAccountCard(
+                    onlinePaidAmt = order.onlinePaidAmt,
+                    walletPaidAmt = order.walletPaidAmt,
+                    totalPaidAmt = order.totalPaidAmt,
+                    itemTotalAmt = item.totalAmt,
+                    selected = refundAccount,
+                    onSelected = { refundAccount = it }
+                )
+            }
+
+            ReturnReasonCard(
+                value = returnReason,
+                onValueChange = { returnReason = it }
             )
 
             if (!error.isNullOrBlank()) {
@@ -107,25 +105,20 @@ fun ReviewOrderItemScreen(
             Spacer(Modifier.height(90.dp))
         }
 
-        if (!alreadyReviewed) {
-            ReviewFooter(
-                enabled = rating > 0,
-                onClick = {
-                    onSubmitReview(
-                        rating,
-                        reviewText.trim()
-                    )
-                }
-            )
-        }
+        ReturnFooter(
+            enabled = item.canUserReturn == true,
+            onClick = {
+                onSubmitReturn(
+                    returnReason.trim(),
+                    refundAccount
+                )
+            }
+        )
     }
 }
 
 @Composable
-private fun ReviewItemHeader(
-    onBack: () -> Unit,
-    alreadyReviewed: Boolean
-) {
+private fun ReturnItemHeader(onBack: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -145,7 +138,7 @@ private fun ReviewItemHeader(
         Spacer(Modifier.width(18.dp))
 
         Text(
-            text = if (alreadyReviewed) "Your Review" else "Review Item",
+            text = "Return Item",
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
@@ -153,7 +146,7 @@ private fun ReviewItemHeader(
 }
 
 @Composable
-private fun InfoBanner(alreadyReviewed: Boolean) {
+private fun InfoBanner() {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
@@ -161,11 +154,7 @@ private fun InfoBanner(alreadyReviewed: Boolean) {
         border = BorderStroke(1.dp, Color(0xFFFFD166))
     ) {
         Text(
-            text = if (alreadyReviewed) {
-                "You have already reviewed this item."
-            } else {
-                "Share your experience with this product to help other shoppers."
-            },
+            text = "You can return this item if it is eligible for return.",
             modifier = Modifier.padding(16.dp),
             fontSize = 15.sp,
             color = Color.Black
@@ -174,7 +163,7 @@ private fun InfoBanner(alreadyReviewed: Boolean) {
 }
 
 @Composable
-private fun ReviewItemTopCard(item: OrderItem) {
+private fun ReturnItemTopCard(item: OrderItem) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -240,12 +229,46 @@ private fun ReviewItemTopCard(item: OrderItem) {
         }
     }
 }
+
 @Composable
-private fun RatingCard(
-    rating: Int,
-    enabled: Boolean,
-    alreadyReviewed: Boolean,
-    onRatingChange: (Int) -> Unit
+private fun ItemSummaryCard(item: OrderItem) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = "Item Summary",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            DetailRow("Unit Price", "₹${formatAmount(item.price)}")
+            DetailRow("Quantity", item.quantity.toString())
+
+            HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+
+            DetailRow(
+                label = "Total",
+                value = "₹${formatAmount(item.totalAmt)}",
+                bold = true
+            )
+        }
+    }
+}
+
+@Composable
+private fun RefundAccountCard(
+    onlinePaidAmt: Double,
+    walletPaidAmt: Double,
+    totalPaidAmt: Double,
+    itemTotalAmt: Double,
+    selected: String?,
+    onSelected: (String) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -255,48 +278,101 @@ private fun RatingCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = if (alreadyReviewed) "Your Rating" else "Rate this product",
+                text = "Refund Account",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(4.dp))
+            Spacer(Modifier.height(6.dp))
 
             Text(
-                text = when {
-                    rating > 0 && alreadyReviewed -> "You rated this item $rating out of 5"
-                    rating > 0 -> "$rating out of 5"
-                    else -> "Tap to rate"
-                },
+                text = "Choose where you want your refund to be credited.",
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = Color.DarkGray
             )
 
-            Spacer(Modifier.height(18.dp))
+            Spacer(Modifier.height(14.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                for (i in 1..5) {
-                    Text(
-                        text = if (i <= rating) "★" else "☆",
-                        fontSize = 44.sp,
-                        color = if (i <= rating) Color(0xFFFFB300) else Color.Gray,
-                        modifier = Modifier.clickable(enabled = enabled) {
-                            onRatingChange(i)
+            if (onlinePaidAmt > 0) {
+                RefundOption(
+                    selected = selected == "source_account",
+                    title = "Refund to Source",
+                    subtitle = buildString {
+                        if (walletPaidAmt > 0) {
+                            append("To source: ₹${formatAmount(onlinePaidAmt)}")
+                            append("\n")
+                            append("To wallet: ₹${formatAmount(walletPaidAmt)}")
+                        } else {
+                            append("₹${formatAmount(onlinePaidAmt)}")
                         }
-                    )
-                }
+                    },
+                    onClick = { onSelected("source_account") }
+                )
+            }
+
+            RefundOption(
+                selected = selected == "wallet_account",
+                title = "Refund to Wallet",
+                subtitle = "₹${formatAmount(itemTotalAmt.coerceAtMost(totalPaidAmt))}",
+                onClick = { onSelected("wallet_account") }
+            )
+        }
+    }
+}
+
+@Composable
+private fun RefundOption(
+    selected: Boolean,
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp)
+            .selectable(
+                selected = selected,
+                onClick = onClick
+            ),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFD6D6D6))
+    ) {
+        Row(
+            modifier = Modifier.padding(14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            RadioButton(
+                selected = selected,
+                onClick = onClick
+            )
+
+            Spacer(Modifier.width(12.dp))
+
+            Column {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(6.dp))
+
+                Text(
+                    text = subtitle,
+                    fontSize = 14.sp,
+                    color = Color.DarkGray,
+                    lineHeight = 20.sp
+                )
             }
         }
     }
 }
+
 @Composable
-private fun ReviewTextCard(
+private fun ReturnReasonCard(
     value: String,
-    enabled: Boolean,
-    alreadyReviewed: Boolean,
     onValueChange: (String) -> Unit
 ) {
     Card(
@@ -307,59 +383,29 @@ private fun ReviewTextCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = if (alreadyReviewed) "Your Review" else "Write your review",
+                text = "Why are you returning this item?",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = if (alreadyReviewed) {
-                    "This is the review you submitted for this item."
-                } else {
-                    "Tell others about your experience with this product."
-                },
-                fontSize = 14.sp,
-                color = Color.DarkGray
-            )
-
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = value,
                 onValueChange = onValueChange,
-                enabled = enabled,
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = {
-                    Text(
-                        if (alreadyReviewed) {
-                            "No written review submitted."
-                        } else {
-                            "Write your review here..."
-                        }
-                    )
+                    Text("Please tell us why you are returning this item")
                 },
-                minLines = 5,
+                minLines = 4,
                 shape = RoundedCornerShape(10.dp)
             )
-
-            if (!alreadyReviewed) {
-                Spacer(Modifier.height(6.dp))
-
-                Text(
-                    text = "${value.length}/1000",
-                    modifier = Modifier.align(Alignment.End),
-                    fontSize = 13.sp,
-                    color = Color.Gray
-                )
-            }
         }
     }
 }
 
 @Composable
-private fun ReviewFooter(
+private fun ReturnFooter(
     enabled: Boolean,
     onClick: () -> Unit
 ) {
@@ -385,11 +431,39 @@ private fun ReviewFooter(
             )
         ) {
             Text(
-                text = "Submit Review",
+                text = "Submit Return Request",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
         }
+    }
+}
+
+@Composable
+private fun DetailRow(
+    label: String,
+    value: String,
+    bold: Boolean = false
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 7.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            fontSize = 15.sp,
+            color = Color.DarkGray,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.Normal
+        )
+
+        Text(
+            text = value,
+            fontSize = 15.sp,
+            color = Color.Black,
+            fontWeight = if (bold) FontWeight.Bold else FontWeight.SemiBold
+        )
     }
 }
 
@@ -399,7 +473,7 @@ private fun EmptyState() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center
     ) {
-        Text("Review item not found.", fontSize = 16.sp)
+        Text("Return item not found.", fontSize = 16.sp)
     }
 }
 

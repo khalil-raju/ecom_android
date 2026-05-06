@@ -14,7 +14,7 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItemDetailResponse
 import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.model.order.ReturnOrderItemResponse
-import com.ecom.app.model.order.ReviewOrderItemResponse
+import com.ecom.app.model.review.ReviewOrderItemResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -189,16 +189,12 @@ interface ApiService {
     @POST("reviews/rate/{itemToken}/")
     suspend fun submitReviewOrderItem(
         @Path("itemToken") itemToken: String,
-
         @Field("rating")
         rating: Int,
-
         @Field("review")
         review: String? = null,
-
         @Header("X-CSRFToken")
         csrfToken: String,
-
         @Query("format") format: String = "json"
     ): ReviewOrderItemResponse
 
