@@ -5,7 +5,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.Product
+import com.ecom.app.model.product.Product
 import com.ecom.app.ui.components.HeroBanner
 import com.ecom.app.ui.components.ProductCard
 

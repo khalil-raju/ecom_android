@@ -1,5 +1,6 @@
-package com.ecom.app.model
+package com.ecom.app.model.order
 
+import com.ecom.app.model.account.Address
 import com.google.gson.annotations.SerializedName
 
 data class CheckoutResponse(

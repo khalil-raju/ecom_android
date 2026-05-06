@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,8 +22,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
-import com.ecom.app.model.OrderItem
-import com.ecom.app.model.OrderItemHistoryResponse
+import com.ecom.app.model.order.OrderItem
+import com.ecom.app.model.order.OrderItemHistoryResponse
 
 private fun fullUrl(path: String?): String? {
     return path?.let {

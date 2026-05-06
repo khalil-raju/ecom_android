@@ -1,20 +1,20 @@
 package com.ecom.app.network
 
-import com.ecom.app.model.ProductListResponse
-import com.ecom.app.model.SearchSuggestionResponse
-import com.ecom.app.model.ProductDetailResponse
-import com.ecom.app.model.CartCountResponse
-import com.ecom.app.model.AuthStepResponse
-import com.ecom.app.model.ProfileResponse
-import com.ecom.app.model.BasketResponse
-import com.ecom.app.model.CancelOrderResponse
-import com.ecom.app.model.CheckoutResponse
-import com.ecom.app.model.InitiateOrderResponse
-import com.ecom.app.model.OrderDetailResponse
-import com.ecom.app.model.OrderItemDetailResponse
-import com.ecom.app.model.OrderItemHistoryResponse
-import com.ecom.app.model.ReturnOrderItemResponse
-import com.ecom.app.model.ReviewOrderItemResponse
+import com.ecom.app.model.product.ProductListResponse
+import com.ecom.app.model.product.SearchSuggestionResponse
+import com.ecom.app.model.product.ProductDetailResponse
+import com.ecom.app.model.basket.CartCountResponse
+import com.ecom.app.model.account.AuthStepResponse
+import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.order.CancelOrderResponse
+import com.ecom.app.model.order.CheckoutResponse
+import com.ecom.app.model.order.InitiateOrderResponse
+import com.ecom.app.model.order.OrderDetailResponse
+import com.ecom.app.model.order.OrderItemDetailResponse
+import com.ecom.app.model.order.OrderItemHistoryResponse
+import com.ecom.app.model.order.ReturnOrderItemResponse
+import com.ecom.app.model.order.ReviewOrderItemResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET

@@ -1,4 +1,4 @@
-package com.ecom.app.model
+package com.ecom.app.model.product
 
 data class SearchSuggestion(
     val name: String,

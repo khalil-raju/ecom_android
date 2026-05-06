@@ -1,4 +1,4 @@
-package com.ecom.app.model
+package com.ecom.app.model.account
 
 import com.google.gson.annotations.SerializedName
 

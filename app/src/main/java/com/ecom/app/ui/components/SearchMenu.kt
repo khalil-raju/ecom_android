@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
-import com.ecom.app.model.SearchSuggestion
+import com.ecom.app.model.product.SearchSuggestion
 import com.ecom.app.network.RetrofitClient
 import kotlinx.coroutines.delay
 

@@ -17,7 +17,7 @@ import androidx.compose.material3.HorizontalDivider
 
 import coil.compose.AsyncImage
 
-import com.ecom.app.model.Product
+import com.ecom.app.model.product.Product
 import com.ecom.app.BuildConfig
 
 @Composable

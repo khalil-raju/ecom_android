@@ -6,7 +6,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,10 +23,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
-import com.ecom.app.model.Address
-import com.ecom.app.model.CheckoutResponse
-import com.ecom.app.model.Order
-import com.ecom.app.model.OrderItem
+import com.ecom.app.model.account.Address
+import com.ecom.app.model.order.CheckoutResponse
+import com.ecom.app.model.order.Order
+import com.ecom.app.model.order.OrderItem
 
 private fun fullUrl(path: String?): String? {
     return path?.let {

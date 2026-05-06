@@ -5,14 +5,12 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.clickable
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -23,13 +21,10 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
-import com.ecom.app.model.OrderDetailResponse
-import com.ecom.app.model.OrderItem
-import com.ecom.app.model.Address
-import com.ecom.app.util.downloadFile
-import com.ecom.app.util.downloadFileAndOpen
-import java.text.SimpleDateFormat
-import java.util.Locale
+import com.ecom.app.model.order.OrderDetailResponse
+import com.ecom.app.model.order.OrderItem
+import com.ecom.app.model.account.Address
+import com.ecom.app.model.order.OrderPayment
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -528,7 +523,7 @@ private fun buildAddressLines(address: Address?): String {
         .joinToString("\n")
 }
 
-private fun buildPaymentText(payment: com.ecom.app.model.OrderPayment?): String {
+private fun buildPaymentText(payment: OrderPayment?): String {
     return when {
         payment == null -> ""
         payment.onlinePaidAmt > 0 -> "Paid via ${payment.onlineMethod ?: "Online"}"

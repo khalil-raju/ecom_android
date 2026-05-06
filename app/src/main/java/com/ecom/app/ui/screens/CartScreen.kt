@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
-import com.ecom.app.model.BasketItem
-import com.ecom.app.model.BasketResponse
+import com.ecom.app.model.basket.BasketItem
+import com.ecom.app.model.basket.BasketResponse
 
 private fun fullUrl(path: String?): String? {
     return path?.let {

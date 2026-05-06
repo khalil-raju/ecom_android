@@ -20,8 +20,8 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
-import com.ecom.app.model.OrderItem
-import com.ecom.app.model.OrderItemDetailResponse
+import com.ecom.app.model.order.OrderItem
+import com.ecom.app.model.order.OrderItemDetailResponse
 
 private fun fullUrl(path: String?): String? {
     return path?.let {

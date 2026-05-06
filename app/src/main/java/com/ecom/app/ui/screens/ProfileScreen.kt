@@ -19,7 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
-import com.ecom.app.model.ProfileResponse
+import com.ecom.app.model.account.ProfileResponse
 
 private data class ProfileRowItem(
     val title: String,

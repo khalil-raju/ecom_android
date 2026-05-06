@@ -1,4 +1,4 @@
-package com.ecom.app.model
+package com.ecom.app.model.account
 
 import com.google.gson.annotations.SerializedName
 
@@ -23,4 +23,3 @@ data class AuthStepResponse(
     @SerializedName("login_attempts_left")
     val loginAttemptsLeft: Int?
 )
-

@@ -21,7 +21,6 @@ import androidx.compose.ui.Modifier
 import androidx.core.view.WindowCompat
 import android.util.Log
 import androidx.compose.runtime.mutableIntStateOf
-import android.app.Activity
 import androidx.compose.ui.platform.LocalContext
 
 /*
@@ -31,32 +30,32 @@ import com.razorpay.PaymentResultWithDataListener
 import org.json.JSONObject
 */
 
-import com.ecom.app.model.Product
+import com.ecom.app.model.product.Product
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.components.SearchMenu
 import com.ecom.app.ui.components.SideMenu
 import com.ecom.app.ui.components.TopMenu
 import com.ecom.app.ui.screens.ProductListScreen
-import com.ecom.app.model.ProductDetailResponse
+import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.screens.ProductDetailScreen
 import com.ecom.app.ui.screens.auth.LoginContactScreen
 import com.ecom.app.ui.screens.auth.LoginPasswordScreen
-import com.ecom.app.model.ProfileResponse
+import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.ui.screens.CartScreen
 import com.ecom.app.ui.screens.ProfileScreen
-import com.ecom.app.model.BasketResponse
-import com.ecom.app.model.CheckoutResponse
-import com.ecom.app.model.OrderDetailResponse
-import com.ecom.app.model.OrderItemDetailResponse
-import com.ecom.app.model.OrderItemHistoryResponse
+import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.order.CheckoutResponse
+import com.ecom.app.model.order.OrderDetailResponse
+import com.ecom.app.model.order.OrderItemDetailResponse
+import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.ui.screens.CheckoutScreen
 import com.ecom.app.ui.screens.OrderDetailScreen
 import com.ecom.app.ui.screens.OrderItemDetailScreen
 import com.ecom.app.ui.screens.OrderItemHistoryScreen
 import com.ecom.app.ui.screens.PaymentWebViewScreen
-import com.ecom.app.model.CancelOrderResponse
-import com.ecom.app.model.ReturnOrderItemResponse
-import com.ecom.app.model.ReviewOrderItemResponse
+import com.ecom.app.model.order.CancelOrderResponse
+import com.ecom.app.model.order.ReturnOrderItemResponse
+import com.ecom.app.model.order.ReviewOrderItemResponse
 import com.ecom.app.ui.screens.CancelOrderScreen
 import com.ecom.app.ui.screens.ReturnOrderItemScreen
 import com.ecom.app.ui.screens.ReviewOrderItemScreen

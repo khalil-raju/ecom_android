@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.OutlinedButton
@@ -26,7 +25,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.painterResource
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.graphicsLayer
@@ -38,8 +36,8 @@ import coil.compose.AsyncImage
 
 import com.ecom.app.R
 import com.ecom.app.BuildConfig
-import com.ecom.app.model.ProductDetailResponse
-import com.ecom.app.model.ProductVariantDetail
+import com.ecom.app.model.product.ProductDetailResponse
+import com.ecom.app.model.product.ProductVariantDetail
 import com.ecom.app.network.RetrofitClient
 
 
