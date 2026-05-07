@@ -32,7 +32,6 @@ import com.ecom.app.ui.routes.product.ProductDetailRoute
 import com.ecom.app.ui.routes.product.ProductListRoute
 import com.ecom.app.ui.routes.review.ReviewOrderItemRoute
 import com.ecom.app.ui.routes.wallet.WalletRoute
-import com.ecom.app.ui.screens.StaticWebScreen
 import kotlinx.coroutines.CoroutineScope
 
 enum class OtpPurpose {
@@ -76,7 +75,6 @@ sealed interface AppScreen {
     data object SavedAddresses : AppScreen
     data class AddAddress(val addressId: Int? = null) : AppScreen
     data object Wallet : AppScreen
-    data class StaticWeb(val title: String, val url: String) : AppScreen
 }
 
 @Composable
@@ -398,13 +396,5 @@ fun AppRouter(
                 }
             )
         }
-
-        is AppScreen.StaticWeb -> StaticWebScreen(
-            title = currentScreen.title,
-            url = currentScreen.url,
-            onBack = {
-                setScreen(AppScreen.Profile)
-            }
-        )
     }
 }
