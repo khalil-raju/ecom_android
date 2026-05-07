@@ -47,6 +47,8 @@ android {
         create("abitomodaLocal") {
             dimension = "brand"
             applicationId = "com.abitomoda.app.local"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_am_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_am_launcher_round"
             resValue("string", "app_name", "ABITOMODA_L")
             buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
@@ -57,6 +59,8 @@ android {
         create("abitomodaProd") {
             dimension = "brand"
             applicationId = "com.abitomoda.app"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_am_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_am_launcher_round"
             resValue("string", "app_name", "ABITOMODA")
             buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"https://abitomoda.com/\"")
@@ -67,6 +71,8 @@ android {
         create("steezyfitLocal") {
             dimension = "brand"
             applicationId = "com.steezyfit.app.local"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_sf_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_sf_launcher_round"
             resValue("string", "app_name", "STEEZYFIT_L")
             buildConfigField("String", "BRAND_NAME", "\"STEEZYFIT\"")
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
@@ -77,6 +83,8 @@ android {
         create("steezyfitProd") {
             dimension = "brand"
             applicationId = "com.steezyfit.app"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_sf_launcher"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_sf_launcher_round"
             resValue("string", "app_name", "STEEZYFIT")
             buildConfigField("String", "BRAND_NAME", "\"STEEZYFIT\"")
             buildConfigField("String", "BASE_URL", "\"https://steezyfit.com/\"")
