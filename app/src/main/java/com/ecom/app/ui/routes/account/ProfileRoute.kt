@@ -26,6 +26,7 @@ fun ProfileRoute(
     navigateChangePhone: () -> Unit,
     navigateChangePassword: () -> Unit,
     navigateOrderItemHistory: () -> Unit,
+    navigateWallet: () -> Unit,
     navigateCart: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
@@ -42,6 +43,7 @@ fun ProfileRoute(
         onChangePasswordClick = navigateChangePassword,
         onCartClick = navigateCart,
         onViewOrderClick = navigateOrderItemHistory,
+        onViewWalletClick = navigateWallet,
         onLogout = {
             scope.launch {
                 try {

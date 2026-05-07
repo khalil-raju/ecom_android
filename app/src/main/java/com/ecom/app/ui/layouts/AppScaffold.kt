@@ -31,10 +31,10 @@ fun AppScaffold(
     onWalletClick: () -> Unit,
     onWishlistClick: () -> Unit,
     onLogoutClick: () -> Unit,
-    onTermsClick: () -> Unit,
-    onPrivacyClick: () -> Unit,
-    onReturnsClick: () -> Unit,
-    onContactClick: () -> Unit,
+    onTermsAndConditionsClick: () -> Unit,
+    onPrivacyPolicyClick: () -> Unit,
+    onReturnPolicyClick: () -> Unit,
+    onContactUsClick: () -> Unit,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Box(modifier = Modifier.safeDrawingPadding()) {
@@ -55,10 +55,10 @@ fun AppScaffold(
                     onWalletClick = onWalletClick,
                     onWishlistClick = onWishlistClick,
                     onLogoutClick = onLogoutClick,
-                    onTermsClick = onTermsClick,
-                    onPrivacyClick = onPrivacyClick,
-                    onReturnsClick = onReturnsClick,
-                    onContactClick = onContactClick
+                    onTermsClick = onTermsAndConditionsClick,
+                    onPrivacyClick = onPrivacyPolicyClick,
+                    onReturnsClick = onReturnPolicyClick,
+                    onContactClick = onContactUsClick
                 )
             }
         ) {

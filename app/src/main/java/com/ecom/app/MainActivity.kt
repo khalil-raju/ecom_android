@@ -26,20 +26,7 @@ import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
 import com.ecom.app.ui.navigations.AppScreen
 import com.ecom.app.ui.navigations.AppRouter
-import com.ecom.app.ui.routes.account.LoginContactRoute
-import com.ecom.app.ui.routes.account.LoginPasswordRoute
-import com.ecom.app.ui.routes.account.ProfileRoute
-import com.ecom.app.ui.routes.basket.CartRoute
-import com.ecom.app.ui.routes.order.CancelOrderRoute
-import com.ecom.app.ui.routes.order.CheckoutRoute
-import com.ecom.app.ui.routes.order.OrderDetailRoute
-import com.ecom.app.ui.routes.order.OrderItemDetailRoute
-import com.ecom.app.ui.routes.order.OrderItemHistoryRoute
-import com.ecom.app.ui.routes.order.ReturnOrderItemRoute
-import com.ecom.app.ui.routes.payment.PaymentWebRoute
-import com.ecom.app.ui.routes.product.ProductDetailRoute
-import com.ecom.app.ui.routes.product.ProductListRoute
-import com.ecom.app.ui.routes.review.ReviewOrderItemRoute
+import com.ecom.app.util.openExternalUrl
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -210,7 +197,7 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onWalletClick = {
-                    // later
+                    currentScreen = AppScreen.Wallet
                 },
 
                 onWishlistClick = {
@@ -230,21 +217,34 @@ class MainActivity : ComponentActivity() {
                     }
                 },
 
-                onTermsClick = {
-                    // later
+                onTermsAndConditionsClick = {
+                    openExternalUrl(
+                        context,
+                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/terms-and-conditions/"
+                    )
                 },
 
-                onPrivacyClick = {
-                    // later
+                onPrivacyPolicyClick = {
+                    openExternalUrl(
+                        context,
+                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/privacy-policy/"
+                    )
                 },
 
-                onReturnsClick = {
-                    // later
+                onReturnPolicyClick = {
+                    openExternalUrl(
+                        context,
+                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/returns-and-shipping-policy/"
+                    )
                 },
 
-                onContactClick = {
-                    // later
+                onContactUsClick = {
+                    openExternalUrl(
+                        context,
+                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/contact-us/"
+                    )
                 }
+
             ) { innerPadding ->
 
                 AppRouter(

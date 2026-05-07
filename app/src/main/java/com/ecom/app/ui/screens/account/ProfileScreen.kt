@@ -44,6 +44,7 @@ fun ProfileScreen(
     onChangePasswordClick: () -> Unit,
     onCartClick: () -> Unit,
     onViewOrderClick: () -> Unit,
+    onViewWalletClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val user = profile?.user
@@ -170,7 +171,8 @@ fun ProfileScreen(
                         ProfileActionItem(
                             "▰",
                             "Wallet",
-                            "View balance and transactions"
+                            "View balance and transactions",
+                            onClick = onViewWalletClick
                         )
                     )
                 )

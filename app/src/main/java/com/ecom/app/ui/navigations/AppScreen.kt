@@ -31,6 +31,8 @@ import com.ecom.app.ui.routes.payment.PaymentWebRoute
 import com.ecom.app.ui.routes.product.ProductDetailRoute
 import com.ecom.app.ui.routes.product.ProductListRoute
 import com.ecom.app.ui.routes.review.ReviewOrderItemRoute
+import com.ecom.app.ui.routes.wallet.WalletRoute
+import com.ecom.app.ui.screens.StaticWebScreen
 import kotlinx.coroutines.CoroutineScope
 
 enum class OtpPurpose {
@@ -73,6 +75,8 @@ sealed interface AppScreen {
     data class OtpVerify(val contact: String, val purpose: OtpPurpose) : AppScreen
     data object SavedAddresses : AppScreen
     data class AddAddress(val addressId: Int? = null) : AppScreen
+    data object Wallet : AppScreen
+    data class StaticWeb(val title: String, val url: String) : AppScreen
 }
 
 @Composable
@@ -300,6 +304,9 @@ fun AppRouter(
             navigateOrderItemHistory = {
                 setScreen(AppScreen.OrderItemHistory)
             },
+            navigateWallet = {
+                setScreen(AppScreen.Wallet)
+            },
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
@@ -381,5 +388,23 @@ fun AppRouter(
                 }
             )
         }
+
+        AppScreen.Wallet -> {
+            WalletRoute(
+                innerPadding = innerPadding,
+                scope = scope,
+                navigateBack = {
+                    setScreen(AppScreen.Profile)
+                }
+            )
+        }
+
+        is AppScreen.StaticWeb -> StaticWebScreen(
+            title = currentScreen.title,
+            url = currentScreen.url,
+            onBack = {
+                setScreen(AppScreen.Profile)
+            }
+        )
     }
 }

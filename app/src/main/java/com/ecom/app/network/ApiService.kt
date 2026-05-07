@@ -21,6 +21,7 @@ import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.model.order.ReturnOrderItemResponse
 import com.ecom.app.model.product.CategoryMenuResponse
 import com.ecom.app.model.review.ReviewOrderItemResponse
+import com.ecom.app.model.wallet.WalletResponse
 
 import retrofit2.http.Path
 import retrofit2.http.GET
@@ -430,6 +431,13 @@ interface ApiService {
         @Query("format")
         format: String = "json"
     ): ReturnOrderItemResponse
+
+    // ---------------- Wallet ----------------
+    @GET("wallets/")
+    suspend fun getWalletDetail(
+        @Query("format")
+        format: String = "json"
+    ): WalletResponse
 
     // ---------------- Review ----------------
     @GET("reviews/rate/{itemToken}/")
