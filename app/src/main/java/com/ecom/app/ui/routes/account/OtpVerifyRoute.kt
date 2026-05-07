@@ -51,7 +51,7 @@ fun OtpVerifyRoute(
             Log.e("OTP_START", "failed: ${e.message}", e)
         }
     }
-    
+
     fun handleSubmitResponse(response: AuthStepResponse) {
         if (response.success) {
             scope.launch {

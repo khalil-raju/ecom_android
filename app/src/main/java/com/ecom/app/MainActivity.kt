@@ -20,6 +20,8 @@ import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.Product
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.SideMenuCategory
+import com.ecom.app.ui.components.SideMenuCategoryChild
 import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
 import com.ecom.app.ui.navigations.AppScreen
@@ -54,8 +56,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             var drawerContentType by remember { mutableStateOf(DrawerContentType.SIDE_MENU) }
-            var products by remember { mutableStateOf<List<Product>>(emptyList()) }
+
             var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
+
+            var products by remember { mutableStateOf<List<Product>>(emptyList()) }
+            var parentCategories by remember { mutableStateOf<List<SideMenuCategory>>(emptyList()) }
 
             var cartCount by remember { mutableIntStateOf(0) }
             var isAuthenticated by remember { mutableStateOf(false) }
@@ -76,6 +81,25 @@ class MainActivity : ComponentActivity() {
                     products = productResponse.products
                 } catch (e: Exception) {
                     Log.e("INIT_PRODUCTS", "failed: ${e.message}", e)
+                }
+
+                try {
+                    val categoryResponse = RetrofitClient.apiService.getCategoryMenu()
+
+                    parentCategories = categoryResponse.categories.map { cat ->
+                        SideMenuCategory(
+                            name = cat.name,
+                            slug = cat.slug,
+                            children = cat.children.map { child ->
+                                SideMenuCategoryChild(
+                                    name = child.name,
+                                    slug = child.slug
+                                )
+                            }
+                        )
+                    }
+                } catch (e: Exception) {
+                    Log.e("INIT_CATEGORIES", "failed: ${e.message}", e)
                 }
 
                 try {
@@ -103,6 +127,7 @@ class MainActivity : ComponentActivity() {
                 currentScreen = currentScreen,
                 isAuthenticated = isAuthenticated,
                 cartCount = cartCount,
+                parentCategories = parentCategories,
 
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
@@ -156,11 +181,28 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onSignupClick = {
-                    // later: currentScreen = AppScreen.SignupContact
+                    currentScreen = AppScreen.SignupContact
                 },
 
-                onCategoryClick = { _, _ ->
-                    // later
+                onCategoryClick = { parentSlug, childSlug ->
+                    scope.launch {
+                        try {
+                            val response = if (childSlug.isNullOrBlank()) {
+                                RetrofitClient.apiService.getProductsByParentCategory(parentSlug)
+                            } else {
+                                RetrofitClient.apiService.getProductsByChildCategory(
+                                    parentSlug = parentSlug,
+                                    childSlug = childSlug
+                                )
+                            }
+
+                            products = response.products
+                            currentScreen = AppScreen.Home
+
+                        } catch (e: Exception) {
+                            Log.e("CATEGORY_PRODUCTS", "failed: ${e.message}", e)
+                        }
+                    }
                 },
 
                 onOrdersClick = {

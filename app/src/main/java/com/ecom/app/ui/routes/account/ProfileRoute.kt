@@ -24,6 +24,9 @@ fun ProfileRoute(
     navigateChangeName: () -> Unit,
     navigateChangeEmail: () -> Unit,
     navigateChangePhone: () -> Unit,
+    navigateChangePassword: () -> Unit,
+    navigateOrderItemHistory: () -> Unit,
+    navigateCart: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
     ProfileScreen(
@@ -36,6 +39,9 @@ fun ProfileRoute(
         onChangeNameClick = navigateChangeName,
         onChangeEmailClick = navigateChangeEmail,
         onChangePhoneClick = navigateChangePhone,
+        onChangePasswordClick = navigateChangePassword,
+        onCartClick = navigateCart,
+        onViewOrderClick = navigateOrderItemHistory,
         onLogout = {
             scope.launch {
                 try {

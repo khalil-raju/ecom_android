@@ -11,12 +11,15 @@ import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.routes.account.AddAddressRoute
 import com.ecom.app.ui.routes.account.ChangeContactRoute
 import com.ecom.app.ui.routes.account.ChangeNameRoute
+import com.ecom.app.ui.routes.account.ChangePasswordRoute
 import com.ecom.app.ui.routes.account.ContactChangeType
 import com.ecom.app.ui.routes.account.LoginContactRoute
 import com.ecom.app.ui.routes.account.LoginPasswordRoute
 import com.ecom.app.ui.routes.account.OtpVerifyRoute
 import com.ecom.app.ui.routes.account.ProfileRoute
 import com.ecom.app.ui.routes.account.SavedAddressesRoute
+import com.ecom.app.ui.routes.account.SignupContactRoute
+import com.ecom.app.ui.routes.account.SignupPasswordRoute
 import com.ecom.app.ui.routes.basket.CartRoute
 import com.ecom.app.ui.routes.order.CancelOrderRoute
 import com.ecom.app.ui.routes.order.CheckoutRoute
@@ -42,6 +45,8 @@ sealed interface AppScreen {
         return this is AppScreen.PaymentWeb ||
                 this is AppScreen.LoginContact ||
                 this is AppScreen.LoginPassword ||
+                this is AppScreen.SignupContact ||
+                this is AppScreen.SignupPassword ||
                 this is AppScreen.OtpVerify
     }
 
@@ -60,8 +65,11 @@ sealed interface AppScreen {
     data object ChangeName : AppScreen
     data object ChangeEmail : AppScreen
     data object ChangePhone : AppScreen
+    data object ChangePassword : AppScreen
     data object LoginContact : AppScreen
     data class LoginPassword(val contact: String) : AppScreen
+    data object SignupContact : AppScreen
+    data class SignupPassword(val contact: String) : AppScreen
     data class OtpVerify(val contact: String, val purpose: OtpPurpose) : AppScreen
     data object SavedAddresses : AppScreen
     data class AddAddress(val addressId: Int? = null) : AppScreen
@@ -182,7 +190,7 @@ fun AppRouter(
             scope = scope,
             navigateHome = { setScreen(AppScreen.Home) },
             navigateLoginPassword = { setScreen(AppScreen.LoginPassword(it)) },
-            navigateSignup = { }
+            navigateSignup = { setScreen(AppScreen.SignupContact) }
         )
 
         is AppScreen.LoginPassword -> LoginPasswordRoute(
@@ -203,6 +211,36 @@ fun AppRouter(
                         purpose = OtpPurpose.LOGIN
                     )
                 )
+            }
+        )
+
+        AppScreen.SignupContact -> SignupContactRoute(
+            scope = scope,
+            navigateHome = {
+                setScreen(AppScreen.Home)
+            },
+            navigateLoginPassword = { contact ->
+                setScreen(AppScreen.LoginPassword(contact))
+            },
+            navigateSignupPassword = { contact ->
+                setScreen(AppScreen.SignupPassword(contact))
+            },
+            navigateLogin = {
+                setScreen(AppScreen.LoginContact)
+            }
+        )
+
+        is AppScreen.SignupPassword -> SignupPasswordRoute(
+            scope = scope,
+            contact = currentScreen.contact,
+            navigateHome = {
+                setScreen(AppScreen.Home)
+            },
+            navigateLogin = {
+                setScreen(AppScreen.LoginContact)
+            },
+            navigateOtp = { contact, purpose ->
+                setScreen(AppScreen.OtpVerify(contact, purpose))
             }
         )
 
@@ -253,6 +291,15 @@ fun AppRouter(
             navigateChangePhone = {
                 setScreen(AppScreen.ChangePhone)
             },
+            navigateChangePassword = {
+                setScreen(AppScreen.ChangePassword)
+            },
+            navigateCart = {
+                setScreen(AppScreen.Cart)
+            },
+            navigateOrderItemHistory = {
+                setScreen(AppScreen.OrderItemHistory)
+            },
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
@@ -291,6 +338,17 @@ fun AppRouter(
             navigateBack = { setScreen(AppScreen.Profile) },
             navigateOtp = { contact, purpose ->
                 setScreen(AppScreen.OtpVerify(contact, purpose))
+            }
+        )
+
+        AppScreen.ChangePassword -> ChangePasswordRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateBack = {
+                setScreen(AppScreen.Profile)
+            },
+            navigateProfile = {
+                setScreen(AppScreen.Profile)
             }
         )
 

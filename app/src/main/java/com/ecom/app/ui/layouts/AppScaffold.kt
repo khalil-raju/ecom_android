@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.ecom.app.ui.components.SideMenuCategory
 import com.ecom.app.ui.navigations.AppScreen
 
 @Composable
@@ -15,6 +16,7 @@ fun AppScaffold(
     currentScreen: AppScreen,
     isAuthenticated: Boolean,
     cartCount: Int,
+    parentCategories: List<SideMenuCategory>,
     onCloseDrawer: () -> Unit,
     onMenuClick: () -> Unit,
     onSearchClick: () -> Unit,
@@ -42,6 +44,7 @@ fun AppScaffold(
                 AppDrawer(
                     drawerContentType = drawerContentType,
                     isAuthenticated = isAuthenticated,
+                    parentCategories = parentCategories,
                     onClose = onCloseDrawer,
                     onHomeClick = onHomeClick,
                     onLoginClick = onLoginClick,

@@ -8,6 +8,7 @@ import com.ecom.app.model.basket.CartCountResponse
 import com.ecom.app.model.account.AuthStepResponse
 import com.ecom.app.model.account.ChangeContactResponse
 import com.ecom.app.model.account.ChangeNameResponse
+import com.ecom.app.model.account.ChangePasswordResponse
 import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.basket.BasketResponse
@@ -18,6 +19,7 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItemDetailResponse
 import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.model.order.ReturnOrderItemResponse
+import com.ecom.app.model.product.CategoryMenuResponse
 import com.ecom.app.model.review.ReviewOrderItemResponse
 
 import retrofit2.http.Path
@@ -30,7 +32,7 @@ import retrofit2.http.Header
 
 
 interface ApiService {
-
+    // ---------------- Login ----------------
     @FormUrlEncoded
     @POST("accounts/login/")
     suspend fun loginContact(
@@ -47,9 +49,49 @@ interface ApiService {
         @Field("password") password: String
     ): AuthStepResponse
 
+    // ---------------- Logout ----------------
     @POST("accounts/logout/")
     suspend fun logout(
         @Query("format") format: String = "json"
+    ): AuthStepResponse
+
+    // ---------------- Signup ----------------
+    @FormUrlEncoded
+    @POST("accounts/signup/")
+    suspend fun signupContact(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("contact")
+        contact: String,
+
+        @Field("consent_pp_tc")
+        consentPpTc: String? = null,
+
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @GET("accounts/signup/password/")
+    suspend fun getSignupPassword(
+        @Query("format")
+        format: String = "json"
+    ): AuthStepResponse
+
+    @FormUrlEncoded
+    @POST("accounts/signup/password/")
+    suspend fun signupPassword(
+        @Header("X-CSRFToken")
+        csrfToken: String,
+
+        @Field("password")
+        password: String,
+
+        @Field("confirm")
+        confirm: String,
+
+        @Query("format")
+        format: String = "json"
     ): AuthStepResponse
 
     // ---------------- OTP: Login ----------------
@@ -167,6 +209,24 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): AuthStepResponse
 
+    // ---------------- Change Password ----------------
+    @GET("accounts/change_password/")
+    suspend fun getChangePassword(
+        @Query("format") format: String = "json"
+    ): ChangePasswordResponse
+
+    @FormUrlEncoded
+    @POST("accounts/change_password/")
+    suspend fun submitChangePassword(
+        @Header("X-CSRFToken") csrfToken: String,
+
+        @Field("new_password") newPassword: String,
+
+        @Field("confirm_password") confirmPassword: String,
+
+        @Query("format") format: String = "json"
+    ): ChangePasswordResponse
+
     // ---------------- Profile ----------------
     @GET("accounts/profile/")
     suspend fun getProfile(
@@ -179,6 +239,7 @@ interface ApiService {
         format: String = "json"
     ): ChangeNameResponse
 
+    // ---------------- Change Name ----------------
     @FormUrlEncoded
     @POST("accounts/change_name/")
     suspend fun submitChangeName(
@@ -195,6 +256,7 @@ interface ApiService {
         format: String = "json"
     ): ChangeNameResponse
 
+    // ---------------- Change Email ----------------
     @GET("accounts/change_email/")
     suspend fun getChangeEmail(
         @Query("format") format: String = "json"
@@ -208,6 +270,7 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): ChangeContactResponse
 
+    // ---------------- Change Phone ----------------
     @GET("accounts/change_phone/")
     suspend fun getChangePhone(
         @Query("format") format: String = "json"
@@ -221,6 +284,7 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): ChangeContactResponse
 
+    // ---------------- Product ----------------
     @GET("/")
     suspend fun getProducts(
         @Query("format") format: String = "json",
@@ -240,6 +304,30 @@ interface ApiService {
         @Query("format") format: String = "json"
     ): ProductDetailResponse
 
+    @GET("products/category/menu/")
+    suspend fun getCategoryMenu(
+        @Query("format") format: String = "json"
+    ): CategoryMenuResponse
+
+    @GET("products/category/{parentSlug}/")
+    suspend fun getProductsByParentCategory(
+        @Path("parentSlug") parentSlug: String,
+        @Query("format") format: String = "json"
+    ): ProductListResponse
+
+    @GET("products/category/{parentSlug}/{childSlug}/")
+    suspend fun getProductsByChildCategory(
+        @Path("parentSlug") parentSlug: String,
+        @Path("childSlug") childSlug: String,
+        @Query("format") format: String = "json"
+    ): ProductListResponse
+
+    // ---------------- Basket ----------------
+    @GET("baskets/")
+    suspend fun getBasket(
+        @Query("format") format: String = "json"
+    ): BasketResponse
+
     @FormUrlEncoded
     @POST("baskets/cart/update/")
     suspend fun addToCart(
@@ -249,11 +337,6 @@ interface ApiService {
         @Field("quantity") quantity: Int = 1,
         @Field("minimal") minimal: String = "1"
     ): CartCountResponse
-
-    @GET("baskets/")
-    suspend fun getBasket(
-        @Query("format") format: String = "json"
-    ): BasketResponse
 
     @FormUrlEncoded
     @POST("baskets/cart/update/")
@@ -266,6 +349,7 @@ interface ApiService {
         @Field("minimal") minimal: String = "0"
     ): BasketResponse
 
+    // ---------------- Order ----------------
     @GET("orders/checkout/")
     suspend fun getCheckout(
         @Query("format") format: String = "json"
@@ -347,6 +431,7 @@ interface ApiService {
         format: String = "json"
     ): ReturnOrderItemResponse
 
+    // ---------------- Review ----------------
     @GET("reviews/rate/{itemToken}/")
     suspend fun getReviewOrderItem(
         @Path("itemToken") itemToken: String,

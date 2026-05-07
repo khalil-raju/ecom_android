@@ -41,6 +41,9 @@ fun ProfileScreen(
     onChangeNameClick: () -> Unit,
     onChangePhoneClick: () -> Unit,
     onChangeEmailClick: () -> Unit,
+    onChangePasswordClick: () -> Unit,
+    onCartClick: () -> Unit,
+    onViewOrderClick: () -> Unit,
     onLogout: () -> Unit
 ) {
     val user = profile?.user
@@ -108,7 +111,8 @@ fun ProfileScreen(
                         ),
                         ProfileActionItem(
                             iconText = "🔒",
-                            title = "Change Password"
+                            title = "Change Password",
+                            onClick = onChangePasswordClick
                         )
                     )
                 )
@@ -138,8 +142,17 @@ fun ProfileScreen(
                 ProfileSectionCard(
                     title = "Basket",
                     items = listOf(
-                        ProfileActionItem("♡", "View Wishlist", "Items you saved for later"),
-                        ProfileActionItem("🛍", "View Shopping Bag", "Items in your cart")
+                        ProfileActionItem(
+                            "♡",
+                            "View Wishlist",
+                            "Items you saved for later"
+                        ),
+                        ProfileActionItem(
+                            "🛍",
+                            "View Shopping Bag",
+                            "Items in your cart",
+                            onClick = onCartClick
+                        )
                     )
                 )
             }
@@ -148,8 +161,17 @@ fun ProfileScreen(
                 ProfileSectionCard(
                     title = "Order & Wallet",
                     items = listOf(
-                        ProfileActionItem("▣", "View Orders", "Track and view your orders"),
-                        ProfileActionItem("▰", "Wallet", "View balance and transactions")
+                        ProfileActionItem(
+                            "▣",
+                            "View Orders",
+                            "Track and view your orders",
+                            onClick = onViewOrderClick
+                        ),
+                        ProfileActionItem(
+                            "▰",
+                            "Wallet",
+                            "View balance and transactions"
+                        )
                     )
                 )
             }

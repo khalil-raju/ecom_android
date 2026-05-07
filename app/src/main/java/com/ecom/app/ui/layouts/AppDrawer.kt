@@ -4,6 +4,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.runtime.Composable
 import com.ecom.app.ui.components.SearchMenu
 import com.ecom.app.ui.components.SideMenu
+import com.ecom.app.ui.components.SideMenuCategory
 
 enum class DrawerContentType {
     SIDE_MENU,
@@ -14,6 +15,7 @@ enum class DrawerContentType {
 fun AppDrawer(
     drawerContentType: DrawerContentType,
     isAuthenticated: Boolean,
+    parentCategories: List<SideMenuCategory>,
     onClose: () -> Unit,
     onHomeClick: () -> Unit,
     onLoginClick: () -> Unit,
@@ -33,7 +35,7 @@ fun AppDrawer(
         when (drawerContentType) {
             DrawerContentType.SIDE_MENU -> {
                 SideMenu(
-                    parentCategories = emptyList(),
+                    parentCategories = parentCategories,
                     isAuthenticated = isAuthenticated,
                     onClose = onClose,
                     onHomeClick = onHomeClick,
