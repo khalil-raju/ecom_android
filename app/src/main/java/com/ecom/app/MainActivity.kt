@@ -37,7 +37,7 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var drawerContentType by remember { mutableStateOf(DrawerContentType.SIDE_MENU) }
+            var drawerContentType by remember { mutableStateOf(DrawerContentType.SEARCH_MENU) }
 
             var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
             var backScreenStack by remember { mutableStateOf<List<AppScreen>>(emptyList()) }
@@ -50,11 +50,6 @@ class MainActivity : ComponentActivity() {
             }
 
             fun replaceScreenTo(screen: AppScreen) {
-                backScreenStack = emptyList()
-                currentScreen = screen
-            }
-
-            fun clearBackStackAndReplaceScreenTo(screen: AppScreen) {
                 backScreenStack = emptyList()
                 currentScreen = screen
             }
@@ -133,31 +128,36 @@ class MainActivity : ComponentActivity() {
             }
 
             AppScaffold(
+                /* Drawer */
                 drawerState = drawerState,
                 drawerContentType = drawerContentType,
-                currentScreen = currentScreen,
-                isAuthenticated = isAuthenticated,
-                cartCount = cartCount,
-                parentCategories = parentCategories,
-
                 onCloseDrawer = {
                     scope.launch { drawerState.close() }
                 },
 
-                onMenuClick = {
-                    drawerContentType = DrawerContentType.SIDE_MENU
-                    scope.launch { drawerState.open() }
-                },
+                /* AppScreen */
+                currentScreen = currentScreen,
 
+                /* Top Menu */
+                onBackClick = {},
+                onLogoClick = {
+                    replaceScreenTo(AppScreen.Home)
+                },
                 onSearchClick = {
                     drawerContentType = DrawerContentType.SEARCH_MENU
                     scope.launch { drawerState.open() }
                 },
 
-                onLogoClick = {
-                    clearBackStackAndReplaceScreenTo(AppScreen.Home)
+                /* Bottom Menu */
+                onHomeClick = {
+                    replaceScreenTo(AppScreen.Home)
                 },
-
+                onCategoriesClick = {},
+                onWishlistClick = {},
+                cartCount = cartCount,
+                onCartClick = {
+                    setScreenTo(AppScreen.Cart)
+                },
                 onProfileClick = {
                     scope.launch {
                         try {
@@ -177,96 +177,6 @@ class MainActivity : ComponentActivity() {
                         }
                     }
                 },
-
-                onCartClick = {
-                    setScreenTo(AppScreen.Cart)
-                },
-
-                onHomeClick = {
-                    clearBackStackAndReplaceScreenTo(AppScreen.Home)
-                },
-
-                onLoginClick = {
-                    setScreenTo(AppScreen.LoginContact)
-                },
-
-                onSignupClick = {
-                    setScreenTo(AppScreen.SignupContact)
-                },
-
-                onCategoryClick = { parentSlug, childSlug ->
-                    scope.launch {
-                        try {
-                            val response = if (childSlug.isNullOrBlank()) {
-                                RetrofitClient.apiService.getProductsByParentCategory(parentSlug)
-                            } else {
-                                RetrofitClient.apiService.getProductsByChildCategory(
-                                    parentSlug = parentSlug,
-                                    childSlug = childSlug
-                                )
-                            }
-
-                            products = response.products
-                            clearBackStackAndReplaceScreenTo(AppScreen.Home)
-
-                        } catch (e: Exception) {
-                            Log.e("CATEGORY_PRODUCTS", "failed: ${e.message}", e)
-                        }
-                    }
-                },
-
-                onOrdersClick = {
-                    setScreenTo(AppScreen.OrderItemHistory)
-                },
-
-                onWalletClick = {
-                    setScreenTo(AppScreen.Wallet)
-                },
-
-                onWishlistClick = {
-                    setScreenTo(AppScreen.Cart)
-                },
-
-                onLogoutClick = {
-                    scope.launch {
-                        try {
-                            RetrofitClient.apiService.logout()
-                            isAuthenticated = false
-                            profileResponse = null
-                            clearBackStackAndReplaceScreenTo(AppScreen.LoginContact)
-                        } catch (e: Exception) {
-                            Log.e("SIDE_MENU_LOGOUT", "failed: ${e.message}", e)
-                        }
-                    }
-                },
-
-                onTermsAndConditionsClick = {
-                    openExternalUrl(
-                        context,
-                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/terms-and-conditions/"
-                    )
-                },
-
-                onPrivacyPolicyClick = {
-                    openExternalUrl(
-                        context,
-                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/privacy-policy/"
-                    )
-                },
-
-                onReturnPolicyClick = {
-                    openExternalUrl(
-                        context,
-                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/returns-and-shipping-policy/"
-                    )
-                },
-
-                onContactUsClick = {
-                    openExternalUrl(
-                        context,
-                        "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/contact-us/"
-                    )
-                }
             ) { innerPadding ->
 
                 AppRouter(

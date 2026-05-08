@@ -25,6 +25,7 @@ import kotlinx.coroutines.delay
 @Composable
 fun SearchMenu(
     onClose: () -> Unit
+
 ) {
     var query by remember { mutableStateOf("") }
     var suggestions by remember { mutableStateOf<List<SearchSuggestion>>(emptyList()) }

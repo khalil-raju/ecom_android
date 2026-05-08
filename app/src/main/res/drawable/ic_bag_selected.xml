@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- bag body -->
+    <path
+        android:fillColor="#1F2329"
+        android:pathData="
+            M5.2,8.8
+            L18.8,8.8
+            L20,20
+            L4,20
+            Z" />
+
+    <!-- handle outer -->
+    <path
+        android:fillColor="#1F2329"
+        android:pathData="
+            M8,9
+            C8,5.4 9.7,3 12,3
+            C14.3,3 16,5.4 16,9
+            L14.2,9
+            C14.2,6.4 13.3,4.8 12,4.8
+            C10.7,4.8 9.8,6.4 9.8,9
+            Z" />
+
+    <!-- handle cutout -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M9.8,8.8
+            C9.8,6.4 10.7,4.8 12,4.8
+            C13.3,4.8 14.2,6.4 14.2,8.8
+            Z" />
+
+    <!-- left rivet -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M8.2,10.6
+            m-1.1,0
+            a1.1,1.1 0,1 0,2.2 0
+            a1.1,1.1 0,1 0,-2.2 0" />
+
+    <!-- right rivet -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="
+            M15.8,10.6
+            m-1.1,0
+            a1.1,1.1 0,1 0,2.2 0
+            a1.1,1.1 0,1 0,-2.2 0" />
+</vector>
