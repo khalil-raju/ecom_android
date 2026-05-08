@@ -76,11 +76,12 @@ sealed interface AppScreen {
     data class AddAddress(val addressId: Int? = null) : AppScreen
     data object Wallet : AppScreen
 }
-
 @Composable
 fun AppRouter(
     innerPadding: PaddingValues,
     currentScreen: AppScreen,
+    setScreenTo: (AppScreen) -> Unit,
+    replaceScreenTo: (AppScreen) -> Unit,
     scope: CoroutineScope,
     context: Context,
     products: List<Product>,
@@ -88,26 +89,24 @@ fun AppRouter(
     checkoutResponse: CheckoutResponse?,
     profileResponse: ProfileResponse?,
     profileError: String?,
-    setScreen: (AppScreen) -> Unit,
     setCartCount: (Int) -> Unit,
     setBasketResponse: (BasketResponse) -> Unit,
     setCheckoutResponse: (CheckoutResponse) -> Unit,
     setAuthenticated: (Boolean) -> Unit,
     setProfileResponse: (ProfileResponse?) -> Unit
 ) {
-
     when (currentScreen) {
         AppScreen.Home -> ProductListRoute(
             innerPadding = innerPadding,
             scope = scope,
             products = products,
-            navigateProductDetail = { setScreen(AppScreen.ProductDetail(it)) }
+            navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) }
         )
 
         is AppScreen.ProductDetail -> ProductDetailRoute(
             innerPadding = innerPadding,
             detail = currentScreen.detail,
-            navigateBack = { setScreen(AppScreen.Home) },
+            navigateBack = { replaceScreenTo(AppScreen.Home) },
             onCartCountChange = setCartCount
         )
 
@@ -118,41 +117,41 @@ fun AppRouter(
             setBasketResponse = setBasketResponse,
             setCheckoutResponse = setCheckoutResponse,
             setCartCount = setCartCount,
-            navigateHome = { setScreen(AppScreen.Home) },
-            navigateProductDetail = { setScreen(AppScreen.ProductDetail(it)) },
-            navigateCheckout = { setScreen(AppScreen.Checkout) }
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
+            navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) },
+            navigateCheckout = { setScreenTo(AppScreen.Checkout) }
         )
 
         AppScreen.Checkout -> CheckoutRoute(
             innerPadding = innerPadding,
             scope = scope,
             checkoutResponse = checkoutResponse,
-            navigateCart = { setScreen(AppScreen.Cart) },
-            navigatePaymentWeb = { setScreen(AppScreen.PaymentWeb(it)) },
-            onAddAddressClick = { }
+            navigateCart = { replaceScreenTo(AppScreen.Cart) },
+            navigatePaymentWeb = { setScreenTo(AppScreen.PaymentWeb(it)) },
+            onAddAddressClick = { setScreenTo(AppScreen.AddAddress()) }
         )
 
         is AppScreen.PaymentWeb -> PaymentWebRoute(
             url = currentScreen.url,
-            onPaymentSuccess = { setScreen(AppScreen.OrderDetail(it)) },
-            onPaymentFailed = { setScreen(AppScreen.Cart) }
+            onPaymentSuccess = { replaceScreenTo(AppScreen.OrderDetail(it)) },
+            onPaymentFailed = { replaceScreenTo(AppScreen.Cart) }
         )
 
         AppScreen.OrderItemHistory -> OrderItemHistoryRoute(
             innerPadding = innerPadding,
-            navigateBack = { setScreen(AppScreen.Home) },
-            navigateOrderItemDetail = { setScreen(AppScreen.OrderItemDetail(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.Home) },
+            navigateOrderItemDetail = { setScreenTo(AppScreen.OrderItemDetail(it)) }
         )
 
         is AppScreen.OrderItemDetail -> OrderItemDetailRoute(
             innerPadding = innerPadding,
             scope = scope,
             itemToken = currentScreen.itemToken,
-            navigateBack = { setScreen(AppScreen.OrderItemHistory) },
-            navigateOrderDetail = { setScreen(AppScreen.OrderDetail(it)) },
-            navigateReturnOrderItem = { setScreen(AppScreen.ReturnOrderItem(it)) },
-            navigateReviewOrderItem = { setScreen(AppScreen.ReviewOrderItem(it)) },
-            navigateProductDetail = { setScreen(AppScreen.ProductDetail(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.OrderItemHistory) },
+            navigateOrderDetail = { setScreenTo(AppScreen.OrderDetail(it)) },
+            navigateReturnOrderItem = { setScreenTo(AppScreen.ReturnOrderItem(it)) },
+            navigateReviewOrderItem = { setScreenTo(AppScreen.ReviewOrderItem(it)) },
+            navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) }
         )
 
         is AppScreen.OrderDetail -> OrderDetailRoute(
@@ -160,54 +159,52 @@ fun AppRouter(
             scope = scope,
             context = context,
             orderToken = currentScreen.orderToken,
-            navigateBack = { setScreen(AppScreen.OrderItemHistory) },
-            navigateCancelOrder = { setScreen(AppScreen.CancelOrder(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.OrderItemHistory) },
+            navigateCancelOrder = { setScreenTo(AppScreen.CancelOrder(it)) }
         )
 
         is AppScreen.CancelOrder -> CancelOrderRoute(
             innerPadding = innerPadding,
             scope = scope,
             orderToken = currentScreen.orderToken,
-            navigateBack = { setScreen(AppScreen.OrderDetail(currentScreen.orderToken)) },
-            navigateOrderDetail = { setScreen(AppScreen.OrderDetail(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.OrderDetail(currentScreen.orderToken)) },
+            navigateOrderDetail = { replaceScreenTo(AppScreen.OrderDetail(it)) }
         )
 
         is AppScreen.ReturnOrderItem -> ReturnOrderItemRoute(
             innerPadding = innerPadding,
             scope = scope,
             itemToken = currentScreen.itemToken,
-            navigateBack = { setScreen(AppScreen.OrderItemDetail(currentScreen.itemToken)) },
-            navigateOrderItemDetail = { setScreen(AppScreen.OrderItemDetail(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.OrderItemDetail(currentScreen.itemToken)) },
+            navigateOrderItemDetail = { replaceScreenTo(AppScreen.OrderItemDetail(it)) }
         )
 
         is AppScreen.ReviewOrderItem -> ReviewOrderItemRoute(
             innerPadding = innerPadding,
             scope = scope,
             itemToken = currentScreen.itemToken,
-            navigateBack = { setScreen(AppScreen.OrderItemDetail(currentScreen.itemToken)) },
-            navigateOrderItemDetail = { setScreen(AppScreen.OrderItemDetail(it)) }
+            navigateBack = { replaceScreenTo(AppScreen.OrderItemDetail(currentScreen.itemToken)) },
+            navigateOrderItemDetail = { replaceScreenTo(AppScreen.OrderItemDetail(it)) }
         )
 
         AppScreen.LoginContact -> LoginContactRoute(
             scope = scope,
-            navigateHome = { setScreen(AppScreen.Home) },
-            navigateLoginPassword = { setScreen(AppScreen.LoginPassword(it)) },
-            navigateSignup = { setScreen(AppScreen.SignupContact) }
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
+            navigateLoginPassword = { setScreenTo(AppScreen.LoginPassword(it)) },
+            navigateSignup = { replaceScreenTo(AppScreen.SignupContact) }
         )
 
         is AppScreen.LoginPassword -> LoginPasswordRoute(
             scope = scope,
             contact = currentScreen.contact,
-            navigateHome = { setScreen(AppScreen.Home) },
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
             onAuthenticated = {
                 setAuthenticated(true)
-                setScreen(AppScreen.Home)
+                replaceScreenTo(AppScreen.Home)
             },
-            onUnauthenticated = {
-                setAuthenticated(false)
-            },
+            onUnauthenticated = { setAuthenticated(false) },
             navigateOtpLogin = {
-                setScreen(
+                setScreenTo(
                     AppScreen.OtpVerify(
                         contact = currentScreen.contact,
                         purpose = OtpPurpose.LOGIN
@@ -218,31 +215,19 @@ fun AppRouter(
 
         AppScreen.SignupContact -> SignupContactRoute(
             scope = scope,
-            navigateHome = {
-                setScreen(AppScreen.Home)
-            },
-            navigateLoginPassword = { contact ->
-                setScreen(AppScreen.LoginPassword(contact))
-            },
-            navigateSignupPassword = { contact ->
-                setScreen(AppScreen.SignupPassword(contact))
-            },
-            navigateLogin = {
-                setScreen(AppScreen.LoginContact)
-            }
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
+            navigateLoginPassword = { replaceScreenTo(AppScreen.LoginPassword(it)) },
+            navigateSignupPassword = { setScreenTo(AppScreen.SignupPassword(it)) },
+            navigateLogin = { replaceScreenTo(AppScreen.LoginContact) }
         )
 
         is AppScreen.SignupPassword -> SignupPasswordRoute(
             scope = scope,
             contact = currentScreen.contact,
-            navigateHome = {
-                setScreen(AppScreen.Home)
-            },
-            navigateLogin = {
-                setScreen(AppScreen.LoginContact)
-            },
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
+            navigateLogin = { replaceScreenTo(AppScreen.LoginContact) },
             navigateOtp = { contact, purpose ->
-                setScreen(AppScreen.OtpVerify(contact, purpose))
+                setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
         )
 
@@ -250,26 +235,22 @@ fun AppRouter(
             scope = scope,
             contact = currentScreen.contact,
             purpose = currentScreen.purpose,
-            navigateHome = {
-                setScreen(AppScreen.Home)
-            },
+            navigateHome = { replaceScreenTo(AppScreen.Home) },
             onVerified = {
                 when (currentScreen.purpose) {
                     OtpPurpose.LOGIN,
                     OtpPurpose.SIGNUP -> {
                         setAuthenticated(true)
-                        setScreen(AppScreen.Home)
+                        replaceScreenTo(AppScreen.Home)
                     }
 
                     OtpPurpose.CHANGE_PHONE,
                     OtpPurpose.CHANGE_EMAIL -> {
-                        setScreen(AppScreen.Profile)
+                        replaceScreenTo(AppScreen.Profile)
                     }
                 }
             },
-            onProfileUpdated = {
-                setProfileResponse(it)
-            }
+            onProfileUpdated = { setProfileResponse(it) }
         )
 
         AppScreen.Profile -> ProfileRoute(
@@ -277,62 +258,38 @@ fun AppRouter(
             scope = scope,
             profileResponse = profileResponse,
             profileError = profileError,
-            navigateBack = { setScreen(AppScreen.Home) },
-            navigateSavedAddresses = {
-                setScreen(AppScreen.SavedAddresses)
-            },
-            navigateAddAddress = {
-                setScreen(AppScreen.AddAddress())
-            },
-            navigateChangeName = {
-                setScreen(AppScreen.ChangeName)
-            },
-            navigateChangeEmail = {
-                setScreen(AppScreen.ChangeEmail)
-            },
-            navigateChangePhone = {
-                setScreen(AppScreen.ChangePhone)
-            },
-            navigateChangePassword = {
-                setScreen(AppScreen.ChangePassword)
-            },
-            navigateCart = {
-                setScreen(AppScreen.Cart)
-            },
-            navigateOrderItemHistory = {
-                setScreen(AppScreen.OrderItemHistory)
-            },
-            navigateWallet = {
-                setScreen(AppScreen.Wallet)
-            },
+            navigateBack = { replaceScreenTo(AppScreen.Home) },
+            navigateSavedAddresses = { setScreenTo(AppScreen.SavedAddresses) },
+            navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
+            navigateChangeName = { setScreenTo(AppScreen.ChangeName) },
+            navigateChangeEmail = { setScreenTo(AppScreen.ChangeEmail) },
+            navigateChangePhone = { setScreenTo(AppScreen.ChangePhone) },
+            navigateChangePassword = { setScreenTo(AppScreen.ChangePassword) },
+            navigateCart = { setScreenTo(AppScreen.Cart) },
+            navigateOrderItemHistory = { setScreenTo(AppScreen.OrderItemHistory) },
+            navigateWallet = { setScreenTo(AppScreen.Wallet) },
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
-                setScreen(AppScreen.LoginContact)
+                replaceScreenTo(AppScreen.LoginContact)
             }
         )
 
         AppScreen.ChangeName -> ChangeNameRoute(
             innerPadding = innerPadding,
             scope = scope,
-            navigateBack = {
-                setScreen(AppScreen.Profile)
-            },
-            navigateProfile = {
-                setScreen(AppScreen.Profile)
-            },
-            onProfileUpdated = {
-                setProfileResponse(it)
-            }
+            navigateBack = { replaceScreenTo(AppScreen.Profile) },
+            navigateProfile = { replaceScreenTo(AppScreen.Profile) },
+            onProfileUpdated = { setProfileResponse(it) }
         )
 
         AppScreen.ChangeEmail -> ChangeContactRoute(
             innerPadding = innerPadding,
             scope = scope,
             type = ContactChangeType.EMAIL,
-            navigateBack = { setScreen(AppScreen.Profile) },
+            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateOtp = { contact, purpose ->
-                setScreen(AppScreen.OtpVerify(contact, purpose))
+                setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
         )
 
@@ -340,61 +297,39 @@ fun AppRouter(
             innerPadding = innerPadding,
             scope = scope,
             type = ContactChangeType.PHONE,
-            navigateBack = { setScreen(AppScreen.Profile) },
+            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateOtp = { contact, purpose ->
-                setScreen(AppScreen.OtpVerify(contact, purpose))
+                setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
         )
 
         AppScreen.ChangePassword -> ChangePasswordRoute(
             innerPadding = innerPadding,
             scope = scope,
-            navigateBack = {
-                setScreen(AppScreen.Profile)
-            },
-            navigateProfile = {
-                setScreen(AppScreen.Profile)
-            }
+            navigateBack = { replaceScreenTo(AppScreen.Profile) },
+            navigateProfile = { replaceScreenTo(AppScreen.Profile) }
         )
 
-        is AppScreen.AddAddress -> {
-            AddAddressRoute(
-                innerPadding = innerPadding,
-                scope = scope,
-                addressId = currentScreen.addressId,
-                navigateBack = {
-                    setScreen(AppScreen.SavedAddresses)
-                },
-                navigateSavedAddresses = {
-                    setScreen(AppScreen.SavedAddresses)
-                }
-            )
-        }
+        is AppScreen.AddAddress -> AddAddressRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            addressId = currentScreen.addressId,
+            navigateBack = { replaceScreenTo(AppScreen.SavedAddresses) },
+            navigateSavedAddresses = { replaceScreenTo(AppScreen.SavedAddresses) }
+        )
 
-        AppScreen.SavedAddresses -> {
-            SavedAddressesRoute(
-                innerPadding = innerPadding,
-                scope = scope,
-                navigateBack = {
-                    setScreen(AppScreen.Profile)
-                },
-                navigateAddAddress = {
-                    setScreen(AppScreen.AddAddress())
-                },
-                navigateEditAddress = { addressId ->
-                    setScreen(AppScreen.AddAddress(addressId))
-                }
-            )
-        }
+        AppScreen.SavedAddresses -> SavedAddressesRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateBack = { replaceScreenTo(AppScreen.Profile) },
+            navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
+            navigateEditAddress = { setScreenTo(AppScreen.AddAddress(it)) }
+        )
 
-        AppScreen.Wallet -> {
-            WalletRoute(
-                innerPadding = innerPadding,
-                scope = scope,
-                navigateBack = {
-                    setScreen(AppScreen.Profile)
-                }
-            )
-        }
+        AppScreen.Wallet -> WalletRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateBack = { replaceScreenTo(AppScreen.Profile) }
+        )
     }
 }

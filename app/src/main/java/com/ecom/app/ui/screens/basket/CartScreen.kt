@@ -18,7 +18,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.material3.CircularProgressIndicator
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
@@ -62,52 +61,15 @@ fun CartScreen(
                 CircularProgressIndicator()
             }
         } else if (cartItems.isEmpty()) {
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-
-                    Text(
-                        text = "🛍",
-                        fontSize = 64.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(18.dp))
-
-                    Text(
-                        text = "Your Shopping Bag is Empty",
-                        fontSize = 22.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.Black
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = "Looks like you haven’t added anything yet.",
-                        fontSize = 15.sp,
-                        color = Color.Gray
-                    )
-                }
-            }
-
+            EmptyCartState()
         } else {
-
             LazyColumn(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-                    .padding(16.dp),
+                    .weight(1f),
+                contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
-
                 items(cartItems) { item ->
                     CartItemCard(
                         item = item,
@@ -116,16 +78,53 @@ fun CartScreen(
                                 onNavigateToProduct(variantId, slug)
                             }
                         },
-                        onQuantityChange = onQuantityChange,
+                        onQuantityChange = onQuantityChange
                     )
+                }
+
+                item {
+                    CartSummaryCard(
+                        itemCount = cartItems.sumOf { it.quantity },
+                        total = total,
+                        onCheckoutClick = onCheckoutClick
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
             }
         }
+    }
+}
 
-        if(total > 0.0) {
-            CartFooter(
-                total = total,
-                onCheckoutClick = onCheckoutClick
+@Composable
+private fun EmptyCartState() {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .fillMaxHeight()
+            .padding(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(text = "🛍", fontSize = 64.sp)
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Text(
+                text = "Your Shopping Bag is Empty",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black
+            )
+
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = "Looks like you haven’t added anything yet.",
+                fontSize = 15.sp,
+                color = Color.Gray
             )
         }
     }
@@ -163,7 +162,7 @@ private fun CartHeader(onBack: () -> Unit) {
 private fun CartItemCard(
     item: BasketItem,
     onProductClick: (variantId: Int?, slug: String) -> Unit,
-    onQuantityChange: (BasketItem, Int) -> Unit,
+    onQuantityChange: (BasketItem, Int) -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -186,23 +185,16 @@ private fun CartItemCard(
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = item.name,
-                        fontSize = 17.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable {
-                                onProductClick(item.variantId, item.slug)
-                            }
-                    )
-                }
+                Text(
+                    text = item.name,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable {
+                        onProductClick(item.variantId, item.slug)
+                    }
+                )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Text(
                     text = "Size: ${item.size}",
@@ -211,7 +203,16 @@ private fun CartItemCard(
                     fontWeight = FontWeight.SemiBold
                 )
 
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = "Price: ${formatAmount(item.price)}",
+                    color = Color.Gray,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -219,7 +220,7 @@ private fun CartItemCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "₹${item.price ?: ""}",
+                        text = "₹${formatAmount(item.subtotal)}",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -237,78 +238,128 @@ private fun CartItemCard(
 }
 
 @Composable
+private fun CartSummaryCard(
+    itemCount: Int,
+    total: Double,
+    onCheckoutClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE5E5E5))
+    ) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Surface(
+                    modifier = Modifier.size(36.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color(0xFFF2F2F2)
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(text = "🛍", fontSize = 18.sp)
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                Text(
+                    text = "$itemCount ${if (itemCount == 1) "item" else "items"}",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            HorizontalDivider(color = Color(0xFFEAEAEA))
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Subtotal",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "₹${formatAmount(total)}",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Button(
+                onClick = onCheckoutClick,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Proceed to Checkout",
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    }
+}
+
+@Composable
 private fun QuantityControl(
     quantity: Int,
-    onQuantityChange: (Int) -> Unit,
+    onQuantityChange: (Int) -> Unit
 ) {
     Row(
         modifier = Modifier
             .border(
                 width = 1.dp,
-                color = Color(0xFFDADADA),   // light gray like design
+                color = Color(0xFFDADADA),
                 shape = RoundedCornerShape(8.dp)
             )
             .padding(horizontal = 12.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            "−",
+            text = "−",
             fontSize = 22.sp,
             modifier = Modifier.clickable { onQuantityChange(-1) }
         )
 
         Spacer(modifier = Modifier.width(18.dp))
 
-        Text(quantity.toString(), fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+        Text(
+            text = quantity.toString(),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
 
         Spacer(modifier = Modifier.width(18.dp))
 
         Text(
-            "+",
+            text = "+",
             fontSize = 22.sp,
             modifier = Modifier.clickable { onQuantityChange(1) }
         )
     }
 }
 
-@Composable
-private fun CartFooter(
-    total: Double,
-    onCheckoutClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(horizontal = 18.dp)
-            .padding(top = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Total: ₹$total",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedButton(
-            onClick = onCheckoutClick,
-            modifier = Modifier
-                .width(260.dp)
-                .height(46.dp),
-            border = BorderStroke(3.dp, Color.Black),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
-            )
-        ) {
-            Text(
-                text = "Proceed to Checkout",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
-    }
+private fun formatAmount(value: Double?): String {
+    return "%.2f".format(value)
 }

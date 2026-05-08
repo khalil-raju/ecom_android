@@ -3,16 +3,11 @@ package com.ecom.app
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import com.ecom.app.model.account.ProfileResponse
@@ -24,8 +19,8 @@ import com.ecom.app.ui.components.SideMenuCategory
 import com.ecom.app.ui.components.SideMenuCategoryChild
 import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
-import com.ecom.app.ui.navigations.AppScreen
 import com.ecom.app.ui.navigations.AppRouter
+import com.ecom.app.ui.navigations.AppScreen
 import com.ecom.app.util.openExternalUrl
 import kotlinx.coroutines.launch
 
@@ -45,6 +40,35 @@ class MainActivity : ComponentActivity() {
             var drawerContentType by remember { mutableStateOf(DrawerContentType.SIDE_MENU) }
 
             var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
+            var backScreenStack by remember { mutableStateOf<List<AppScreen>>(emptyList()) }
+
+            fun setScreenTo(screen: AppScreen) {
+                if (screen != currentScreen) {
+                    backScreenStack = backScreenStack + currentScreen
+                    currentScreen = screen
+                }
+            }
+
+            fun replaceScreenTo(screen: AppScreen) {
+                backScreenStack = emptyList()
+                currentScreen = screen
+            }
+
+            fun clearBackStackAndReplaceScreenTo(screen: AppScreen) {
+                backScreenStack = emptyList()
+                currentScreen = screen
+            }
+
+            fun goBackScreen() {
+                if (backScreenStack.isNotEmpty()) {
+                    currentScreen = backScreenStack.last()
+                    backScreenStack = backScreenStack.dropLast(1)
+                }
+            }
+
+            BackHandler(enabled = backScreenStack.isNotEmpty()) {
+                goBackScreen()
+            }
 
             var products by remember { mutableStateOf<List<Product>>(emptyList()) }
             var parentCategories by remember { mutableStateOf<List<SideMenuCategory>>(emptyList()) }
@@ -131,7 +155,7 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onLogoClick = {
-                    currentScreen = AppScreen.Home
+                    clearBackStackAndReplaceScreenTo(AppScreen.Home)
                 },
 
                 onProfileClick = {
@@ -143,32 +167,31 @@ class MainActivity : ComponentActivity() {
                             profileResponse = response
                             isAuthenticated = response.success && response.authenticated
 
-                            currentScreen = if (isAuthenticated) {
-                                AppScreen.Profile
-                            } else {
-                                AppScreen.LoginContact
-                            }
+                            setScreenTo(
+                                if (isAuthenticated) AppScreen.Profile
+                                else AppScreen.LoginContact
+                            )
                         } catch (e: Exception) {
                             isAuthenticated = false
-                            currentScreen = AppScreen.LoginContact
+                            setScreenTo(AppScreen.LoginContact)
                         }
                     }
                 },
 
                 onCartClick = {
-                    currentScreen = AppScreen.Cart
+                    setScreenTo(AppScreen.Cart)
                 },
 
                 onHomeClick = {
-                    currentScreen = AppScreen.Home
+                    clearBackStackAndReplaceScreenTo(AppScreen.Home)
                 },
 
                 onLoginClick = {
-                    currentScreen = AppScreen.LoginContact
+                    setScreenTo(AppScreen.LoginContact)
                 },
 
                 onSignupClick = {
-                    currentScreen = AppScreen.SignupContact
+                    setScreenTo(AppScreen.SignupContact)
                 },
 
                 onCategoryClick = { parentSlug, childSlug ->
@@ -184,7 +207,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             products = response.products
-                            currentScreen = AppScreen.Home
+                            clearBackStackAndReplaceScreenTo(AppScreen.Home)
 
                         } catch (e: Exception) {
                             Log.e("CATEGORY_PRODUCTS", "failed: ${e.message}", e)
@@ -193,15 +216,15 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onOrdersClick = {
-                    currentScreen = AppScreen.OrderItemHistory
+                    setScreenTo(AppScreen.OrderItemHistory)
                 },
 
                 onWalletClick = {
-                    currentScreen = AppScreen.Wallet
+                    setScreenTo(AppScreen.Wallet)
                 },
 
                 onWishlistClick = {
-                    currentScreen = AppScreen.Cart
+                    setScreenTo(AppScreen.Cart)
                 },
 
                 onLogoutClick = {
@@ -210,7 +233,7 @@ class MainActivity : ComponentActivity() {
                             RetrofitClient.apiService.logout()
                             isAuthenticated = false
                             profileResponse = null
-                            currentScreen = AppScreen.LoginContact
+                            clearBackStackAndReplaceScreenTo(AppScreen.LoginContact)
                         } catch (e: Exception) {
                             Log.e("SIDE_MENU_LOGOUT", "failed: ${e.message}", e)
                         }
@@ -244,7 +267,6 @@ class MainActivity : ComponentActivity() {
                         "${BuildConfig.BASE_URL.trimEnd('/')}/about-us/contact-us/"
                     )
                 }
-
             ) { innerPadding ->
 
                 AppRouter(
@@ -257,7 +279,8 @@ class MainActivity : ComponentActivity() {
                     checkoutResponse = checkoutResponse,
                     profileResponse = profileResponse,
                     profileError = profileError,
-                    setScreen = { currentScreen = it },
+                    setScreenTo = { setScreenTo(it) },
+                    replaceScreenTo = { replaceScreenTo(it) },
                     setCartCount = { cartCount = it },
                     setBasketResponse = { basketResponse = it },
                     setCheckoutResponse = { checkoutResponse = it },

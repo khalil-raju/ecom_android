@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -49,9 +50,11 @@ fun CheckoutScreen(
     ) -> Unit
 ) {
     val addresses = checkout?.allAddress.orEmpty()
+
     var shippingAddress by remember(checkout) {
         mutableStateOf(checkout?.selectedAddress ?: addresses.firstOrNull())
     }
+
     var billingAddress by remember(checkout) {
         mutableStateOf(checkout?.selectedAddress ?: addresses.firstOrNull())
     }
@@ -70,20 +73,26 @@ fun CheckoutScreen(
         CheckoutHeader(onBack = onBack)
 
         LazyColumn(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .padding(16.dp),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp)
         ) {
             item {
                 SectionTitle("Shipping Address")
-                AddressCard(address = shippingAddress)
+                AddressDropdownCard(
+                    selectedAddress = shippingAddress,
+                    addresses = addresses,
+                    onAddressSelected = { shippingAddress = it }
+                )
             }
 
             item {
                 SectionTitle("Billing Address")
-                AddressCard(address = billingAddress)
+                AddressDropdownCard(
+                    selectedAddress = billingAddress,
+                    addresses = addresses,
+                    onAddressSelected = { billingAddress = it }
+                )
             }
 
             item {
@@ -108,19 +117,26 @@ fun CheckoutScreen(
                     onPaymentMethodChange = { paymentMethod = it }
                 )
             }
-        }
 
-        CheckoutFooter(
-            total = order?.totalAmount ?: 0.0,
-            onProceed = {
-                onProceedToPayment(
-                    shippingAddress?.id,
-                    billingAddress?.id,
-                    useWallet,
-                    paymentMethod
+            item {
+                ProceedPaymentCard(
+                    total = order?.totalAmount ?: 0.0,
+                    paymentMethod = paymentMethod,
+                    onProceed = {
+                        onProceedToPayment(
+                            shippingAddress?.id,
+                            billingAddress?.id,
+                            useWallet,
+                            paymentMethod
+                        )
+                    }
                 )
             }
-        )
+
+            item {
+                Spacer(Modifier.height(12.dp))
+            }
+        }
     }
 }
 
@@ -163,7 +179,13 @@ private fun SectionTitle(title: String) {
 }
 
 @Composable
-private fun AddressCard(address: Address?) {
+private fun AddressDropdownCard(
+    selectedAddress: Address?,
+    addresses: List<Address>,
+    onAddressSelected: (Address) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
@@ -179,38 +201,82 @@ private fun AddressCard(address: Address?) {
             Spacer(modifier = Modifier.width(14.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .border(
-                            width = 1.dp,
-                            color = Color(0xFFDADADA),
-                            shape = RoundedCornerShape(8.dp)
-                        )
-                        .padding(horizontal = 12.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = address?.label?.ifBlank { "Address" } ?: "Address",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .border(
+                                width = 1.dp,
+                                color = Color(0xFFDADADA),
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .clickable { expanded = true }
+                            .padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = selectedAddress?.label?.ifBlank { "Address" } ?: "Select Address",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                text = if (selectedAddress != null) {
+                                    "${selectedAddress.fullName} • ${selectedAddress.phone}"
+                                } else {
+                                    "Choose from saved addresses"
+                                },
+                                fontSize = 14.sp,
+                                color = Color.Gray
+                            )
+                        }
 
                         Text(
-                            text = "${address?.fullName ?: ""} • ${address?.phone ?: ""}",
-                            fontSize = 14.sp,
-                            color = Color.Gray
+                            text = if (expanded) "⌃" else "⌄",
+                            fontSize = 26.sp,
+                            fontWeight = FontWeight.Bold
                         )
                     }
 
-                    Text("⌄", fontSize = 26.sp, fontWeight = FontWeight.Bold)
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        addresses.forEach { address ->
+                            DropdownMenuItem(
+                                text = {
+                                    Column {
+                                        Text(
+                                            text = address.label.ifBlank { "Address" },
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = "${address.fullName} • ${address.phone}",
+                                            fontSize = 13.sp,
+                                            color = Color.Gray
+                                        )
+                                        Text(
+                                            text = buildAddressText(address).replace("\n", ", "),
+                                            fontSize = 13.sp,
+                                            color = Color.DarkGray
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    onAddressSelected(address)
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Text(
-                    text = buildAddressText(address),
+                    text = buildAddressText(selectedAddress),
                     fontSize = 15.sp,
                     lineHeight = 22.sp
                 )
@@ -270,7 +336,7 @@ private fun CircleIcon(text: String) {
             .background(Color(0xFFF0F0F0)),
         contentAlignment = Alignment.Center
     ) {
-        Text(text = text, fontSize = 26.sp)
+        Text(text = text, fontSize = 24.sp)
     }
 }
 
@@ -292,10 +358,36 @@ private fun OrderItemsCard(
                     .padding(horizontal = 14.dp, vertical = 12.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("Item", modifier = Modifier.weight(2.1f), fontSize = 14.sp)
-                Text("Price", modifier = Modifier.weight(0.9f), fontSize = 14.sp)
-                Text("Qty", modifier = Modifier.weight(0.6f), fontSize = 14.sp)
-                Text("Subtotal", modifier = Modifier.weight(1f), fontSize = 14.sp)
+                Text(
+                    text = "Item",
+                    modifier = Modifier.weight(2.6f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Text(
+                    text = "Price",
+                    modifier = Modifier.weight(1f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.End
+                )
+
+                Text(
+                    text = "Qty",
+                    modifier = Modifier.weight(0.7f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.Center
+                )
+
+                Text(
+                    text = "Subtotal",
+                    modifier = Modifier.weight(1.2f),
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    textAlign = TextAlign.End
+                )
             }
 
             HorizontalDivider()
@@ -313,7 +405,7 @@ private fun OrderItemsCard(
             Column(
                 modifier = Modifier.padding(horizontal = 18.dp, vertical = 14.dp)
             ) {
-                SummaryRow("Items Total", order?.itemsTotalAmt ?: 0.0)
+                SummaryRow("Item(s) Total", order?.itemsTotalAmt ?: 0.0)
                 SummaryRow("Shipping", order?.shippingCost ?: 0.0)
 
                 HorizontalDivider(
@@ -347,11 +439,11 @@ private fun OrderItemRow(item: OrderItem) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(14.dp),
+            .padding(horizontal = 14.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.weight(2.1f),
+            modifier = Modifier.weight(2.6f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
@@ -363,16 +455,17 @@ private fun OrderItemRow(item: OrderItem) {
                 contentScale = ContentScale.Crop
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
             Column {
                 Text(
                     text = item.variantName,
                     fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    lineHeight = 18.sp
                 )
 
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.height(5.dp))
 
                 Text(
                     text = "Size: ${item.variantSize ?: ""}",
@@ -382,24 +475,26 @@ private fun OrderItemRow(item: OrderItem) {
             }
         }
 
-        Spacer(modifier = Modifier.width(8.dp))
-
         Text(
             text = "₹${formatAmount(item.price)}",
-            modifier = Modifier.weight(0.9f),
-            fontSize = 14.sp
+            modifier = Modifier.weight(1f),
+            fontSize = 14.sp,
+            textAlign = TextAlign.End
         )
 
         Text(
             text = item.quantity.toString(),
-            modifier = Modifier.weight(0.6f),
-            fontSize = 14.sp
+            modifier = Modifier.weight(0.7f),
+            fontSize = 14.sp,
+            textAlign = TextAlign.Center
         )
 
         Text(
             text = "₹${formatAmount(item.totalAmt)}",
-            modifier = Modifier.weight(1f),
-            fontSize = 14.sp
+            modifier = Modifier.weight(1.2f),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.End
         )
     }
 }
@@ -510,51 +605,65 @@ private fun PaymentOption(
 }
 
 @Composable
-private fun CheckoutFooter(
+private fun ProceedPaymentCard(
     total: Double,
+    paymentMethod: String,
     onProceed: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(horizontal = 18.dp)
-            .padding(top = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        Text(
-            text = "Grand Total: ₹$total",
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        OutlinedButton(
-            onClick = onProceed,
-            modifier = Modifier
-                .width(260.dp)
-                .height(46.dp),
-            border = BorderStroke(3.dp, Color.Black),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.outlinedButtonColors(
-                containerColor = Color.Black,
-                contentColor = Color.White
-            )
+        Column(
+            modifier = Modifier.padding(18.dp)
         ) {
-            Text(
-                text = "Proceed to Payment",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Grand Total",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Text(
+                    text = "₹${formatAmount(total)}",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+
+            Spacer(modifier = Modifier.height(18.dp))
+
+            Button(
+                onClick = onProceed,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color.Black,
+                    contentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = if (paymentMethod == "COD") {
+                        "Place Order"
+                    } else {
+                        "Proceed to Payment"
+                    },
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
 
 private fun formatAmount(value: Double): String {
-    return if (value % 1.0 == 0.0) {
-        value.toInt().toString()
-    } else {
-        "%.2f".format(value)
-    }
+    return "%.2f".format(value)
 }
