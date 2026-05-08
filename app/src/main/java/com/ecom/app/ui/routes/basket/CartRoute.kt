@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
@@ -12,6 +13,10 @@ import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.screens.basket.CartScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun CartRoute(
@@ -25,9 +30,27 @@ fun CartRoute(
     navigateProductDetail: (ProductDetailResponse) -> Unit,
     navigateCheckout: () -> Unit
 ) {
+    var isLoading by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        try {
+            isLoading = true
+
+            val response = RetrofitClient.apiService.getBasket()
+            setBasketResponse(response)
+            setCartCount(response.cartCount)
+
+        } catch (e: Exception) {
+            Log.e("CART_REFRESH", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
+        }
+    }
+
     CartScreen(
         modifier = Modifier.padding(innerPadding),
         basket = basketResponse,
+        isLoading = isLoading,
         onBack = navigateHome,
         onNavigateToProduct = { variantId, slug ->
             scope.launch {

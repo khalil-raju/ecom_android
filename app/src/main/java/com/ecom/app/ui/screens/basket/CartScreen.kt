@@ -18,6 +18,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material3.CircularProgressIndicator
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.R
@@ -35,6 +36,7 @@ private fun fullUrl(path: String?): String? {
 fun CartScreen(
     modifier: Modifier = Modifier,
     basket: BasketResponse?,
+    isLoading: Boolean = false,
     onBack: () -> Unit,
     onNavigateToProduct: (Int, String) -> Unit,
     onQuantityChange: (BasketItem, Int) -> Unit,
@@ -50,7 +52,16 @@ fun CartScreen(
     ) {
         CartHeader(onBack = onBack)
 
-        if (cartItems.isEmpty()) {
+        if (isLoading && basket == null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (cartItems.isEmpty()) {
 
             Box(
                 modifier = Modifier
@@ -209,7 +220,7 @@ private fun CartItemCard(
                 ) {
                     Text(
                         text = "₹${item.price ?: ""}",
-                        fontSize = 18.sp,
+                        fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
 
