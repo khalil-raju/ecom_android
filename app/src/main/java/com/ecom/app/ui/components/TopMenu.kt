@@ -41,7 +41,7 @@ fun TopMenu(
         ) {
             if (showBackButton) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_back),
+                    painter = painterResource(id = R.drawable.ic_back_white),
                     contentDescription = "Back",
                     tint = Color.Unspecified,
                     modifier = Modifier

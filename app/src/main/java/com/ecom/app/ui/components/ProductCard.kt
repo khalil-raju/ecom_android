@@ -13,6 +13,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.material3.HorizontalDivider
 
 import coil.compose.AsyncImage
@@ -32,7 +33,6 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(vertical = 2.dp)
     ) {
 
         AsyncImage(
@@ -56,11 +56,14 @@ fun ProductCard(product: Product, onClick: () -> Unit) {
             text = "₹${product.price ?: ""}",
             modifier = Modifier
                 .padding(top = 4.dp)
+                .padding(bottom = 24.dp)
                 .align(Alignment.CenterHorizontally),
             fontWeight = FontWeight.Bold,
             fontSize = 18.sp
         )
 
-        HorizontalDivider()
+        HorizontalDivider(
+            thickness = 1.dp,
+        )
     }
 }
