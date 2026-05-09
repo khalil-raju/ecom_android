@@ -22,6 +22,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.review.ReviewOrderItemResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -58,9 +59,14 @@ fun ReviewOrderItemScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        ReviewItemHeader(
-            onBack = onBack,
-            alreadyReviewed = alreadyReviewed
+
+        ScreenHeader(
+            title = if (alreadyReviewed) "Your Review" else "Review Item",
+            subtitle = if (alreadyReviewed) {
+                "View your submitted feedback"
+            } else {
+                "Share your experience with this product"
+            }
         )
 
         if (item == null) {

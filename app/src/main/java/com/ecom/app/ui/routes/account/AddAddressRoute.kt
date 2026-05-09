@@ -39,7 +39,6 @@ fun AddAddressRoute(
         modifier = Modifier.padding(innerPadding),
         response = response,
         errorMsg = response?.errorMsg.orEmpty(),
-        onBack = navigateBack,
         onFetchPincode = { pincode ->
             try {
                 RetrofitClient.apiService.getPinCodeDetails(pincode)

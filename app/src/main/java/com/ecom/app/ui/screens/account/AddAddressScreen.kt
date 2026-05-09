@@ -21,13 +21,13 @@ import com.ecom.app.model.account.Address
 import com.ecom.app.model.account.AddressFormResponse
 import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.RegionState
+import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
 fun AddAddressScreen(
     modifier: Modifier = Modifier,
     response: AddressFormResponse?,
     errorMsg: Map<String, String> = emptyMap(),
-    onBack: () -> Unit,
     onFetchPincode: suspend (String) -> PinCodeResponse?,
     onSubmit: (
         fullName: String,
@@ -110,7 +110,15 @@ fun AddAddressScreen(
             .background(Color(0xFFF7F7F7))
     ) {
 
-        AddressHeader(onBack = onBack)
+        ScreenHeader(
+            title = if (address != null) "Edit Address" else "Add Address",
+
+            subtitle = if (address != null) {
+                "Update your delivery details"
+            } else {
+                "Add new delivery details"
+            }
+        )
 
         Column(
             modifier = Modifier

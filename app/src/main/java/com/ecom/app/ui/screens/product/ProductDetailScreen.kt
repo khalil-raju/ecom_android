@@ -69,7 +69,6 @@ fun ProductDetailScreen(
         modifier = modifier.fillMaxSize()
     ) {
         item {
-            DetailActionRow(onBack = onBack)
 
             ZoomableImage(
                 images = selectedVariant?.images.orEmpty(),

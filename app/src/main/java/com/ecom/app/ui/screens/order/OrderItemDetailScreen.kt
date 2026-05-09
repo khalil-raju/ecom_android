@@ -22,6 +22,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.order.OrderItemDetailResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -49,7 +50,11 @@ fun OrderItemDetailScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        OrderItemDetailHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "Item Details",
+            subtitle = "View and manage delivery item"
+        )
 
         if (item == null) {
             EmptyState()

@@ -43,7 +43,6 @@ fun ChangeContactRoute(
         label = if (type == ContactChangeType.EMAIL) "New Email" else "New Phone Number",
         value = response?.value.orEmpty(),
         error = error,
-        onBack = navigateBack,
         onSubmit = { value ->
             scope.launch {
                 try {

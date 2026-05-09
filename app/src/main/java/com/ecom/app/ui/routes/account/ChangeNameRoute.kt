@@ -41,7 +41,6 @@ fun ChangeNameRoute(
         modifier = Modifier.padding(innerPadding),
         response = response,
         error = error,
-        onBack = navigateBack,
 
         onSubmit = { firstName, lastName ->
             scope.launch {

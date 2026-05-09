@@ -16,6 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
+import com.ecom.app.ui.components.ScreenHeader
 
 
 @Composable
@@ -25,7 +26,6 @@ fun ChangeContactScreen(
     label: String,
     value: String,
     error: String?,
-    onBack: () -> Unit,
     onSubmit: (String) -> Unit
 ) {
     var input by remember(value) { mutableStateOf(value) }
@@ -35,25 +35,8 @@ fun ChangeContactScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_back),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
-            )
 
-            Spacer(Modifier.width(14.dp))
-
-            Text(title, fontSize = 22.sp, fontWeight = FontWeight.Bold)
-        }
+        ScreenHeader(title = title)
 
         Column(
             modifier = Modifier.padding(16.dp)

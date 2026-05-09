@@ -22,6 +22,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.CancelOrderResponse
 import com.ecom.app.model.order.OrderItem
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -66,7 +67,11 @@ fun CancelOrderScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        CancelOrderHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "Cancel Order",
+            subtitle = "Tell us why you want to cancel"
+        )
 
         LazyColumn(
             modifier = Modifier

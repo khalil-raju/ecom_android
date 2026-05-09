@@ -139,7 +139,9 @@ class MainActivity : ComponentActivity() {
                 currentScreen = currentScreen,
 
                 /* Top Menu */
-                onBackClick = {},
+                onBackClick = {
+                    goBackScreen()
+                },
                 onLogoClick = {
                     replaceScreenTo(AppScreen.Home)
                 },
@@ -152,7 +154,9 @@ class MainActivity : ComponentActivity() {
                 onHomeClick = {
                     replaceScreenTo(AppScreen.Home)
                 },
-                onCategoriesClick = {},
+                onOrdersClick = {
+                    setScreenTo(AppScreen.OrderItemHistory)
+                },
                 onWishlistClick = {},
                 cartCount = cartCount,
                 onCartClick = {

@@ -25,6 +25,7 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.account.Address
 import com.ecom.app.model.order.OrderPayment
+import com.ecom.app.ui.components.ScreenHeader
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -56,7 +57,11 @@ fun OrderDetailScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        OrderDetailHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "Order Details",
+            subtitle = "View and manage order"
+        )
 
         LazyColumn(
             modifier = Modifier

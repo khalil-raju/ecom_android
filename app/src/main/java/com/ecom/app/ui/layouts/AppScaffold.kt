@@ -28,7 +28,7 @@ fun AppScaffold(
 
     /* Bottom Menu */
     onHomeClick: () -> Unit,
-    onCategoriesClick: () -> Unit,
+    onOrdersClick: () -> Unit,
     onWishlistClick: () -> Unit,
     cartCount: Int,
     onCartClick: () -> Unit,
@@ -64,7 +64,7 @@ fun AppScaffold(
                             currentScreen = currentScreen,
                             cartCount = cartCount,
                             onHomeClick = onHomeClick,
-                            onCategoriesClick = onCategoriesClick,
+                            onOrdersClick = onOrdersClick,
                             onWishlistClick = onWishlistClick,
                             onCartClick = onCartClick,
                             onProfileClick = onProfileClick

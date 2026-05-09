@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.ChangePasswordResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
 fun ChangePasswordScreen(
@@ -38,29 +39,11 @@ fun ChangePasswordScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                painter = painterResource(id = R.drawable.ic_back),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(26.dp)
-                    .clickable { onBack() }
-            )
 
-            Spacer(Modifier.width(14.dp))
-
-            Text(
-                text = response?.heading ?: "Change Password",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold
-            )
-        }
+        ScreenHeader(
+            title = "Change Password",
+            subtitle = "Keep your account secure"
+        )
 
         Column(
             modifier = Modifier

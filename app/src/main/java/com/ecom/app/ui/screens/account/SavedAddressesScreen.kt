@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.Address
+import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
 fun SavedAddressesScreen(
@@ -35,8 +36,9 @@ fun SavedAddressesScreen(
             .background(Color(0xFFF7F7F7))
     ) {
 
-        SavedAddressesHeader(
-            onBack = onBack
+        ScreenHeader(
+            title = "Saved Addresses",
+            subtitle = "Manage your delivery addresses"
         )
 
         if (addresses.isEmpty()) {

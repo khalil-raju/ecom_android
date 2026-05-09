@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.wallet.WalletResponse
 import com.ecom.app.model.wallet.WalletTxn
+import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
 fun WalletScreen(
@@ -35,7 +36,11 @@ fun WalletScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        WalletHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "My Wallet",
+            subtitle = "View your balance & transaction details"
+        )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

@@ -25,7 +25,7 @@ fun BottomMenu(
     currentScreen: AppScreen,
     cartCount: Int,
     onHomeClick: () -> Unit,
-    onCategoriesClick: () -> Unit,
+    onOrdersClick: () -> Unit,
     onWishlistClick: () -> Unit,
     onCartClick: () -> Unit,
     onProfileClick: () -> Unit
@@ -54,11 +54,11 @@ fun BottomMenu(
             )
 
             BottomMenuItem(
-                selectedIcon = R.drawable.ic_categories_selected,
-                unselectedIcon = R.drawable.ic_categories_unselected,
-                label = "Categories",
-                selected = false,
-                onClick = onCategoriesClick,
+                selectedIcon = R.drawable.ic_orders_selected,
+                unselectedIcon = R.drawable.ic_orders_unselected,
+                label = "Orders",
+                selected = currentScreen == AppScreen.OrderItemHistory,
+                onClick = onOrdersClick,
                 modifier = Modifier.weight(1f)
             )
 

@@ -28,6 +28,7 @@ import com.ecom.app.model.account.Address
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.order.Order
 import com.ecom.app.model.order.OrderItem
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -70,7 +71,11 @@ fun CheckoutScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        CheckoutHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "Checkout",
+            subtitle = "Review your order and payment"
+        )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

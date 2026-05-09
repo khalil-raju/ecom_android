@@ -23,6 +23,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.order.ReturnOrderItemResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -57,7 +58,11 @@ fun ReturnOrderItemScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        ReturnItemHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "Return Item",
+            subtitle = "Request a return for this item"
+        )
 
         if (item == null || order == null) {
             EmptyState()

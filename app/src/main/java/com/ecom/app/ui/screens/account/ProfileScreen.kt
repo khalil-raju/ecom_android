@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 private data class ProfileActionItem(
     val iconText: String,
@@ -58,7 +59,11 @@ fun ProfileScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        ProfileHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "My Profile",
+            subtitle = "Manage your account and preferences"
+        )
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),

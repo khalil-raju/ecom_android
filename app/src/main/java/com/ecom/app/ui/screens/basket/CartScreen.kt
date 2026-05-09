@@ -23,6 +23,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.basket.BasketItem
 import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -49,7 +50,10 @@ fun CartScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-        CartHeader(onBack = onBack)
+
+        ScreenHeader(
+            title = "My Shopping Bag",
+        )
 
         if (isLoading && basket == null) {
             Box(
