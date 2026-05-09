@@ -17,7 +17,8 @@ fun AddAddressRoute(
     scope: CoroutineScope,
     addressId: Int? = null,
     navigateBack: () -> Unit,
-    navigateSavedAddresses: () -> Unit
+    navigateSavedAddresses: () -> Unit,
+    navigateCheckout: () -> Unit
 ) {
     var response by remember(addressId) {
         mutableStateOf<AddressFormResponse?>(null)
@@ -52,42 +53,73 @@ fun AddAddressRoute(
                 try {
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
 
-                    val result = if (addressId != null) {
-                        RetrofitClient.apiService.submitEditAddress(
-                            addressId = addressId,
-                            csrfToken = csrfToken,
-                            fullName = fullName,
-                            phone = phone,
-                            line1 = line1,
-                            line2 = line2,
-                            postalCode = postalCode,
-                            city = city,
-                            state = state,
-                            country = country,
-                            label = label,
-                            isDefault = if (isDefault) "on" else null
-                        )
-                    } else {
-                        RetrofitClient.apiService.submitAddAddress(
-                            csrfToken = csrfToken,
-                            fullName = fullName,
-                            phone = phone,
-                            line1 = line1,
-                            line2 = line2,
-                            postalCode = postalCode,
-                            city = city,
-                            state = state,
-                            country = country,
-                            label = label,
-                            isDefault = if (isDefault) "on" else null,
-                            consentPpTc = if (consentPpTc) "on" else null
-                        )
+                    val result = when {
+                        addressId != null -> {
+                            RetrofitClient.apiService.submitEditAddress(
+                                addressId = addressId,
+                                csrfToken = csrfToken,
+                                fullName = fullName,
+                                phone = phone,
+                                line1 = line1,
+                                line2 = line2,
+                                postalCode = postalCode,
+                                city = city,
+                                state = state,
+                                country = country,
+                                label = label,
+                                isDefault = if (isDefault) "on" else null
+                            )
+                        }
+
+                        response?.isGuest == true -> {
+                            RetrofitClient.apiService.submitAddAddress(
+                                csrfToken = csrfToken,
+                                fullName = fullName,
+                                phone = phone,
+                                line1 = line1,
+                                line2 = line2,
+                                postalCode = postalCode,
+                                city = city,
+                                state = state,
+                                country = country,
+                                label = label,
+                                isDefault = if (isDefault) "on" else null,
+                                consentPpTc = if (consentPpTc) "on" else null,
+                                from = "checkout"
+                            )
+                        }
+
+                        else -> {
+                            RetrofitClient.apiService.submitAddAddress(
+                                csrfToken = csrfToken,
+                                fullName = fullName,
+                                phone = phone,
+                                line1 = line1,
+                                line2 = line2,
+                                postalCode = postalCode,
+                                city = city,
+                                state = state,
+                                country = country,
+                                label = label,
+                                isDefault = if (isDefault) "on" else null,
+                                consentPpTc = if (consentPpTc) "on" else null
+                            )
+                        }
                     }
 
                     response = result
 
                     if (result.success) {
-                        navigateSavedAddresses()
+                        when (result.nextStep) {
+
+                            "checkout" -> {
+                                navigateCheckout()
+                            }
+
+                            else -> {
+                                navigateSavedAddresses()
+                            }
+                        }
                     }
                 } catch (e: Exception) {
                     Log.e("ADDRESS_FORM_SUBMIT", "failed: ${e.message}", e)

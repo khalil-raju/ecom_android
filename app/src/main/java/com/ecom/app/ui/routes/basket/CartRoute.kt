@@ -28,7 +28,9 @@ fun CartRoute(
     setCartCount: (Int) -> Unit,
     navigateHome: () -> Unit,
     navigateProductDetail: (ProductDetailResponse) -> Unit,
-    navigateCheckout: () -> Unit
+    navigateCheckout: () -> Unit,
+    navigateAddAddress: () -> Unit,
+    navigateSignupOtp: (String) -> Unit
 ) {
     var isLoading by remember { mutableStateOf(false) }
 
@@ -89,8 +91,43 @@ fun CartRoute(
             scope.launch {
                 try {
                     val response = RetrofitClient.apiService.getCheckout()
-                    setCheckoutResponse(response)
-                    navigateCheckout()
+
+                    when (response.nextStep) {
+                        "checkout" -> {
+                            setCheckoutResponse(response)
+                            navigateCheckout()
+                        }
+
+                        "login_contact" -> {
+                            val guestResponse = RetrofitClient.apiService.getCheckout(
+                                guest = "1"
+                            )
+
+                            when (guestResponse.nextStep) {
+                                "checkout" -> {
+                                    setCheckoutResponse(guestResponse)
+                                    navigateCheckout()
+                                }
+
+                                "add_address" -> {
+                                    navigateAddAddress()
+                                }
+
+                                "signup_otp" -> {
+                                    navigateSignupOtp(response.contact.orEmpty())
+                                }
+                            }
+                        }
+
+                        "add_address" -> {
+                            navigateAddAddress()
+                        }
+
+                        else -> {
+                            Log.e("CHECKOUT", "unexpected next_step: ${response.nextStep}")
+                        }
+                    }
+
                 } catch (e: Exception) {
                     Log.e("CHECKOUT", "failed: ${e.message}", e)
                 }

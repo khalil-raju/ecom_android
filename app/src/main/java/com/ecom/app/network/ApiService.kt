@@ -359,6 +359,7 @@ interface ApiService {
     // ---------------- Order ----------------
     @GET("orders/checkout/")
     suspend fun getCheckout(
+        @Query("guest") guest: String? = null,
         @Query("format") format: String = "json"
     ): CheckoutResponse
 

@@ -119,7 +119,16 @@ fun AppRouter(
             setCartCount = setCartCount,
             navigateHome = { replaceScreenTo(AppScreen.Home) },
             navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) },
-            navigateCheckout = { setScreenTo(AppScreen.Checkout) }
+            navigateCheckout = { setScreenTo(AppScreen.Checkout) },
+            navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
+            navigateSignupOtp = { contact ->
+                setScreenTo(
+                    AppScreen.OtpVerify(
+                        contact = contact,
+                        purpose = OtpPurpose.SIGNUP
+                    )
+                )
+            }
         )
 
         AppScreen.Checkout -> CheckoutRoute(
@@ -314,8 +323,18 @@ fun AppRouter(
             innerPadding = innerPadding,
             scope = scope,
             addressId = currentScreen.addressId,
-            navigateBack = { replaceScreenTo(AppScreen.SavedAddresses) },
-            navigateSavedAddresses = { replaceScreenTo(AppScreen.SavedAddresses) }
+
+            navigateBack = {
+                replaceScreenTo(AppScreen.SavedAddresses)
+            },
+
+            navigateSavedAddresses = {
+                replaceScreenTo(AppScreen.SavedAddresses)
+            },
+
+            navigateCheckout = {
+                replaceScreenTo(AppScreen.Checkout)
+            }
         )
 
         AppScreen.SavedAddresses -> SavedAddressesRoute(

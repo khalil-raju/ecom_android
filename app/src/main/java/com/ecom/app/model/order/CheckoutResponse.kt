@@ -9,6 +9,8 @@ data class CheckoutResponse(
     @SerializedName("next_step")
     val nextStep: String?,
 
+    val contact: String,
+
     @SerializedName("all_address")
     val allAddress: List<Address>,
 
