@@ -14,12 +14,14 @@ enum class DrawerContentType {
 fun AppDrawer(
     drawerContentType: DrawerContentType,
     onClose: () -> Unit,
+    onSearchSubmit: (String) -> Unit
 ) {
-    ModalDrawerSheet {
-        when (drawerContentType) {
-            DrawerContentType.SEARCH_MENU -> {
-                SearchMenu(onClose = onClose)
-            }
+    when (drawerContentType) {
+        DrawerContentType.SEARCH_MENU -> {
+            SearchMenu(
+                onClose = onClose,
+                onSearchSubmit = onSearchSubmit
+            )
         }
     }
 }

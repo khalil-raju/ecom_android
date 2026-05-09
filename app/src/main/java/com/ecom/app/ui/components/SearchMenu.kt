@@ -21,14 +21,20 @@ import com.ecom.app.R
 import com.ecom.app.model.product.SearchSuggestion
 import com.ecom.app.network.RetrofitClient
 import kotlinx.coroutines.delay
-
 @Composable
 fun SearchMenu(
-    onClose: () -> Unit
-
+    onClose: () -> Unit,
+    onSearchSubmit: (String) -> Unit
 ) {
     var query by remember { mutableStateOf("") }
     var suggestions by remember { mutableStateOf<List<SearchSuggestion>>(emptyList()) }
+
+    fun submitSearch() {
+        val cleanQuery = query.trim()
+        if (cleanQuery.isNotBlank()) {
+            onSearchSubmit(cleanQuery)
+        }
+    }
 
     LaunchedEffect(query) {
         if (query.trim().isEmpty()) {
@@ -82,9 +88,7 @@ fun SearchMenu(
                     imeAction = ImeAction.Search
                 ),
                 keyboardActions = KeyboardActions(
-                    onSearch = {
-                        // later: navigate to search results
-                    }
+                    onSearch = { submitSearch() }
                 )
             )
 
@@ -94,7 +98,9 @@ fun SearchMenu(
                 painter = painterResource(id = R.drawable.ic_search),
                 contentDescription = "Search",
                 tint = Color.Black,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { submitSearch() }
             )
         }
 
@@ -106,6 +112,7 @@ fun SearchMenu(
                     .fillMaxWidth()
                     .clickable {
                         query = suggestion.name
+                        submitSearch()
                     }
                     .padding(horizontal = 24.dp, vertical = 12.dp)
             )

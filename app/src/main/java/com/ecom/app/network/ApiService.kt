@@ -298,6 +298,12 @@ interface ApiService {
         @Query("q") query: String
     ): SearchSuggestionResponse
 
+    @GET("products/search/result/")
+    suspend fun searchProducts(
+        @Query("q") query: String,
+        @Query("format") format: String = "json"
+    ): ProductListResponse
+
     @GET("{variantId}/{slug}/")
     suspend fun getProductDetail(
         @Path("variantId") variantId: Int,

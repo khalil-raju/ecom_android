@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
-import androidx.compose.material3.DrawerValue
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
@@ -15,13 +13,10 @@ import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.Product
 import com.ecom.app.network.RetrofitClient
-import com.ecom.app.ui.components.SideMenuCategory
-import com.ecom.app.ui.components.SideMenuCategoryChild
 import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
 import com.ecom.app.ui.navigations.AppRouter
 import com.ecom.app.ui.navigations.AppScreen
-import com.ecom.app.util.openExternalUrl
 import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
@@ -37,10 +32,21 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            var drawerContentType by remember { mutableStateOf(DrawerContentType.SEARCH_MENU) }
+            var drawerContentType by remember {
+                mutableStateOf(DrawerContentType.SEARCH_MENU)
+            }
 
-            var currentScreen by remember { mutableStateOf<AppScreen>(AppScreen.Home) }
-            var backScreenStack by remember { mutableStateOf<List<AppScreen>>(emptyList()) }
+            var isSearchDrawerOpen by remember {
+                mutableStateOf(false)
+            }
+
+            var currentScreen by remember {
+                mutableStateOf<AppScreen>(AppScreen.Home)
+            }
+
+            var backScreenStack by remember {
+                mutableStateOf<List<AppScreen>>(emptyList())
+            }
 
             fun setScreenTo(screen: AppScreen) {
                 if (screen != currentScreen) {
@@ -65,19 +71,34 @@ class MainActivity : ComponentActivity() {
                 goBackScreen()
             }
 
-            var products by remember { mutableStateOf<List<Product>>(emptyList()) }
-            var parentCategories by remember { mutableStateOf<List<SideMenuCategory>>(emptyList()) }
+            var products by remember {
+                mutableStateOf<List<Product>>(emptyList())
+            }
 
-            var cartCount by remember { mutableIntStateOf(0) }
-            var isAuthenticated by remember { mutableStateOf(false) }
+            var cartCount by remember {
+                mutableIntStateOf(0)
+            }
 
-            var profileResponse by remember { mutableStateOf<ProfileResponse?>(null) }
-            var profileError by remember { mutableStateOf<String?>(null) }
+            var isAuthenticated by remember {
+                mutableStateOf(false)
+            }
 
-            var basketResponse by remember { mutableStateOf<BasketResponse?>(null) }
-            var checkoutResponse by remember { mutableStateOf<CheckoutResponse?>(null) }
+            var profileResponse by remember {
+                mutableStateOf<ProfileResponse?>(null)
+            }
 
-            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+            var profileError by remember {
+                mutableStateOf<String?>(null)
+            }
+
+            var basketResponse by remember {
+                mutableStateOf<BasketResponse?>(null)
+            }
+
+            var checkoutResponse by remember {
+                mutableStateOf<CheckoutResponse?>(null)
+            }
+
             val scope = rememberCoroutineScope()
             val context = LocalContext.current
 
@@ -87,25 +108,6 @@ class MainActivity : ComponentActivity() {
                     products = productResponse.products
                 } catch (e: Exception) {
                     Log.e("INIT_PRODUCTS", "failed: ${e.message}", e)
-                }
-
-                try {
-                    val categoryResponse = RetrofitClient.apiService.getCategoryMenu()
-
-                    parentCategories = categoryResponse.categories.map { cat ->
-                        SideMenuCategory(
-                            name = cat.name,
-                            slug = cat.slug,
-                            children = cat.children.map { child ->
-                                SideMenuCategoryChild(
-                                    name = child.name,
-                                    slug = child.slug
-                                )
-                            }
-                        )
-                    }
-                } catch (e: Exception) {
-                    Log.e("INIT_CATEGORIES", "failed: ${e.message}", e)
                 }
 
                 try {
@@ -128,40 +130,60 @@ class MainActivity : ComponentActivity() {
             }
 
             AppScaffold(
-                /* Drawer */
-                drawerState = drawerState,
+                isSearchDrawerOpen = isSearchDrawerOpen,
                 drawerContentType = drawerContentType,
                 onCloseDrawer = {
-                    scope.launch { drawerState.close() }
+                    isSearchDrawerOpen = false
                 },
 
-                /* AppScreen */
                 currentScreen = currentScreen,
 
-                /* Top Menu */
                 onBackClick = {
                     goBackScreen()
                 },
+
                 onLogoClick = {
                     replaceScreenTo(AppScreen.Home)
                 },
+
                 onSearchClick = {
                     drawerContentType = DrawerContentType.SEARCH_MENU
-                    scope.launch { drawerState.open() }
+                    isSearchDrawerOpen = true
                 },
 
-                /* Bottom Menu */
+                onSearchSubmit = { query ->
+                    scope.launch {
+                        try {
+                            val response = RetrofitClient.apiService.searchProducts(query)
+
+                            products = response.products
+                            isSearchDrawerOpen = false
+                            replaceScreenTo(AppScreen.Home)
+
+                        } catch (e: Exception) {
+                            Log.e("SEARCH_PRODUCTS", "failed: ${e.message}", e)
+                        }
+                    }
+                },
+
                 onHomeClick = {
                     replaceScreenTo(AppScreen.Home)
                 },
+
                 onOrdersClick = {
                     setScreenTo(AppScreen.OrderItemHistory)
                 },
-                onWishlistClick = {},
+
+                onWishlistClick = {
+                    // later: setScreenTo(AppScreen.Wishlist)
+                },
+
                 cartCount = cartCount,
+
                 onCartClick = {
                     setScreenTo(AppScreen.Cart)
                 },
+
                 onProfileClick = {
                     scope.launch {
                         try {
@@ -172,15 +194,19 @@ class MainActivity : ComponentActivity() {
                             isAuthenticated = response.success && response.authenticated
 
                             setScreenTo(
-                                if (isAuthenticated) AppScreen.Profile
-                                else AppScreen.LoginContact
+                                if (isAuthenticated) {
+                                    AppScreen.Profile
+                                } else {
+                                    AppScreen.LoginContact
+                                }
                             )
+
                         } catch (e: Exception) {
                             isAuthenticated = false
                             setScreenTo(AppScreen.LoginContact)
                         }
                     }
-                },
+                }
             ) { innerPadding ->
 
                 AppRouter(
