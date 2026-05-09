@@ -42,7 +42,9 @@ fun ChangeContactScreen(
             modifier = Modifier.padding(16.dp)
         ) {
             Card(
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(
+                    containerColor = Color.White
+                ),
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(

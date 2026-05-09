@@ -4,6 +4,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -61,45 +62,57 @@ fun OrderItemDetailScreen(
             return@Column
         }
 
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            ItemTopSection(
-                item = item,
-                onProductClick = onProductClick
-            )
+            item {
+                ItemTopSection(
+                    item = item,
+                    onProductClick = onProductClick
+                )
+            }
 
-            ItemInfoCard(
-                item = item,
-                onOrderDetailClick = onOrderDetailClick
-            )
+            item {
+                ItemInfoCard(
+                    item = item,
+                    onOrderDetailClick = onOrderDetailClick
+                )
+            }
 
-            PriceDetailsCard(item = item)
+            item {
+                PriceDetailsCard(item = item)
+            }
 
-            ReviewItemCard(
-                itemToken = item.itemToken,
-                canUserReview = item.canUserReview,
-                alreadyReviewed = item.alreadyReviewed,
-                onReviewItemClick = onReviewItemClick
-            )
+            item {
+                ReviewItemCard(
+                    itemToken = item.itemToken,
+                    canUserReview = item.canUserReview,
+                    alreadyReviewed = item.alreadyReviewed,
+                    onReviewItemClick = onReviewItemClick
+                )
+            }
 
-            ReturnItemCard(
-                itemToken = item.itemToken,
-                canUserReturn = item.canUserReturn,
-                onReturnItemClick = onReturnItemClick
-            )
+            item {
+                ReturnItemCard(
+                    itemToken = item.itemToken,
+                    canUserReturn = item.canUserReturn,
+                    onReturnItemClick = onReturnItemClick
+                )
+            }
 
-            HelpCard(
-                itemToken = item.itemToken,
-                onSupportClick = onSupportClick
-            )
+            item {
+                HelpCard(
+                    itemToken = item.itemToken,
+                    onSupportClick = onSupportClick
+                )
+            }
 
-
-            Spacer(Modifier.height(20.dp))
+            item {
+                Spacer(Modifier.height(20.dp))
+            }
         }
     }
 }

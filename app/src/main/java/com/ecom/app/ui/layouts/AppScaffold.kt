@@ -49,6 +49,7 @@ fun AppScaffold(
             .safeDrawingPadding()
     ) {
         Scaffold(
+            containerColor = Color.White,
             topBar = {
                 if (!currentScreen.isFullScreen()) {
                     TopMenu(

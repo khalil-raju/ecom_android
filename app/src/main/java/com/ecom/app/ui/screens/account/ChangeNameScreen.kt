@@ -36,7 +36,7 @@ fun ChangeNameScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(Color.Gray)
+            .background(Color(0xFFF7F7F7))
     ) {
 
         ScreenHeader(

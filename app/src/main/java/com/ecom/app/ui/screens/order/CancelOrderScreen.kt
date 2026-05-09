@@ -76,8 +76,7 @@ fun CancelOrderScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(1f)
-                .padding(16.dp),
+                .padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
             item {
@@ -126,22 +125,20 @@ fun CancelOrderScreen(
             }
 
             item {
-                Spacer(Modifier.height(90.dp))
+                CancelActionCard(
+                    enabled = order?.canUserCancel == true,
+                    onCancelClick = {
+                        val reason = if (selectedReason == "Other") {
+                            otherReason.trim()
+                        } else {
+                            selectedReason.trim()
+                        }
+
+                        onConfirmCancel(reason, refundAccount)
+                    }
+                )
             }
         }
-
-        CancelFooter(
-            enabled = order?.canUserCancel == true,
-            onCancelClick = {
-                val reason = if (selectedReason == "Other") {
-                    otherReason.trim()
-                } else {
-                    selectedReason.trim()
-                }
-
-                onConfirmCancel(reason, refundAccount)
-            }
-        )
     }
 }
 
@@ -185,7 +182,9 @@ private fun OrderSummaryCard(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        Column(modifier = Modifier.padding(18.dp)) {
+        Column(
+            modifier = Modifier.padding(18.dp)
+        ) {
             Text(
                 text = "Order Summary",
                 fontSize = 20.sp,
@@ -412,36 +411,40 @@ private fun CancelReasonCard(
 }
 
 @Composable
-private fun CancelFooter(
+private fun CancelActionCard(
     enabled: Boolean,
     onCancelClick: () -> Unit
 ) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(horizontal = 18.dp, vertical = 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        Button(
-            onClick = onCancelClick,
-            enabled = enabled,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(52.dp),
-            shape = RoundedCornerShape(8.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFD32F2F),
-                contentColor = Color.White,
-                disabledContainerColor = Color.LightGray,
-                disabledContentColor = Color.White
-            )
+        Column(
+            modifier = Modifier.padding(18.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Cancel Order",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Button(
+                onClick = onCancelClick,
+                enabled = enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(52.dp),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFFD32F2F),
+                    contentColor = Color.White,
+                    disabledContainerColor = Color.LightGray,
+                    disabledContentColor = Color.White
+                )
+            ) {
+                Text(
+                    text = "Cancel Order",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }
@@ -487,6 +490,5 @@ private fun buildItemMeta(item: OrderItem): String {
 }
 
 private fun formatAmount(value: Double): String {
-    return if (value % 1.0 == 0.0) value.toInt().toString()
-    else "%.2f".format(value)
+    return "%.2f".format(value)
 }
