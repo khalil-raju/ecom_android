@@ -8,15 +8,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import coil.compose.rememberAsyncImagePainter
+import androidx.compose.foundation.Image
 import com.ecom.app.BuildConfig
 
 @Composable
-fun HeroBanner() {
+fun HeroBanner(
+    onHeroLoaded: () -> Unit
+) {
     AsyncImage(
         model = BuildConfig.HERO_IMAGE,
         contentDescription = "Hero Banner",
         modifier = Modifier
             .fillMaxWidth(),
-        contentScale = ContentScale.FillWidth
+        contentScale = ContentScale.FillWidth,
+        onSuccess = {
+            onHeroLoaded()
+        },
+        onError = {
+            onHeroLoaded()
+        }
     )
 }
