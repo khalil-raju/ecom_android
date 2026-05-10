@@ -54,36 +54,36 @@ fun LoginPasswordScreen(
             )
 
             // Password input with eye toggle
-            Box(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                OutlinedTextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    placeholder = { Text("Password") },
-                    visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(end = 48.dp)
-                )
-
-                Icon(
-                    painter = painterResource(
-                        id = if (showPassword)
-                            R.drawable.ic_eye_open
-                        else
-                            R.drawable.ic_eye_close
-                    ),
-                    contentDescription = "Toggle password",
-                    tint = Color.Gray,
-                    modifier = Modifier
-                        .align(Alignment.CenterEnd)
-                        .padding(end = 12.dp)
-                        .size(22.dp)
-                        .clickable { showPassword = !showPassword }
-                )
-            }
+            OutlinedTextField(
+                value = password,
+                onValueChange = { password = it },
+                placeholder = { Text("Password") },
+                singleLine = true,
+                visualTransformation = if (showPassword) {
+                    VisualTransformation.None
+                } else {
+                    PasswordVisualTransformation()
+                },
+                trailingIcon = {
+                    Icon(
+                        painter = painterResource(
+                            id = if (showPassword) {
+                                R.drawable.ic_eye_open
+                            } else {
+                                R.drawable.ic_eye_close
+                            }
+                        ),
+                        contentDescription = "Toggle password",
+                        tint = Color.Gray,
+                        modifier = Modifier
+                            .size(22.dp)
+                            .clickable { showPassword = !showPassword }
+                    )
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+            )
 
             // Attempts left
             if (attemptsLeft != null) {

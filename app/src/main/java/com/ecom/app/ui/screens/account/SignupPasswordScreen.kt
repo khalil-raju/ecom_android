@@ -11,7 +11,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.Color
-import com.ecom.app.ui.screens.account.AuthShell
+import androidx.compose.foundation.clickable
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.input.VisualTransformation
+import com.ecom.app.R
 
 @Composable
 fun SignupPasswordScreen(
@@ -24,6 +28,9 @@ fun SignupPasswordScreen(
     AuthShell(onLogoClick = onLogoClick) {
         var password by remember { mutableStateOf("") }
         var confirm by remember { mutableStateOf("") }
+
+        var showPassword by remember { mutableStateOf(false) }
+        var showConfirm by remember { mutableStateOf(false) }
 
         val minLengthOk = password.length >= 8
         val notAllNumeric = password.isNotBlank() && !password.all { it.isDigit() }
@@ -47,8 +54,20 @@ fun SignupPasswordScreen(
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Password") },
             singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(
+                        id = if (showPassword) R.drawable.ic_eye_open else R.drawable.ic_eye_close
+                    ),
+                    contentDescription = "Toggle password",
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { showPassword = !showPassword }
+                )
+            }
         )
 
         Spacer(Modifier.height(12.dp))
@@ -59,8 +78,20 @@ fun SignupPasswordScreen(
             modifier = Modifier.fillMaxWidth(),
             label = { Text("Confirm Password") },
             singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+            visualTransformation = if (showConfirm) VisualTransformation.None else PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            trailingIcon = {
+                Icon(
+                    painter = painterResource(
+                        id = if (showConfirm) R.drawable.ic_eye_open else R.drawable.ic_eye_close
+                    ),
+                    contentDescription = "Toggle confirm password",
+                    tint = Color.Gray,
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clickable { showConfirm = !showConfirm }
+                )
+            }
         )
 
         Spacer(Modifier.height(10.dp))
