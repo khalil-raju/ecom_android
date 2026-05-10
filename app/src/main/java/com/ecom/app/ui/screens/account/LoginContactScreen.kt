@@ -21,6 +21,7 @@ fun LoginContactScreen(
     onLogoClick: () -> Unit,
     onContinue: (String) -> Unit,
     onSignupClick: () -> Unit,
+    onGuestCheckoutClick: (() -> Unit)? = null,
     error: String? = null
 ) {
     var contact by remember { mutableStateOf("") }
@@ -95,6 +96,17 @@ fun LoginContactScreen(
                     text = "Create an account",
                     color = Color.Blue,
                     modifier = Modifier.clickable { onSignupClick() }
+                )
+            }
+
+            if (onGuestCheckoutClick != null) {
+                Text(
+                    text = "Continue checkout as guest",
+                    color = Color.Blue,
+                    fontSize = 16.sp,
+                    modifier = Modifier
+                        .padding(top = 22.dp)
+                        .clickable { onGuestCheckoutClick() }
                 )
             }
         }

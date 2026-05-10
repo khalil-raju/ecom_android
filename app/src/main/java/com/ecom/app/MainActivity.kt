@@ -197,13 +197,13 @@ class MainActivity : ComponentActivity() {
                                 if (isAuthenticated) {
                                     AppScreen.Profile
                                 } else {
-                                    AppScreen.LoginContact
+                                    AppScreen.LoginContact()
                                 }
                             )
 
                         } catch (e: Exception) {
                             isAuthenticated = false
-                            setScreenTo(AppScreen.LoginContact)
+                            setScreenTo(AppScreen.LoginContact())
                         }
                     }
                 }

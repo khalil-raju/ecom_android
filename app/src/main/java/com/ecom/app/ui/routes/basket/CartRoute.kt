@@ -30,7 +30,8 @@ fun CartRoute(
     navigateProductDetail: (ProductDetailResponse) -> Unit,
     navigateCheckout: () -> Unit,
     navigateAddAddress: () -> Unit,
-    navigateSignupOtp: (String) -> Unit
+    navigateSignupOtp: (String) -> Unit,
+    navigateLogin: () -> Unit,
 ) {
     var isLoading by remember { mutableStateOf(false) }
 
@@ -99,24 +100,7 @@ fun CartRoute(
                         }
 
                         "login_contact" -> {
-                            val guestResponse = RetrofitClient.apiService.getCheckout(
-                                guest = "1"
-                            )
-
-                            when (guestResponse.nextStep) {
-                                "checkout" -> {
-                                    setCheckoutResponse(guestResponse)
-                                    navigateCheckout()
-                                }
-
-                                "add_address" -> {
-                                    navigateAddAddress()
-                                }
-
-                                "signup_otp" -> {
-                                    navigateSignupOtp(response.contact.orEmpty())
-                                }
-                            }
+                            navigateLogin()
                         }
 
                         "add_address" -> {

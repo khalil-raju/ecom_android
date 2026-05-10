@@ -67,7 +67,7 @@ sealed interface AppScreen {
     data object ChangeEmail : AppScreen
     data object ChangePhone : AppScreen
     data object ChangePassword : AppScreen
-    data object LoginContact : AppScreen
+    data class LoginContact(val fromCheckout: Boolean = false) : AppScreen
     data class LoginPassword(val contact: String) : AppScreen
     data object SignupContact : AppScreen
     data class SignupPassword(val contact: String) : AppScreen
@@ -128,6 +128,9 @@ fun AppRouter(
                         purpose = OtpPurpose.SIGNUP
                     )
                 )
+            },
+            navigateLogin = {
+                setScreenTo(AppScreen.LoginContact(fromCheckout = true))
             }
         )
 
@@ -196,11 +199,18 @@ fun AppRouter(
             navigateOrderItemDetail = { replaceScreenTo(AppScreen.OrderItemDetail(it)) }
         )
 
-        AppScreen.LoginContact -> LoginContactRoute(
+        is AppScreen.LoginContact -> LoginContactRoute(
             scope = scope,
             navigateHome = { replaceScreenTo(AppScreen.Home) },
             navigateLoginPassword = { setScreenTo(AppScreen.LoginPassword(it)) },
-            navigateSignup = { replaceScreenTo(AppScreen.SignupContact) }
+            navigateSignup = { replaceScreenTo(AppScreen.SignupContact) },
+            navigateGuestCheckout = if (currentScreen.fromCheckout) {
+                {
+                    setScreenTo(AppScreen.AddAddress())
+                }
+            } else {
+                null
+            }
         )
 
         is AppScreen.LoginPassword -> LoginPasswordRoute(
@@ -227,14 +237,14 @@ fun AppRouter(
             navigateHome = { replaceScreenTo(AppScreen.Home) },
             navigateLoginPassword = { replaceScreenTo(AppScreen.LoginPassword(it)) },
             navigateSignupPassword = { setScreenTo(AppScreen.SignupPassword(it)) },
-            navigateLogin = { replaceScreenTo(AppScreen.LoginContact) }
+            navigateLogin = { replaceScreenTo(AppScreen.LoginContact()) }
         )
 
         is AppScreen.SignupPassword -> SignupPasswordRoute(
             scope = scope,
             contact = currentScreen.contact,
             navigateHome = { replaceScreenTo(AppScreen.Home) },
-            navigateLogin = { replaceScreenTo(AppScreen.LoginContact) },
+            navigateLogin = { replaceScreenTo(AppScreen.LoginContact()) },
             navigateOtp = { contact, purpose ->
                 setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
@@ -245,21 +255,43 @@ fun AppRouter(
             contact = currentScreen.contact,
             purpose = currentScreen.purpose,
             navigateHome = { replaceScreenTo(AppScreen.Home) },
-            onVerified = {
+
+            onVerified = { response ->
+
                 when (currentScreen.purpose) {
+
                     OtpPurpose.LOGIN,
                     OtpPurpose.SIGNUP -> {
+
                         setAuthenticated(true)
-                        replaceScreenTo(AppScreen.Home)
+
+                        when (response.nextStep) {
+
+                            "/orders/checkout/" -> {
+                                replaceScreenTo(AppScreen.Checkout)
+                            }
+
+                            else -> {
+                                replaceScreenTo(AppScreen.Home)
+                            }
+                        }
                     }
 
                     OtpPurpose.CHANGE_PHONE,
                     OtpPurpose.CHANGE_EMAIL -> {
+
                         replaceScreenTo(AppScreen.Profile)
                     }
                 }
             },
-            onProfileUpdated = { setProfileResponse(it) }
+
+            setCheckoutResponse = {
+                setCheckoutResponse(it)
+            },
+
+            onProfileUpdated = {
+                setProfileResponse(it)
+            }
         )
 
         AppScreen.Profile -> ProfileRoute(
@@ -280,7 +312,7 @@ fun AppRouter(
             onLoggedOut = {
                 setAuthenticated(false)
                 setProfileResponse(null)
-                replaceScreenTo(AppScreen.LoginContact)
+                replaceScreenTo(AppScreen.LoginContact())
             }
         )
 
@@ -334,6 +366,19 @@ fun AppRouter(
 
             navigateCheckout = {
                 replaceScreenTo(AppScreen.Checkout)
+            },
+
+            setCheckoutResponse = {
+                setCheckoutResponse(it)
+            },
+
+            navigateSignupOtp = { contact ->
+                setScreenTo(
+                    AppScreen.OtpVerify(
+                        contact = contact,
+                        purpose = OtpPurpose.SIGNUP
+                    )
+                )
             }
         )
 

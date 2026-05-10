@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.ecom.app.model.account.AddressFormResponse
 import com.ecom.app.model.account.PinCodeResponse
+import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.screens.account.AddAddressScreen
 import kotlinx.coroutines.CoroutineScope
@@ -18,7 +19,9 @@ fun AddAddressRoute(
     addressId: Int? = null,
     navigateBack: () -> Unit,
     navigateSavedAddresses: () -> Unit,
-    navigateCheckout: () -> Unit
+    navigateCheckout: () -> Unit,
+    setCheckoutResponse: (CheckoutResponse) -> Unit,
+    navigateSignupOtp: (String) -> Unit
 ) {
     var response by remember(addressId) {
         mutableStateOf<AddressFormResponse?>(null)
@@ -113,7 +116,35 @@ fun AddAddressRoute(
                         when (result.nextStep) {
 
                             "checkout" -> {
-                                navigateCheckout()
+
+                                val checkoutResponse = RetrofitClient.apiService.getCheckout(
+                                    guest = "1"
+                                )
+
+                                when (checkoutResponse.nextStep) {
+
+                                    "checkout" -> {
+                                        setCheckoutResponse(checkoutResponse)
+                                        navigateCheckout()
+                                    }
+
+                                    "signup_otp" -> {
+                                        navigateSignupOtp(
+                                            checkoutResponse.contact.orEmpty()
+                                        )
+                                    }
+
+                                    else -> {
+                                        Log.e(
+                                            "CHECKOUT_AFTER_ADDRESS",
+                                            "unexpected next_step: ${checkoutResponse.nextStep}"
+                                        )
+                                    }
+                                }
+                            }
+
+                            "signup_otp" -> {
+                                navigateSignupOtp(phone)
                             }
 
                             else -> {

@@ -13,7 +13,8 @@ fun LoginContactRoute(
     scope: CoroutineScope,
     navigateHome: () -> Unit,
     navigateLoginPassword: (String) -> Unit,
-    navigateSignup: () -> Unit
+    navigateSignup: () -> Unit,
+    navigateGuestCheckout: (() -> Unit)? = null
 ) {
     var loginContactError by remember {
         mutableStateOf<String?>(null)
@@ -67,6 +68,7 @@ fun LoginContactRoute(
                 }
             }
         },
-        onSignupClick = navigateSignup
+        onSignupClick = navigateSignup,
+        onGuestCheckoutClick = navigateGuestCheckout
     )
 }

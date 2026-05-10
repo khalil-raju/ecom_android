@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import com.ecom.app.model.account.AuthStepResponse
 import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.navigations.OtpPurpose
 import com.ecom.app.ui.screens.account.OtpVerifyScreen
@@ -16,7 +17,8 @@ fun OtpVerifyRoute(
     contact: String,
     purpose: OtpPurpose,
     navigateHome: () -> Unit,
-    onVerified: () -> Unit,
+    onVerified: (AuthStepResponse) -> Unit,
+    setCheckoutResponse: (CheckoutResponse) -> Unit,
     onProfileUpdated: (ProfileResponse) -> Unit
 ) {
     var error by remember(contact, purpose) {
@@ -67,7 +69,18 @@ fun OtpVerifyRoute(
                     }
                 }
 
-                onVerified()
+                onVerified(response)
+                Log.d(
+                    "OTP_SUBMIT_RESPONSE",
+                    "success=${response.success}, authenticated=${response.authenticated}, nextStep=${response.nextStep}"
+                )
+
+                if (response.nextStep == "/orders/checkout/") {
+                    val checkoutResponse = RetrofitClient.apiService.getCheckout()
+                    if (checkoutResponse.success) {
+                        setCheckoutResponse(checkoutResponse)
+                    }
+                }
             }
         } else {
             error = response.error ?: response.errorMsg ?: "OTP verification failed"
