@@ -99,7 +99,6 @@ fun AppRouter(
         AppScreen.Home -> ProductListRoute(
             innerPadding = innerPadding,
             scope = scope,
-            products = products,
             navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) }
         )
 
