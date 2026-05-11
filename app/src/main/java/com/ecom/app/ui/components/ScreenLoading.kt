@@ -11,25 +11,63 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+
+import coil.compose.AsyncImage
+import com.ecom.app.BuildConfig
 
 @Composable
 fun ScreenLoading(
-    message: String = "Please wait..."
+    message: String = "Loading..."
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(14.dp)
-        ) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(34.dp),
-                strokeWidth = 3.dp
-            )
+    val infiniteTransition = rememberInfiniteTransition(label = "logo_loading")
 
-            Text(text = message)
-        }
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 0.92f,
+        targetValue = 1.04f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(850),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "logo_scale"
+    )
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        AsyncImage(
+            model = BuildConfig.LOGO_FULL_IMAGE,
+            contentDescription = "Loading",
+            modifier = Modifier
+                .width(170.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                },
+            contentScale = ContentScale.Fit
+        )
+
+        Spacer(Modifier.height(18.dp))
+
+        Text(
+            text = message,
+            fontSize = 15.sp,
+            color = Color.DarkGray
+        )
     }
 }

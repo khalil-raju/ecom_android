@@ -63,17 +63,62 @@ fun ProductDetailScreen(
         mutableStateOf(selectedVariant?.images?.firstOrNull())
     }
 
+    var inWishlist by remember {
+        mutableStateOf(detail.inWishlist)
+    }
+
+    var isWishlistLoading by remember {
+        mutableStateOf(false)
+    }
+
     val scope = rememberCoroutineScope()
 
     LazyColumn(
         modifier = modifier.fillMaxSize()
     ) {
         item {
-
             ZoomableImage(
                 images = selectedVariant?.images.orEmpty(),
                 selectedImage = selectedImage,
                 isOutOfStock = (selectedVariant?.stock ?: 0) <= 0,
+                inWishlist = inWishlist,
+                isWishlistLoading = isWishlistLoading,
+                onWishlistClick = {
+                    scope.launch {
+                        try {
+                            isWishlistLoading = true
+
+                            val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+
+                            if (inWishlist) {
+                                val response = RetrofitClient.apiService.removeFromWishlist(
+                                    csrfToken = csrfToken,
+                                    productId = detail.product.id,
+                                    minimal = "1"
+                                )
+
+                                if (response.success) {
+                                    inWishlist = false
+                                }
+                            } else {
+                                val response = RetrofitClient.apiService.addToWishlist(
+                                    csrfToken = csrfToken,
+                                    productId = detail.product.id,
+                                    minimal = "1"
+                                )
+
+                                if (response.success) {
+                                    inWishlist = true
+                                }
+                            }
+
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        } finally {
+                            isWishlistLoading = false
+                        }
+                    }
+                },
                 onImageChange = { selectedImage = it }
             )
 
@@ -174,6 +219,9 @@ fun ZoomableImage(
     images: List<String?>,
     selectedImage: String?,
     isOutOfStock: Boolean,
+    inWishlist: Boolean,
+    isWishlistLoading: Boolean,
+    onWishlistClick: () -> Unit,
     onImageChange: (String?) -> Unit
 ) {
     var scale by remember(selectedImage) { mutableFloatStateOf(1f) }
@@ -253,6 +301,29 @@ fun ZoomableImage(
                 .transformable(state),
             contentScale = ContentScale.Crop
         )
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(14.dp)
+                .clickable(enabled = !isWishlistLoading) {
+                    onWishlistClick()
+                },
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                painter = painterResource(
+                    id = if (inWishlist) {
+                        R.drawable.ic_wishlist_selected
+                    } else {
+                        R.drawable.ic_wishlist_unselected
+                    }
+                ),
+                contentDescription = "Wishlist",
+                tint = Color.Unspecified,
+                modifier = Modifier.size(40.dp)
+            )
+        }
 
         if (isOutOfStock) {
             Text(

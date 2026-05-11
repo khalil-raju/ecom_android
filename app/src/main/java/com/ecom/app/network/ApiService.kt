@@ -12,6 +12,7 @@ import com.ecom.app.model.account.ChangePasswordResponse
 import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.basket.WishlistResponse
 import com.ecom.app.model.order.CancelOrderResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.order.InitiateOrderResponse
@@ -355,6 +356,24 @@ interface ApiService {
         @Field("quantity") quantity: Int,
         @Field("minimal") minimal: String = "0"
     ): BasketResponse
+
+    @FormUrlEncoded
+    @POST("baskets/wishlist/add/")
+    suspend fun addToWishlist(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("product_id") productId: Int,
+        @Field("minimal") minimal: String = "1",
+        @Query("format") format: String = "json"
+    ): WishlistResponse
+
+    @FormUrlEncoded
+    @POST("baskets/wishlist/remove/")
+    suspend fun removeFromWishlist(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Field("product_id") productId: Int,
+        @Field("minimal") minimal: String = "1",
+        @Query("format") format: String = "json"
+    ): WishlistResponse
 
     // ---------------- Order ----------------
     @GET("orders/checkout/")

@@ -175,7 +175,7 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onWishlistClick = {
-                    // later: setScreenTo(AppScreen.Wishlist)
+                    setScreenTo(AppScreen.Wishlist)
                 },
 
                 cartCount = cartCount,

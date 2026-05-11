@@ -21,6 +21,7 @@ import com.ecom.app.ui.routes.account.SavedAddressesRoute
 import com.ecom.app.ui.routes.account.SignupContactRoute
 import com.ecom.app.ui.routes.account.SignupPasswordRoute
 import com.ecom.app.ui.routes.basket.CartRoute
+import com.ecom.app.ui.routes.basket.WishlistRoute
 import com.ecom.app.ui.routes.order.CancelOrderRoute
 import com.ecom.app.ui.routes.order.CheckoutRoute
 import com.ecom.app.ui.routes.order.OrderDetailRoute
@@ -54,6 +55,7 @@ sealed interface AppScreen {
     data object Home : AppScreen
     data class ProductDetail(val detail: ProductDetailResponse) : AppScreen
     data object Cart : AppScreen
+    data object Wishlist : AppScreen
     data object Checkout : AppScreen
     data object OrderItemHistory : AppScreen
     data class OrderItemDetail(val itemToken: String) : AppScreen
@@ -107,6 +109,19 @@ fun AppRouter(
             detail = currentScreen.detail,
             navigateBack = { replaceScreenTo(AppScreen.Home) },
             onCartCountChange = setCartCount
+        )
+
+        AppScreen.Wishlist -> WishlistRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateHome = {
+                replaceScreenTo(AppScreen.Home)
+            },
+            navigateProductDetail = {
+                setScreenTo(AppScreen.ProductDetail(it))
+            },
+            setBasketResponse = setBasketResponse,
+            setCartCount = setCartCount
         )
 
         AppScreen.Cart -> CartRoute(
