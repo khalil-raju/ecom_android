@@ -174,10 +174,11 @@ fun ProductDetailScreen(
 
                         scope.launch {
                             try {
-                                val response = RetrofitClient.apiService.addToCart(
+                                val response = RetrofitClient.apiService.updateToCart(
                                     csrfToken = csrfToken,
                                     productId = detail.product.id,
-                                    variantId = variant.id
+                                    variantId = variant.id,
+                                    quantity = 1
                                 )
 
                                 onCartCountChange(response.cartCount)

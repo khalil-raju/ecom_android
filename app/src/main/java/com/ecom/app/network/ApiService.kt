@@ -3,15 +3,19 @@ package com.ecom.app.network
 import com.ecom.app.model.account.AddressFormResponse
 import com.ecom.app.model.product.ProductListResponse
 import com.ecom.app.model.product.ProductDetailResponse
-import com.ecom.app.model.basket.CartCountResponse
 import com.ecom.app.model.account.AuthStepResponse
 import com.ecom.app.model.account.ChangeContactResponse
 import com.ecom.app.model.account.ChangeNameResponse
 import com.ecom.app.model.account.ChangePasswordResponse
 import com.ecom.app.model.account.PinCodeResponse
 import com.ecom.app.model.account.ProfileResponse
-import com.ecom.app.model.basket.BasketResponse
-import com.ecom.app.model.basket.WishlistResponse
+import com.ecom.app.model.basket.AddToWishlistResponse
+import com.ecom.app.model.basket.BasketCountsResponse
+import com.ecom.app.model.basket.CartDetailResponse
+import com.ecom.app.model.basket.RemoveFromCartResponse
+import com.ecom.app.model.basket.RemoveFromWishlistResponse
+import com.ecom.app.model.basket.UpdateToCartResponse
+import com.ecom.app.model.basket.WishlistDetailResponse
 import com.ecom.app.model.order.CancelOrderResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.order.InitiateOrderResponse
@@ -331,49 +335,59 @@ interface ApiService {
     ): ProductListResponse
 
     // ---------------- Basket ----------------
-    @GET("baskets/")
-    suspend fun getBasket(
+    @GET("baskets/cart/")
+    suspend fun getCartDetail(
         @Query("format") format: String = "json"
-    ): BasketResponse
+    ): CartDetailResponse
+
+    @GET("baskets/wishlist/")
+    suspend fun getWishlistDetail(
+        @Query("format") format: String = "json"
+    ): WishlistDetailResponse
+
+    @GET("baskets/get/basket/counts/")
+    suspend fun getBasketCounts(
+        @Query("format") format: String = "json"
+    ): BasketCountsResponse
 
     @FormUrlEncoded
     @POST("baskets/cart/update/")
-    suspend fun addToCart(
+    suspend fun updateToCart(
         @Header("X-CSRFToken") csrfToken: String,
-        @Field("product_id") productId: Int,
-        @Field("variant_id") variantId: Int,
-        @Field("quantity") quantity: Int = 1,
-        @Field("minimal") minimal: String = "1"
-    ): CartCountResponse
-
-    @FormUrlEncoded
-    @POST("baskets/cart/update/")
-    suspend fun updateCartQuantity(
         @Query("format") format: String = "json",
-        @Header("X-CSRFToken") csrfToken: String,
         @Field("product_id") productId: Int,
         @Field("variant_id") variantId: Int,
         @Field("quantity") quantity: Int,
-        @Field("minimal") minimal: String = "0"
-    ): BasketResponse
+        @Field("minimal") minimal: String = "1"
+    ): UpdateToCartResponse
+
+    @FormUrlEncoded
+    @POST("baskets/cart/remove/")
+    suspend fun removeFromCart(
+        @Header("X-CSRFToken") csrfToken: String,
+        @Query("format") format: String = "json",
+        @Field("product_id") productId: Int,
+        @Field("variant_id") variantId: Int,
+        @Field("minimal") minimal: String = "1"
+    ): RemoveFromCartResponse
 
     @FormUrlEncoded
     @POST("baskets/wishlist/add/")
     suspend fun addToWishlist(
         @Header("X-CSRFToken") csrfToken: String,
+        @Query("format") format: String = "json",
         @Field("product_id") productId: Int,
         @Field("minimal") minimal: String = "1",
-        @Query("format") format: String = "json"
-    ): WishlistResponse
+    ): AddToWishlistResponse
 
     @FormUrlEncoded
     @POST("baskets/wishlist/remove/")
     suspend fun removeFromWishlist(
         @Header("X-CSRFToken") csrfToken: String,
+        @Query("format") format: String = "json",
         @Field("product_id") productId: Int,
         @Field("minimal") minimal: String = "1",
-        @Query("format") format: String = "json"
-    ): WishlistResponse
+    ): RemoveFromWishlistResponse
 
     // ---------------- Order ----------------
     @GET("orders/checkout/")

@@ -4,9 +4,7 @@ import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import com.ecom.app.model.account.ProfileResponse
-import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
-import com.ecom.app.model.product.Product
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.routes.account.AddAddressRoute
 import com.ecom.app.ui.routes.account.ChangeContactRoute
@@ -86,12 +84,9 @@ fun AppRouter(
     replaceScreenTo: (AppScreen) -> Unit,
     scope: CoroutineScope,
     context: Context,
-    basketResponse: BasketResponse?,
-    checkoutResponse: CheckoutResponse?,
     profileResponse: ProfileResponse?,
     profileError: String?,
     setCartCount: (Int) -> Unit,
-    setBasketResponse: (BasketResponse) -> Unit,
     setCheckoutResponse: (CheckoutResponse) -> Unit,
     setAuthenticated: (Boolean) -> Unit,
     setProfileResponse: (ProfileResponse?) -> Unit
@@ -113,27 +108,29 @@ fun AppRouter(
         AppScreen.Wishlist -> WishlistRoute(
             innerPadding = innerPadding,
             scope = scope,
-            navigateHome = {
-                replaceScreenTo(AppScreen.Home)
-            },
             navigateProductDetail = {
                 setScreenTo(AppScreen.ProductDetail(it))
             },
-            setBasketResponse = setBasketResponse,
             setCartCount = setCartCount
         )
 
         AppScreen.Cart -> CartRoute(
             innerPadding = innerPadding,
             scope = scope,
-            basketResponse = basketResponse,
-            setBasketResponse = setBasketResponse,
-            setCheckoutResponse = setCheckoutResponse,
             setCartCount = setCartCount,
-            navigateHome = { replaceScreenTo(AppScreen.Home) },
             navigateProductDetail = { setScreenTo(AppScreen.ProductDetail(it)) },
             navigateCheckout = { setScreenTo(AppScreen.Checkout) },
+        )
+
+        AppScreen.Checkout -> CheckoutRoute(
+            innerPadding = innerPadding,
+            scope = scope,
+            navigateCart = { replaceScreenTo(AppScreen.Cart) },
+            navigatePaymentWeb = { setScreenTo(AppScreen.PaymentWeb(it)) },
             navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
+            navigateLogin = {
+                setScreenTo(AppScreen.LoginContact(fromCheckout = true))
+            },
             navigateSignupOtp = { contact ->
                 setScreenTo(
                     AppScreen.OtpVerify(
@@ -141,19 +138,7 @@ fun AppRouter(
                         purpose = OtpPurpose.SIGNUP
                     )
                 )
-            },
-            navigateLogin = {
-                setScreenTo(AppScreen.LoginContact(fromCheckout = true))
             }
-        )
-
-        AppScreen.Checkout -> CheckoutRoute(
-            innerPadding = innerPadding,
-            scope = scope,
-            checkoutResponse = checkoutResponse,
-            navigateCart = { replaceScreenTo(AppScreen.Cart) },
-            navigatePaymentWeb = { setScreenTo(AppScreen.PaymentWeb(it)) },
-            onAddAddressClick = { setScreenTo(AppScreen.AddAddress()) }
         )
 
         is AppScreen.PaymentWeb -> PaymentWebRoute(

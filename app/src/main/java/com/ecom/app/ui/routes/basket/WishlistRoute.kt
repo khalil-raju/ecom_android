@@ -3,76 +3,72 @@ package com.ecom.app.ui.routes.basket
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.basket.BasketResponse
-import com.ecom.app.model.order.CheckoutResponse
+import com.ecom.app.model.basket.WishlistDetailResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.network.RetrofitClient
-import com.ecom.app.ui.screens.basket.CartScreen
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.basket.WishlistScreen
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Composable
 fun WishlistRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
-    navigateHome: () -> Unit,
     navigateProductDetail: (ProductDetailResponse) -> Unit,
-    setBasketResponse: (BasketResponse) -> Unit,
     setCartCount: (Int) -> Unit
 ) {
-    var basketResponse by remember {
-        mutableStateOf<BasketResponse?>(null)
+    var wishlistDetailResponse by remember {
+        mutableStateOf<WishlistDetailResponse?>(null)
     }
 
     var isLoading by remember {
         mutableStateOf(true)
     }
 
-    LaunchedEffect(Unit) {
-        try {
-            isLoading = true
-            val response = RetrofitClient.apiService.getBasket()
-            Log.d("WISHLIST_GET","response: $response")
-            basketResponse = response
-            setBasketResponse(response)
-            setCartCount(response.cartCount)
-        } catch (e: Exception) {
-            Log.e("WISHLIST_GET", "failed: ${e.message}", e)
-        } finally {
-            isLoading = false
+    fun refreshWishlist() {
+        scope.launch {
+            try {
+                isLoading = true
+
+                val response = RetrofitClient.apiService.getWishlistDetail()
+                wishlistDetailResponse = response
+
+            } catch (e: Exception) {
+                Log.e("WISHLIST_GET", "failed: ${e.message}", e)
+            } finally {
+                isLoading = false
+            }
         }
     }
 
-    if (isLoading) {
+    LaunchedEffect(Unit) {
+        refreshWishlist()
+    }
+
+    if (isLoading || wishlistDetailResponse == null) {
         ScreenLoading(message = "Loading wishlist...")
         return
     }
 
     WishlistScreen(
         modifier = Modifier.padding(innerPadding),
-        items = basketResponse?.wishlistItems.orEmpty(),
+        items = wishlistDetailResponse?.wishlistItems.orEmpty(),
 
         onProductClick = { item ->
             scope.launch {
                 try {
                     val variantId = item.variantId ?: return@launch
-                    val slug = item.slug
 
                     val detail = RetrofitClient.apiService.getProductDetail(
                         variantId = variantId,
-                        slug = slug
+                        slug = item.slug
                     )
 
                     navigateProductDetail(detail)
+
                 } catch (e: Exception) {
                     Log.e("WISHLIST_PRODUCT", "failed: ${e.message}", e)
                 }
@@ -84,16 +80,15 @@ fun WishlistRoute(
                 try {
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
 
-                    RetrofitClient.apiService.removeFromWishlist(
+                    val response = RetrofitClient.apiService.removeFromWishlist(
                         csrfToken = csrfToken,
                         productId = item.productId,
-                        minimal = "0"
+                        minimal = "1"
                     )
 
-                    val response = RetrofitClient.apiService.getBasket()
-                    basketResponse = response
-                    setBasketResponse(response)
-                    setCartCount(response.cartCount)
+                    if (response.success) {
+                        refreshWishlist()
+                    }
 
                 } catch (e: Exception) {
                     Log.e("WISHLIST_REMOVE", "failed: ${e.message}", e)
@@ -107,17 +102,18 @@ fun WishlistRoute(
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
                     val variantId = item.variantId ?: return@launch
 
-                    val response = RetrofitClient.apiService.addToCart(
+                    val response = RetrofitClient.apiService.updateToCart(
                         csrfToken = csrfToken,
                         productId = item.productId,
-                        variantId = variantId
+                        variantId = variantId,
+                        quantity = 1,
+                        minimal = "1"
                     )
 
-                    setCartCount(response.cartCount)
-
-                    val basket = RetrofitClient.apiService.getBasket()
-                    basketResponse = basket
-                    setBasketResponse(basket)
+                    if (response.success) {
+                        setCartCount(response.cartCount)
+                        refreshWishlist()
+                    }
 
                 } catch (e: Exception) {
                     Log.e("WISHLIST_ADD_CART", "failed: ${e.message}", e)

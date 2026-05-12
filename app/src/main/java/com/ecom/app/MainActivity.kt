@@ -9,7 +9,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
 import com.ecom.app.model.account.ProfileResponse
-import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.basket.BasketCountsResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.ProductLite
 import com.ecom.app.network.RetrofitClient
@@ -71,49 +71,19 @@ class MainActivity : ComponentActivity() {
                 goBackScreen()
             }
 
-            var productsList by remember {
-                mutableStateOf<List<ProductLite>>(emptyList())
-            }
-
-            var cartCount by remember {
-                mutableIntStateOf(0)
-            }
-
-            var isAuthenticated by remember {
-                mutableStateOf(false)
-            }
-
-            var profileResponse by remember {
-                mutableStateOf<ProfileResponse?>(null)
-            }
-
-            var profileError by remember {
-                mutableStateOf<String?>(null)
-            }
-
-            var basketResponse by remember {
-                mutableStateOf<BasketResponse?>(null)
-            }
-
-            var checkoutResponse by remember {
-                mutableStateOf<CheckoutResponse?>(null)
-            }
+            var cartCount by remember { mutableIntStateOf(0) }
+            var isAuthenticated by remember { mutableStateOf(false) }
+            var profileResponse by remember { mutableStateOf<ProfileResponse?>(null) }
+            var profileError by remember { mutableStateOf<String?>(null) }
+            var checkoutResponse by remember { mutableStateOf<CheckoutResponse?>(null) }
 
             val scope = rememberCoroutineScope()
             val context = LocalContext.current
 
             LaunchedEffect(Unit) {
                 try {
-                    val productListResponse = RetrofitClient.apiService.getProductList()
-                    productsList = productListResponse.products
-                } catch (e: Exception) {
-                    Log.e("INIT_PRODUCTS", "failed: ${e.message}", e)
-                }
-
-                try {
-                    val basketResponseFromApi = RetrofitClient.apiService.getBasket()
-                    basketResponse = basketResponseFromApi
-                    cartCount = basketResponseFromApi.cartCount
+                    val response = RetrofitClient.apiService.getBasketCounts()
+                    cartCount = response.cartCount
                 } catch (e: Exception) {
                     Log.e("INIT_BASKET", "failed: ${e.message}", e)
                 }
@@ -156,7 +126,7 @@ class MainActivity : ComponentActivity() {
                         try {
                             val response = RetrofitClient.apiService.searchProducts(query)
 
-                            productsList = response.products
+                            //productsList = response.products
                             isSearchDrawerOpen = false
                             replaceScreenTo(AppScreen.Home)
 
@@ -214,14 +184,11 @@ class MainActivity : ComponentActivity() {
                     currentScreen = currentScreen,
                     scope = scope,
                     context = context,
-                    basketResponse = basketResponse,
-                    checkoutResponse = checkoutResponse,
                     profileResponse = profileResponse,
                     profileError = profileError,
                     setScreenTo = { setScreenTo(it) },
                     replaceScreenTo = { replaceScreenTo(it) },
                     setCartCount = { cartCount = it },
-                    setBasketResponse = { basketResponse = it },
                     setCheckoutResponse = { checkoutResponse = it },
                     setAuthenticated = { isAuthenticated = it },
                     setProfileResponse = { profileResponse = it }

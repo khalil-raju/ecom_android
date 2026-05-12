@@ -41,7 +41,6 @@ private fun fullUrl(path: String?): String? {
 fun CheckoutScreen(
     modifier: Modifier = Modifier,
     checkout: CheckoutResponse?,
-    onBack: () -> Unit,
     onAddAddressClick: () -> Unit = {},
     onProceedToPayment: (
         shippingAddressId: Int?,

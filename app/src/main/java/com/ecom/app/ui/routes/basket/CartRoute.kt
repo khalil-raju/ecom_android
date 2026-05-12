@@ -6,7 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.basket.CartDetailResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.network.RetrofitClient
@@ -17,44 +17,47 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.ecom.app.ui.components.ScreenLoading
 
 @Composable
 fun CartRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
-    basketResponse: BasketResponse?,
-    setBasketResponse: (BasketResponse) -> Unit,
-    setCheckoutResponse: (CheckoutResponse) -> Unit,
     setCartCount: (Int) -> Unit,
-    navigateHome: () -> Unit,
     navigateProductDetail: (ProductDetailResponse) -> Unit,
     navigateCheckout: () -> Unit,
-    navigateAddAddress: () -> Unit,
-    navigateSignupOtp: (String) -> Unit,
-    navigateLogin: () -> Unit,
 ) {
     var isLoading by remember { mutableStateOf(false) }
+    var cartDetailResponse by remember { mutableStateOf<CartDetailResponse?>(null) }
+
+    fun refreshCart() {
+        scope.launch {
+            try {
+                isLoading = true
+                val response = RetrofitClient.apiService.getCartDetail()
+                cartDetailResponse = response
+                setCartCount(response.cartCount)
+            } catch (e: Exception) {
+                Log.e("CART_REFRESH", "failed: ${e.message}", e)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
-        try {
-            isLoading = true
+        refreshCart()
+    }
 
-            val response = RetrofitClient.apiService.getBasket()
-            setBasketResponse(response)
-            setCartCount(response.cartCount)
-
-        } catch (e: Exception) {
-            Log.e("CART_REFRESH", "failed: ${e.message}", e)
-        } finally {
-            isLoading = false
-        }
+    if (isLoading || cartDetailResponse == null) {
+        ScreenLoading(message = "Loading cart...")
+        return
     }
 
     CartScreen(
         modifier = Modifier.padding(innerPadding),
-        basket = basketResponse,
+        cartDetailResponse = cartDetailResponse,
         isLoading = isLoading,
-        onBack = navigateHome,
         onNavigateToProduct = { variantId, slug ->
             scope.launch {
                 try {
@@ -68,54 +71,30 @@ fun CartRoute(
                 }
             }
         },
+
         onQuantityChange = { basketItem, quantity ->
             scope.launch {
                 try {
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
                     val variantId = basketItem.variantId ?: return@launch
 
-                    val response = RetrofitClient.apiService.updateCartQuantity(
+                    val response = RetrofitClient.apiService.updateToCart(
                         csrfToken = csrfToken,
                         productId = basketItem.productId,
                         variantId = variantId,
                         quantity = quantity
                     )
 
-                    setBasketResponse(response)
                     setCartCount(response.cartCount)
+                    refreshCart()
                 } catch (e: Exception) {
                     Log.e("CART_QTY", "failed: ${e.message}", e)
                 }
             }
         },
+
         onCheckoutClick = {
-            scope.launch {
-                try {
-                    val response = RetrofitClient.apiService.getCheckout()
-
-                    when (response.nextStep) {
-                        "checkout" -> {
-                            setCheckoutResponse(response)
-                            navigateCheckout()
-                        }
-
-                        "login_contact" -> {
-                            navigateLogin()
-                        }
-
-                        "add_address" -> {
-                            navigateAddAddress()
-                        }
-
-                        else -> {
-                            Log.e("CHECKOUT", "unexpected next_step: ${response.nextStep}")
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    Log.e("CHECKOUT", "failed: ${e.message}", e)
-                }
-            }
+            navigateCheckout()
         }
     )
 }

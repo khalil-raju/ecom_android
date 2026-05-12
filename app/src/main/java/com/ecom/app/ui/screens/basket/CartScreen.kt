@@ -14,15 +14,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
-import com.ecom.app.R
 import com.ecom.app.model.basket.BasketItem
-import com.ecom.app.model.basket.BasketResponse
+import com.ecom.app.model.basket.CartDetailResponse
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -35,15 +33,14 @@ private fun fullUrl(path: String?): String? {
 @Composable
 fun CartScreen(
     modifier: Modifier = Modifier,
-    basket: BasketResponse?,
+    cartDetailResponse: CartDetailResponse?,
     isLoading: Boolean = false,
-    onBack: () -> Unit,
     onNavigateToProduct: (Int, String) -> Unit,
     onQuantityChange: (BasketItem, Int) -> Unit,
     onCheckoutClick: () -> Unit
 ) {
-    val cartItems = basket?.cartItems.orEmpty()
-    val total = basket?.cartTotal ?: 0.0
+    val cartItems = cartDetailResponse?.cartItems.orEmpty()
+    val total = cartDetailResponse?.cartTotal ?: 0.00
 
     Column(
         modifier = modifier
@@ -55,7 +52,7 @@ fun CartScreen(
             title = "My Shopping Bag",
         )
 
-        if (isLoading && basket == null) {
+        if (isLoading && cartDetailResponse == null) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -131,34 +128,6 @@ private fun EmptyCartState() {
                 color = Color.Gray
             )
         }
-    }
-}
-
-@Composable
-private fun CartHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(modifier = Modifier.width(18.dp))
-
-        Text(
-            text = "My Shopping Bag",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
