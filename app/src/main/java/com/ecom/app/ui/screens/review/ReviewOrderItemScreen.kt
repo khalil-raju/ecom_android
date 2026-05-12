@@ -36,13 +36,12 @@ fun ReviewOrderItemScreen(
     modifier: Modifier = Modifier,
     response: ReviewOrderItemResponse?,
     error: String?,
-    onBack: () -> Unit,
     onSubmitReview: (
         rating: Int,
         review: String
     ) -> Unit
 ) {
-    val item = response?.item
+    val item = response?.orderItem
 
     var rating by remember(response) {
         mutableIntStateOf(response?.review?.rating ?: 0)
@@ -52,7 +51,7 @@ fun ReviewOrderItemScreen(
         mutableStateOf(response?.review?.review.orEmpty())
     }
 
-    val alreadyReviewed = response?.alreadyReviewed == true
+    val alreadyReviewed = item?.alreadyReviewed == true
 
     Column(
         modifier = modifier
@@ -76,7 +75,7 @@ fun ReviewOrderItemScreen(
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -110,51 +109,20 @@ fun ReviewOrderItemScreen(
                 )
             }
 
-            Spacer(Modifier.height(90.dp))
+            if (!alreadyReviewed) {
+                ReviewFooter(
+                    enabled = rating > 0,
+                    onClick = {
+                        onSubmitReview(
+                            rating,
+                            reviewText.trim()
+                        )
+                    }
+                )
+            }
+
+            Spacer(Modifier.height(24.dp))
         }
-
-        if (!alreadyReviewed) {
-            ReviewFooter(
-                enabled = rating > 0,
-                onClick = {
-                    onSubmitReview(
-                        rating,
-                        reviewText.trim()
-                    )
-                }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ReviewItemHeader(
-    onBack: () -> Unit,
-    alreadyReviewed: Boolean
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(Modifier.width(18.dp))
-
-        Text(
-            text = if (alreadyReviewed) "Your Review" else "Review Item",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -384,7 +352,7 @@ private fun ReviewFooter(
                 .height(52.dp),
             shape = RoundedCornerShape(8.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFD32F2F),
+                containerColor = Color.Black,
                 contentColor = Color.White,
                 disabledContainerColor = Color.LightGray,
                 disabledContentColor = Color.White

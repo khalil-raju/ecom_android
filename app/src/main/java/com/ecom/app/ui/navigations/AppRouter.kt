@@ -190,7 +190,6 @@ fun AppRouter(
             innerPadding = innerPadding,
             scope = scope,
             itemToken = currentScreen.itemToken,
-            navigateBack = { replaceScreenTo(AppScreen.OrderItemDetail(currentScreen.itemToken)) },
             navigateOrderItemDetail = { replaceScreenTo(AppScreen.OrderItemDetail(it)) }
         )
 

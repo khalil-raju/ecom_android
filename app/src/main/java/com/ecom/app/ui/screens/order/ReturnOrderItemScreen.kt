@@ -68,7 +68,7 @@ fun ReturnOrderItemScreen(
 
         Column(
             modifier = Modifier
-                .weight(1f)
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
@@ -126,18 +126,18 @@ fun ReturnOrderItemScreen(
                 )
             }
 
-            Spacer(Modifier.height(90.dp))
-        }
+            ReturnFooter(
+                enabled = item.canUserReturn,
+                onClick = {
+                    onSubmitReturn(
+                        returnReason.trim(),
+                        refundAccount
+                    )
+                }
+            )
 
-        ReturnFooter(
-            enabled = item.canUserReturn,
-            onClick = {
-                onSubmitReturn(
-                    returnReason.trim(),
-                    refundAccount
-                )
-            }
-        )
+            Spacer(Modifier.height(24.dp))
+        }
     }
 }
 

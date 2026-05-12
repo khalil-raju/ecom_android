@@ -6,24 +6,22 @@ import com.google.gson.annotations.SerializedName
 data class ReviewOrderItemResponse(
     val success: Boolean,
 
-    val item: OrderItem? = null,
-
-    @SerializedName("already_reviewed")
-    val alreadyReviewed: Boolean = false,
-
-    val review: ReviewData? = null,
+    @SerializedName("error_msg")
+    val errorMsg: String?,
 
     @SerializedName("next_step")
-    val nextStep: String? = null,
+    val nextStep: String,
 
-    @SerializedName("item_token")
-    val itemToken: String? = null,
+    @SerializedName("order_item")
+    val orderItem: OrderItem?,
 
-    val error: String? = null
+    val review: OrderItemReview?
 )
 
-data class ReviewData(
+data class OrderItemReview(
     val rating: Int,
+    val review: String,
 
-    val review: String?
+    @SerializedName("created_at")
+    val createdAt: String?
 )
