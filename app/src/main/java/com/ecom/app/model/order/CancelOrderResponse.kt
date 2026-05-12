@@ -1,25 +1,24 @@
-// model/CancelOrderResponse.kt
 package com.ecom.app.model.order
 
+import com.ecom.app.model.payment.Payment
 import com.google.gson.annotations.SerializedName
 
 data class CancelOrderResponse(
-
     val success: Boolean,
 
-    val order: CancelOrder?,
-
-    @SerializedName("order_items")
-    val orderItems: List<OrderItem> = emptyList(),
-
-    @SerializedName("refund_required")
-    val refundRequired: Boolean = false,
-
-    val error: String? = null,
+    @SerializedName("error_msg")
+    val errorMsg: String?,
 
     @SerializedName("next_step")
-    val nextStep: String? = null,
+    val nextStep: String,
 
-    @SerializedName("order_token")
-    val orderToken: String? = null
+    val order: Order?,
+
+    @SerializedName("order_items")
+    val orderItems: List<OrderItem>,
+
+    @SerializedName("refund_required")
+    val refundRequired: Boolean,
+
+    val payment: Payment?
 )

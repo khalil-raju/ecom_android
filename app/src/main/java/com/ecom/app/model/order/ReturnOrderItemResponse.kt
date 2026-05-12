@@ -1,43 +1,24 @@
-// model/ReturnOrderItemResponse.kt
 package com.ecom.app.model.order
 
+import com.ecom.app.model.payment.Payment
 import com.google.gson.annotations.SerializedName
 
 data class ReturnOrderItemResponse(
     val success: Boolean,
 
-    val order: ReturnOrder? = null,
-
-    @SerializedName("order_item")
-    val orderItem: OrderItem? = null,
-
-    @SerializedName("refund_required")
-    val refundRequired: Boolean = false,
-
-    val error: String? = null,
+    @SerializedName("error_msg")
+    val errorMsg: String?,
 
     @SerializedName("next_step")
-    val nextStep: String? = null,
+    val nextStep: String,
 
-    @SerializedName("item_token")
-    val itemToken: String? = null
-)
+    val order: Order?,
 
-data class ReturnOrder(
-    @SerializedName("order_token")
-    val orderToken: String,
+    @SerializedName("order_item")
+    val orderItem: OrderItem?,
 
-    @SerializedName("order_id")
-    val orderId: String,
+    @SerializedName("refund_required")
+    val refundRequired: Boolean,
 
-    val state: String,
-
-    @SerializedName("total_paid_amt")
-    val totalPaidAmt: Double,
-
-    @SerializedName("online_paid_amt")
-    val onlinePaidAmt: Double,
-
-    @SerializedName("wallet_paid_amt")
-    val walletPaidAmt: Double
+    val payment: Payment?
 )

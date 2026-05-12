@@ -15,6 +15,9 @@ data class Payment(
     @SerializedName("cod_paid_amt")
     val codPaidAmt: Double,
 
+    @SerializedName("total_paid_amt")
+    val totalPaidAmt: Double,
+
     @SerializedName("total_due_amt")
     val totalDueAmt: Double
 )

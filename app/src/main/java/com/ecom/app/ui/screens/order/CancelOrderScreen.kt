@@ -36,13 +36,13 @@ fun CancelOrderScreen(
     modifier: Modifier = Modifier,
     response: CancelOrderResponse?,
     error: String?,
-    onBack: () -> Unit,
     onConfirmCancel: (
         cancelReason: String,
         refundAccount: String?
     ) -> Unit
 ) {
     val order = response?.order
+    val payment = response?.payment
     val items = response?.orderItems.orEmpty()
 
     val reasons = listOf(
@@ -94,9 +94,9 @@ fun CancelOrderScreen(
             if (response?.refundRequired == true) {
                 item {
                     RefundAccountCard(
-                        onlinePaidAmt = order?.onlinePaidAmt ?: 0.0,
-                        walletPaidAmt = order?.walletPaidAmt ?: 0.0,
-                        totalPaidAmt = order?.totalPaidAmt ?: 0.0,
+                        onlinePaidAmt = payment?.onlinePaidAmt ?: 0.0,
+                        walletPaidAmt = payment?.walletPaidAmt ?: 0.0,
+                        totalPaidAmt = payment?.totalPaidAmt ?: 0.0,
                         selected = refundAccount,
                         onSelected = { refundAccount = it }
                     )
@@ -139,34 +139,6 @@ fun CancelOrderScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun CancelOrderHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(modifier = Modifier.width(18.dp))
-
-        Text(
-            text = "Cancel Order",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 

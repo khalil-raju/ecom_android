@@ -79,6 +79,12 @@ data class OrderItem(
 
     val quantity: Int,
 
+    @SerializedName("total_wallet_amt")
+    val totalWalletAmt: Double,
+
+    @SerializedName("after_wallet_total_amt")
+    val afterWalletTotalAmt: Double,
+
     @SerializedName("total_amt")
     val totalAmt: Double,
 

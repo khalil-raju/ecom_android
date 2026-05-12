@@ -2,10 +2,9 @@ package com.ecom.app.ui.screens.order
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
@@ -14,13 +13,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
-import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.order.ReturnOrderItemResponse
 import com.ecom.app.ui.components.ScreenHeader
@@ -37,7 +34,6 @@ fun ReturnOrderItemScreen(
     modifier: Modifier = Modifier,
     response: ReturnOrderItemResponse?,
     error: String?,
-    onBack: () -> Unit,
     onSubmitReturn: (
         returnReason: String,
         refundAccount: String?
@@ -45,9 +41,11 @@ fun ReturnOrderItemScreen(
 ) {
     val order = response?.order
     val item = response?.orderItem
+    val payment = response?.payment
 
     var returnReason by remember { mutableStateOf("") }
-    var refundAccount by remember {
+
+    var refundAccount by remember(response?.refundRequired) {
         mutableStateOf(
             if (response?.refundRequired == true) "wallet_account" else null
         )
@@ -58,13 +56,12 @@ fun ReturnOrderItemScreen(
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-
         ScreenHeader(
             title = "Return Item",
             subtitle = "Request a return for this item"
         )
 
-        if (item == null || order == null) {
+        if (item == null) {
             EmptyState()
             return@Column
         }
@@ -76,18 +73,40 @@ fun ReturnOrderItemScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
-            //InfoBanner()
-
-            ReturnItemTopCard(item = item)
+            OrderInfoCard(
+                title = "Return ${item.variantName}",
+                orderId = order?.orderId,
+                placedAt = order?.placedAt,
+                cancelledAt = order?.cancelledAt
+            )
 
             ItemSummaryCard(item = item)
 
-            if (response.refundRequired) {
+            if (
+                payment != null &&
+                payment.totalPaidAmt > 0
+            ) {
+                PaymentDetailsCard(
+                    onlineMethod = payment.onlineMethod,
+                    onlinePaidAmt = payment.onlinePaidAmt,
+                    walletPaidAmt = payment.walletPaidAmt,
+                    itemAfterWalletTotalAmt = item.afterWalletTotalAmt,
+                    itemWalletTotalAmt = item.totalWalletAmt
+                )
+            }
+
+            if (
+                response.refundRequired &&
+                payment != null &&
+                payment.totalPaidAmt > 0
+            ) {
                 RefundAccountCard(
-                    onlinePaidAmt = order.onlinePaidAmt,
-                    walletPaidAmt = order.walletPaidAmt,
-                    totalPaidAmt = order.totalPaidAmt,
+                    onlineMethod = payment.onlineMethod,
+                    onlinePaidAmt = payment.onlinePaidAmt,
+                    walletPaidAmt = payment.walletPaidAmt,
                     itemTotalAmt = item.totalAmt,
+                    itemAfterWalletTotalAmt = item.afterWalletTotalAmt,
+                    itemWalletTotalAmt = item.totalWalletAmt,
                     selected = refundAccount,
                     onSelected = { refundAccount = it }
                 )
@@ -111,7 +130,7 @@ fun ReturnOrderItemScreen(
         }
 
         ReturnFooter(
-            enabled = item.canUserReturn == true,
+            enabled = item.canUserReturn,
             onClick = {
                 onSubmitReturn(
                     returnReason.trim(),
@@ -123,113 +142,37 @@ fun ReturnOrderItemScreen(
 }
 
 @Composable
-private fun ReturnItemHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(Modifier.width(18.dp))
-
-        Text(
-            text = "Return Item",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
-private fun InfoBanner() {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1)),
-        border = BorderStroke(1.dp, Color(0xFFFFD166))
-    ) {
-        Text(
-            text = "You can return this item if it is eligible for return.",
-            modifier = Modifier.padding(16.dp),
-            fontSize = 15.sp,
-            color = Color.Black
-        )
-    }
-}
-
-@Composable
-private fun ReturnItemTopCard(item: OrderItem) {
+private fun OrderInfoCard(
+    title: String,
+    orderId: String?,
+    placedAt: String?,
+    cancelledAt: String?
+) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
-        Row(
-            modifier = Modifier.padding(14.dp),
-            verticalAlignment = Alignment.Top
-        ) {
-            AsyncImage(
-                model = fullUrl(item.variantImageUrl),
-                contentDescription = item.variantName,
-                modifier = Modifier
-                    .size(width = 116.dp, height = 150.dp)
-                    .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
-                contentScale = ContentScale.Crop
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = title,
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
             )
 
-            Spacer(Modifier.width(16.dp))
+            Spacer(Modifier.height(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = item.variantName,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold
-                )
+            if (!orderId.isNullOrBlank()) {
+                DetailRow("Order ID", orderId)
+            }
 
-                Spacer(Modifier.height(8.dp))
+            if (!placedAt.isNullOrBlank()) {
+                DetailRow("Order Placed", placedAt)
+            }
 
-                Text(
-                    text = buildItemMeta(item),
-                    fontSize = 14.sp,
-                    color = Color.DarkGray
-                )
-
-                Spacer(Modifier.height(12.dp))
-
-                Text(
-                    text = "Qty: ${item.quantity}",
-                    fontSize = 14.sp,
-                    color = Color.DarkGray
-                )
-
-                Spacer(Modifier.height(14.dp))
-
-                Text(
-                    text = "₹${formatAmount(item.totalAmt)}",
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                item.statusSummary?.takeIf { it.isNotBlank() }?.let {
-                    Spacer(Modifier.height(10.dp))
-                    Text(
-                        text = it,
-                        fontSize = 14.sp,
-                        color = statusColor(it),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+            if (!cancelledAt.isNullOrBlank()) {
+                DetailRow("Order Cancelled", cancelledAt)
             }
         }
     }
@@ -244,6 +187,47 @@ private fun ItemSummaryCard(item: OrderItem) {
         border = BorderStroke(1.dp, Color(0xFFE0E0E0))
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
+            Row(verticalAlignment = Alignment.Top) {
+                AsyncImage(
+                    model = fullUrl(item.variantImageUrl),
+                    contentDescription = item.variantName,
+                    modifier = Modifier
+                        .size(width = 96.dp, height = 124.dp)
+                        .background(Color(0xFFF0F0F0), RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Crop
+                )
+
+                Spacer(Modifier.width(14.dp))
+
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = item.variantName,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    if (item.variantSize.isNotBlank()) {
+                        Spacer(Modifier.height(6.dp))
+                        Text(
+                            text = "Size: ${item.variantSize}",
+                            fontSize = 14.sp,
+                            color = Color.DarkGray
+                        )
+                    }
+
+                    Spacer(Modifier.height(8.dp))
+
+                    Text(
+                        text = item.statusSummary,
+                        fontSize = 14.sp,
+                        color = statusColor(item.statusSummary),
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(18.dp))
+
             Text(
                 text = "Item Summary",
                 fontSize = 20.sp,
@@ -267,11 +251,53 @@ private fun ItemSummaryCard(item: OrderItem) {
 }
 
 @Composable
-private fun RefundAccountCard(
+private fun PaymentDetailsCard(
+    onlineMethod: String?,
     onlinePaidAmt: Double,
     walletPaidAmt: Double,
-    totalPaidAmt: Double,
+    itemAfterWalletTotalAmt: Double,
+    itemWalletTotalAmt: Double
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = BorderStroke(1.dp, Color(0xFFE0E0E0))
+    ) {
+        Column(modifier = Modifier.padding(18.dp)) {
+            Text(
+                text = "Payment Details",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.Bold
+            )
+
+            Spacer(Modifier.height(14.dp))
+
+            if (itemAfterWalletTotalAmt > 0 && onlinePaidAmt > 0) {
+                DetailRow(
+                    label = onlineMethod ?: "Online Payment",
+                    value = "₹${formatAmount(itemAfterWalletTotalAmt)}"
+                )
+            }
+
+            if (itemWalletTotalAmt > 0 && walletPaidAmt > 0) {
+                DetailRow(
+                    label = "Wallet",
+                    value = "₹${formatAmount(itemWalletTotalAmt)}"
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun RefundAccountCard(
+    onlineMethod: String?,
+    onlinePaidAmt: Double,
+    walletPaidAmt: Double,
     itemTotalAmt: Double,
+    itemAfterWalletTotalAmt: Double,
+    itemWalletTotalAmt: Double,
     selected: String?,
     onSelected: (String) -> Unit
 ) {
@@ -283,17 +309,9 @@ private fun RefundAccountCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "Refund Account",
+                text = "Refund Options",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(6.dp))
-
-            Text(
-                text = "Choose where you want your refund to be credited.",
-                fontSize = 14.sp,
-                color = Color.DarkGray
             )
 
             Spacer(Modifier.height(14.dp))
@@ -304,11 +322,11 @@ private fun RefundAccountCard(
                     title = "Refund to Source",
                     subtitle = buildString {
                         if (walletPaidAmt > 0) {
-                            append("To source: ₹${formatAmount(onlinePaidAmt)}")
+                            append("To ${onlineMethod ?: "source"}: ₹${formatAmount(itemAfterWalletTotalAmt)}")
                             append("\n")
-                            append("To wallet: ₹${formatAmount(walletPaidAmt)}")
+                            append("To wallet: ₹${formatAmount(itemWalletTotalAmt)}")
                         } else {
-                            append("₹${formatAmount(onlinePaidAmt)}")
+                            append("₹${formatAmount(itemAfterWalletTotalAmt)}")
                         }
                     },
                     onClick = { onSelected("source_account") }
@@ -318,7 +336,7 @@ private fun RefundAccountCard(
             RefundOption(
                 selected = selected == "wallet_account",
                 title = "Refund to Wallet",
-                subtitle = "₹${formatAmount(itemTotalAmt.coerceAtMost(totalPaidAmt))}",
+                subtitle = "₹${formatAmount(itemTotalAmt)}",
                 onClick = { onSelected("wallet_account") }
             )
         }
@@ -388,7 +406,7 @@ private fun ReturnReasonCard(
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
             Text(
-                text = "Why are you returning this item?",
+                text = "Return Reason",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -436,7 +454,7 @@ private fun ReturnFooter(
             )
         ) {
             Text(
-                text = "Submit Return Request",
+                text = "Return",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -480,16 +498,6 @@ private fun EmptyState() {
     ) {
         Text("Return item not found.", fontSize = 16.sp)
     }
-}
-
-private fun buildItemMeta(item: OrderItem): String {
-    val parts = mutableListOf<String>()
-
-    item.variantSize?.takeIf { it.isNotBlank() }?.let {
-        parts.add("Size: $it")
-    }
-
-    return parts.joinToString("  •  ")
 }
 
 private fun statusColor(status: String): Color {

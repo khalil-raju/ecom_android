@@ -1,4 +1,3 @@
-// ui/routes/CancelOrderRoute.kt
 package com.ecom.app.ui.routes.order
 
 import android.util.Log
@@ -8,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.ecom.app.model.order.CancelOrderResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.order.CancelOrderScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -17,11 +17,14 @@ fun CancelOrderRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
     orderToken: String,
-    navigateBack: () -> Unit,
     navigateOrderDetail: (String) -> Unit
 ) {
     var cancelOrderResponse by remember(orderToken) {
         mutableStateOf<CancelOrderResponse?>(null)
+    }
+
+    var isLoading by remember(orderToken) {
+        mutableStateOf(true)
     }
 
     var cancelOrderError by remember(orderToken) {
@@ -30,22 +33,34 @@ fun CancelOrderRoute(
 
     LaunchedEffect(orderToken) {
         try {
+            isLoading = true
             cancelOrderError = null
-            cancelOrderResponse = RetrofitClient.apiService.getCancelOrder(orderToken)
+
+            val response = RetrofitClient.apiService.getCancelOrder(orderToken)
+            cancelOrderResponse = response
+
         } catch (e: Exception) {
             cancelOrderError = e.message ?: "Unable to load cancel order."
             Log.e("CANCEL_ORDER", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
+    }
+
+    if (isLoading || cancelOrderResponse == null) {
+        ScreenLoading(message = "Loading cancel order...")
+        return
     }
 
     CancelOrderScreen(
         modifier = Modifier.padding(innerPadding),
         response = cancelOrderResponse,
         error = cancelOrderError,
-        onBack = navigateBack,
         onConfirmCancel = { reason, refundAccount ->
             scope.launch {
                 try {
+                    cancelOrderError = null
+
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
 
                     val response = RetrofitClient.apiService.submitCancelOrder(
@@ -56,11 +71,13 @@ fun CancelOrderRoute(
                     )
 
                     if (response.success && response.nextStep == "order_details") {
-                        cancelOrderError = null
-                        navigateOrderDetail(response.orderToken ?: orderToken)
+                        val token = response.order?.orderToken ?: orderToken
+                        navigateOrderDetail(token)
                     } else {
-                        cancelOrderError = response.error ?: "Unable to cancel order."
+                        cancelOrderError =
+                            response.errorMsg ?: "Unable to cancel order."
                     }
+
                 } catch (e: Exception) {
                     cancelOrderError = e.message ?: "Unable to cancel order."
                     Log.e("CANCEL_SUBMIT", "failed: ${e.message}", e)
