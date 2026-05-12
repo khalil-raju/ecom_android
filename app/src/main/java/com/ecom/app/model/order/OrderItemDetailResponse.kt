@@ -1,6 +1,10 @@
 package com.ecom.app.model.order
 
+import com.google.gson.annotations.SerializedName
+
 data class OrderItemDetailResponse(
     val success: Boolean,
-    val item: OrderItem
+
+    @SerializedName("order_item")
+    val orderItem: OrderItem
 )

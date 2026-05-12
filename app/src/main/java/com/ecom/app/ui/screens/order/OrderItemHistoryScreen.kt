@@ -39,7 +39,6 @@ private fun fullUrl(path: String?): String? {
 fun OrderItemHistoryScreen(
     modifier: Modifier = Modifier,
     response: OrderItemHistoryResponse?,
-    onBack: () -> Unit,
     onItemClick: (OrderItem) -> Unit
 ) {
     val items = response?.orderItems.orEmpty()
@@ -71,7 +70,7 @@ fun OrderItemHistoryScreen(
                     OrderItemHistoryCard(
                         item = item,
                         onClick = {
-                            if (item.canShowDetails != false) {
+                            if (item.canShowDetails) {
                                 onItemClick(item)
                             }
                         }
@@ -148,7 +147,7 @@ private fun OrderItemHistoryCard(
                 )
 
                 // Order ID
-                item.orderId?.takeIf { it.isNotBlank() }?.let {
+                item.orderId.takeIf { it.isNotBlank() }?.let {
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Order ID: $it",
@@ -160,7 +159,7 @@ private fun OrderItemHistoryCard(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 // Status
-                item.statusSummary?.let {
+                item.statusSummary.let {
                     Text(
                         text = it,
                         fontSize = 16.sp,
@@ -170,7 +169,7 @@ private fun OrderItemHistoryCard(
                 }
             }
 
-            if (item.canShowDetails == true) {
+            if (item.canShowDetails) {
                 Text(
                     text = "›",
                     fontSize = 34.sp,

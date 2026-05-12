@@ -7,9 +7,15 @@ data class CheckoutResponse(
     val success: Boolean,
 
     @SerializedName("next_step")
-    val nextStep: String?,
+    val nextStep: String,
 
-    val contact: String,
+    @SerializedName("error_msg")
+    val errorMsg: String?,
+
+    val contact: String?,
+
+    @SerializedName("contact_type")
+    val contactType: String?,
 
     @SerializedName("all_address")
     val allAddress: List<Address>,
@@ -18,7 +24,7 @@ data class CheckoutResponse(
     val selectedAddress: Address?,
 
     @SerializedName("wallet_balance")
-    val walletBalance: Double?,
+    val walletBalance: Double,
 
     val order: Order?,
 

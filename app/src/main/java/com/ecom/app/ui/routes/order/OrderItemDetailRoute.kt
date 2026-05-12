@@ -1,4 +1,3 @@
-// ui/routes/OrderItemDetailRoute.kt
 package com.ecom.app.ui.routes.order
 
 import android.util.Log
@@ -6,9 +5,10 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.order.OrderItemDetailResponse
+import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.order.OrderItemDetailScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -18,7 +18,6 @@ fun OrderItemDetailRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
     itemToken: String,
-    navigateBack: () -> Unit,
     navigateOrderDetail: (String) -> Unit,
     navigateReturnOrderItem: (String) -> Unit,
     navigateReviewOrderItem: (String) -> Unit,
@@ -28,38 +27,50 @@ fun OrderItemDetailRoute(
         mutableStateOf<OrderItemDetailResponse?>(null)
     }
 
+    var isLoading by remember(itemToken) {
+        mutableStateOf(true)
+    }
+
     LaunchedEffect(itemToken) {
         try {
-            orderItemDetailResponse =
-                RetrofitClient.apiService.getOrderItemDetail(itemToken)
+            isLoading = true
+
+            val response = RetrofitClient.apiService.getOrderItemDetail(itemToken)
+            orderItemDetailResponse = response
+
         } catch (e: Exception) {
             Log.e("ORDER_ITEM_DETAIL", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
+    }
+
+    if (isLoading || orderItemDetailResponse == null) {
+        ScreenLoading(message = "Loading order item...")
+        return
     }
 
     OrderItemDetailScreen(
         modifier = Modifier.padding(innerPadding),
         response = orderItemDetailResponse,
 
-        onBack = navigateBack,
-
         onOrderDetailClick = { orderToken ->
             navigateOrderDetail(orderToken)
         },
 
-        onReturnItemClick = { itemToken ->
-            navigateReturnOrderItem(itemToken)
+        onReturnItemClick = { token ->
+            navigateReturnOrderItem(token)
         },
 
-        onReviewItemClick = { itemToken ->
-            navigateReviewOrderItem(itemToken)
+        onReviewItemClick = { token ->
+            navigateReviewOrderItem(token)
         },
 
-        onTrackItemClick = { itemToken ->
+        onTrackItemClick = {
             // later
         },
 
-        onSupportClick = { itemToken ->
+        onSupportClick = {
             // later
         },
 

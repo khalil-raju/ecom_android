@@ -1,8 +1,8 @@
-package com.ecom.app.model.order
+package com.ecom.app.model.payment
 
 import com.google.gson.annotations.SerializedName
 
-data class OrderPayment(
+data class Payment(
     @SerializedName("online_method")
     val onlineMethod: String?,
 

@@ -36,7 +36,6 @@ private fun fullUrl(path: String?): String? {
 fun OrderItemDetailScreen(
     modifier: Modifier = Modifier,
     response: OrderItemDetailResponse?,
-    onBack: () -> Unit,
     onOrderDetailClick: (String) -> Unit,
     onReturnItemClick: (String) -> Unit = {},
     onReviewItemClick: (String) -> Unit = {},
@@ -44,7 +43,7 @@ fun OrderItemDetailScreen(
     onSupportClick: (String) -> Unit = {},
     onProductClick: (variantId: Int, slug: String) -> Unit
 ) {
-    val item = response?.item
+    val item = response?.orderItem
 
     Column(
         modifier = modifier

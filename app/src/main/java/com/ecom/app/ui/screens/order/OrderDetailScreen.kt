@@ -24,7 +24,7 @@ import com.ecom.app.R
 import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.account.Address
-import com.ecom.app.model.order.OrderPayment
+import com.ecom.app.model.payment.Payment
 import com.ecom.app.ui.components.ScreenHeader
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -48,7 +48,7 @@ fun OrderDetailScreen(
     val order = response?.order
     val items = response?.orderItems.orEmpty()
     val payment = response?.payment
-    val shippingAddress = response?.shippingAddress
+    val shippingAddress = order?.shippingAddress
 
     val context = LocalContext.current
 
@@ -530,7 +530,7 @@ private fun buildAddressLines(address: Address?): String {
         .joinToString("\n")
 }
 
-private fun buildPaymentText(payment: OrderPayment?): String {
+private fun buildPaymentText(payment: Payment?): String {
     return when {
         payment == null -> ""
         payment.onlinePaidAmt > 0 -> "Paid via ${payment.onlineMethod ?: "Online"}"

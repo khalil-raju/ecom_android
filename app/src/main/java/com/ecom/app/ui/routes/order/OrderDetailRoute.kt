@@ -1,4 +1,3 @@
-// ui/routes/OrderDetailRoute.kt
 package com.ecom.app.ui.routes.order
 
 import android.content.Context
@@ -10,6 +9,7 @@ import androidx.compose.ui.Modifier
 import com.ecom.app.BuildConfig
 import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.order.OrderDetailScreen
 import com.ecom.app.util.downloadFileAndOpen
 import kotlinx.coroutines.CoroutineScope
@@ -34,12 +34,27 @@ fun OrderDetailRoute(
         mutableStateOf<OrderDetailResponse?>(null)
     }
 
+    var isLoading by remember(orderToken) {
+        mutableStateOf(true)
+    }
+
     LaunchedEffect(orderToken) {
         try {
-            orderDetailResponse = RetrofitClient.apiService.getOrderDetail(orderToken)
+            isLoading = true
+
+            val response = RetrofitClient.apiService.getOrderDetail(orderToken)
+            orderDetailResponse = response
+
         } catch (e: Exception) {
             Log.e("ORDER_DETAIL", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
+    }
+
+    if (isLoading || orderDetailResponse == null) {
+        ScreenLoading(message = "Loading order...")
+        return
     }
 
     OrderDetailScreen(

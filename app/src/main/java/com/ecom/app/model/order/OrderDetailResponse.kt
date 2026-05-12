@@ -2,6 +2,7 @@
 package com.ecom.app.model.order
 
 import com.ecom.app.model.account.Address
+import com.ecom.app.model.payment.Payment
 import com.google.gson.annotations.SerializedName
 
 data class OrderDetailResponse(
@@ -9,16 +10,10 @@ data class OrderDetailResponse(
 
     val order: Order,
 
-    @SerializedName("shipping_address")
-    val shippingAddress: Address?,
-
-    @SerializedName("billing_address")
-    val billingAddress: Address?,
-
     @SerializedName("order_items")
     val orderItems: List<OrderItem>,
 
-    val payment: OrderPayment?,
+    val payment: Payment?,
 
     val invoice: OrderInvoice?
 )
