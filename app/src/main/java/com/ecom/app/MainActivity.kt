@@ -11,7 +11,7 @@ import androidx.core.view.WindowCompat
 import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.basket.BasketResponse
 import com.ecom.app.model.order.CheckoutResponse
-import com.ecom.app.model.product.Product
+import com.ecom.app.model.product.ProductLite
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
@@ -71,8 +71,8 @@ class MainActivity : ComponentActivity() {
                 goBackScreen()
             }
 
-            var products by remember {
-                mutableStateOf<List<Product>>(emptyList())
+            var productsList by remember {
+                mutableStateOf<List<ProductLite>>(emptyList())
             }
 
             var cartCount by remember {
@@ -104,8 +104,8 @@ class MainActivity : ComponentActivity() {
 
             LaunchedEffect(Unit) {
                 try {
-                    val productResponse = RetrofitClient.apiService.getProducts()
-                    products = productResponse.products
+                    val productListResponse = RetrofitClient.apiService.getProductList()
+                    productsList = productListResponse.products
                 } catch (e: Exception) {
                     Log.e("INIT_PRODUCTS", "failed: ${e.message}", e)
                 }
@@ -156,7 +156,7 @@ class MainActivity : ComponentActivity() {
                         try {
                             val response = RetrofitClient.apiService.searchProducts(query)
 
-                            products = response.products
+                            productsList = response.products
                             isSearchDrawerOpen = false
                             replaceScreenTo(AppScreen.Home)
 
@@ -214,7 +214,6 @@ class MainActivity : ComponentActivity() {
                     currentScreen = currentScreen,
                     scope = scope,
                     context = context,
-                    products = products,
                     basketResponse = basketResponse,
                     checkoutResponse = checkoutResponse,
                     profileResponse = profileResponse,

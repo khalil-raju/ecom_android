@@ -37,7 +37,7 @@ import coil.compose.AsyncImage
 import com.ecom.app.R
 import com.ecom.app.BuildConfig
 import com.ecom.app.model.product.ProductDetailResponse
-import com.ecom.app.model.product.ProductVariantDetail
+import com.ecom.app.model.product.Variant
 import com.ecom.app.network.RetrofitClient
 
 
@@ -381,9 +381,9 @@ private fun ThumbnailRow(
 
 @Composable
 private fun VariantButtons(
-    variants: List<ProductVariantDetail>,
-    selectedVariant: ProductVariantDetail?,
-    onVariantClick: (ProductVariantDetail) -> Unit
+    variants: List<Variant>,
+    selectedVariant: Variant?,
+    onVariantClick: (Variant) -> Unit
 ) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(18.dp)

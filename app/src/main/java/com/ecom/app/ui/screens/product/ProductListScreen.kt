@@ -26,7 +26,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filter
-import com.ecom.app.model.product.Product
+import com.ecom.app.model.product.ProductLite
 import com.ecom.app.ui.components.HeroBanner
 import com.ecom.app.ui.components.ProductCard
 import com.ecom.app.ui.components.ScreenLoading
@@ -35,13 +35,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ProductListScreen(
-    products: List<Product>,
+    products: List<ProductLite>,
     isLoading: Boolean,
     isLoadingMore: Boolean,
     hasMore: Boolean,
     modifier: Modifier = Modifier,
     onLoadMore: () -> Unit,
-    onProductClick: (Product) -> Unit
+    onProductClick: (ProductLite) -> Unit
 ) {
     val listState = rememberLazyListState()
     val scope = rememberCoroutineScope()

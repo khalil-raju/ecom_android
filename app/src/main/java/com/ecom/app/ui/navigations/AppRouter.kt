@@ -86,7 +86,6 @@ fun AppRouter(
     replaceScreenTo: (AppScreen) -> Unit,
     scope: CoroutineScope,
     context: Context,
-    products: List<Product>,
     basketResponse: BasketResponse?,
     checkoutResponse: CheckoutResponse?,
     profileResponse: ProfileResponse?,

@@ -18,11 +18,14 @@ import androidx.compose.material3.HorizontalDivider
 
 import coil.compose.AsyncImage
 
-import com.ecom.app.model.product.Product
 import com.ecom.app.BuildConfig
+import com.ecom.app.model.product.ProductLite
 
 @Composable
-fun ProductCard(product: Product, onClick: () -> Unit) {
+fun ProductCard(
+    product: ProductLite,
+    onClick: () -> Unit
+) {
 
     val imageUrl = product.image?.let {
         if (it.startsWith("http")) it

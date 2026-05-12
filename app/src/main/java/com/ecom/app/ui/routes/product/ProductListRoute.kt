@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.product.Product
+import com.ecom.app.model.product.ProductLite
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.screens.product.ProductListScreen
@@ -18,7 +18,7 @@ fun ProductListRoute(
     scope: CoroutineScope,
     navigateProductDetail: (ProductDetailResponse) -> Unit
 ) {
-    var products by remember { mutableStateOf<List<Product>>(emptyList()) }
+    var products by remember { mutableStateOf<List<ProductLite>>(emptyList()) }
     var nextOffset by remember { mutableIntStateOf(0) }
     var hasMore by remember { mutableStateOf(true) }
     var isLoading by remember { mutableStateOf(false) }
@@ -42,7 +42,7 @@ fun ProductListRoute(
                 val offsetToLoad = if (reset) 0 else nextOffset
                 val limitToLoad = 20
 
-                val response = RetrofitClient.apiService.getProducts(
+                val response = RetrofitClient.apiService.getProductList(
                     limit = limitToLoad,
                     offset = offsetToLoad
                 )

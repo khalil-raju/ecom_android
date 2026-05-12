@@ -2,7 +2,6 @@ package com.ecom.app.network
 
 import com.ecom.app.model.account.AddressFormResponse
 import com.ecom.app.model.product.ProductListResponse
-import com.ecom.app.model.product.SearchSuggestionResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.basket.CartCountResponse
 import com.ecom.app.model.account.AuthStepResponse
@@ -20,7 +19,8 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItemDetailResponse
 import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.model.order.ReturnOrderItemResponse
-import com.ecom.app.model.product.CategoryMenuResponse
+import com.ecom.app.model.product.AutocompleteSearchSuggestionsResponse
+import com.ecom.app.model.product.ProductCategoryResponse
 import com.ecom.app.model.review.ReviewOrderItemResponse
 import com.ecom.app.model.wallet.WalletResponse
 
@@ -288,7 +288,7 @@ interface ApiService {
 
     // ---------------- Product ----------------
     @GET("/")
-    suspend fun getProducts(
+    suspend fun getProductList(
         @Query("format") format: String = "json",
         @Query("limit") limit: Int = 20,
         @Query("offset") offset: Int = 0
@@ -297,7 +297,7 @@ interface ApiService {
     @GET("products/search/autocomplete/")
     suspend fun getSearchSuggestions(
         @Query("q") query: String
-    ): SearchSuggestionResponse
+    ): AutocompleteSearchSuggestionsResponse
 
     @GET("products/search/result/")
     suspend fun searchProducts(
@@ -315,7 +315,7 @@ interface ApiService {
     @GET("products/category/menu/")
     suspend fun getCategoryMenu(
         @Query("format") format: String = "json"
-    ): CategoryMenuResponse
+    ): ProductCategoryResponse
 
     @GET("products/category/{parentSlug}/")
     suspend fun getProductsByParentCategory(

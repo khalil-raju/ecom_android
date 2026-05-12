@@ -18,7 +18,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
-import com.ecom.app.model.product.SearchSuggestion
+import com.ecom.app.model.product.AutocompleteSearchSuggestion
 import com.ecom.app.network.RetrofitClient
 import kotlinx.coroutines.delay
 @Composable
@@ -27,7 +27,7 @@ fun SearchMenu(
     onSearchSubmit: (String) -> Unit
 ) {
     var query by remember { mutableStateOf("") }
-    var suggestions by remember { mutableStateOf<List<SearchSuggestion>>(emptyList()) }
+    var suggestions by remember { mutableStateOf<List<AutocompleteSearchSuggestion>>(emptyList()) }
 
     fun submitSearch() {
         val cleanQuery = query.trim()
