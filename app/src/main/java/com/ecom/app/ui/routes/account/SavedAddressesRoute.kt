@@ -15,7 +15,6 @@ import kotlinx.coroutines.launch
 fun SavedAddressesRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
-    navigateBack: () -> Unit,
     navigateAddAddress: () -> Unit,
     navigateEditAddress: (Int) -> Unit = {}
 ) {
@@ -35,7 +34,6 @@ fun SavedAddressesRoute(
     SavedAddressesScreen(
         modifier = Modifier.padding(innerPadding),
         addresses = addresses,
-        onBack = navigateBack,
         onAddAddress = navigateAddAddress,
         onEditAddress = navigateEditAddress,
         onDeleteAddress = { addressId ->

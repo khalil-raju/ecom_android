@@ -17,18 +17,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
-import com.ecom.app.model.account.Address
-import com.ecom.app.model.account.AddressFormResponse
-import com.ecom.app.model.account.PinCodeResponse
+import com.ecom.app.model.account.AddAddressResponse
+import com.ecom.app.model.account.PincodeDetailsResponse
 import com.ecom.app.model.account.RegionState
 import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
 fun AddAddressScreen(
     modifier: Modifier = Modifier,
-    response: AddressFormResponse?,
+    response: AddAddressResponse?,
     errorMsg: Map<String, String> = emptyMap(),
-    onFetchPincode: suspend (String) -> PinCodeResponse?,
+    onFetchPincode: suspend (String) -> PincodeDetailsResponse?,
     onSubmit: (
         fullName: String,
         phone: String,
@@ -45,7 +44,7 @@ fun AddAddressScreen(
 ) {
 
     val address = response?.address
-    val states = response?.states.orEmpty()
+    val states = response?.regionStates.orEmpty()
     val isGuest = response?.isGuest == true
 
     var fullName by remember(address) {
@@ -98,7 +97,6 @@ fun AddAddressScreen(
             val result = onFetchPincode(postalCode)
 
             if (result?.success == true) {
-                city = result.city.orEmpty()
                 state = result.state.orEmpty()
             }
         }
@@ -259,37 +257,6 @@ fun AddAddressScreen(
 }
 
 @Composable
-private fun AddressHeader(
-    onBack: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(modifier = Modifier.width(18.dp))
-
-        Text(
-            text = "Address Form",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-    }
-}
-
-@Composable
 private fun AddressCard(
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -361,7 +328,7 @@ private fun StateDropdown(
 
     Column {
         Text(
-            text = "State / Region",
+            text = "State",
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp
         )

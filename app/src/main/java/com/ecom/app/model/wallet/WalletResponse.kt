@@ -3,8 +3,6 @@ package com.ecom.app.model.wallet
 import com.google.gson.annotations.SerializedName
 
 data class WalletResponse(
-    val success: Boolean,
-
     @SerializedName("wallet_balance")
     val walletBalance: Double = 0.0,
 

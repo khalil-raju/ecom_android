@@ -51,10 +51,10 @@ fun ScreenLoading(
         verticalArrangement = Arrangement.Center
     ) {
         AsyncImage(
-            model = BuildConfig.LOGO_FULL_IMAGE,
+            model = BuildConfig.LOGO_SHORT_IMAGE,
             contentDescription = "Loading",
             modifier = Modifier
-                .width(170.dp)
+                .width(64.dp)
                 .graphicsLayer {
                     scaleX = scale
                     scaleY = scale

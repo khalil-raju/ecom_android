@@ -1,14 +1,16 @@
 package com.ecom.app.network
 
-import com.ecom.app.model.account.AddressFormResponse
+import com.ecom.app.model.account.AddAddressResponse
 import com.ecom.app.model.product.ProductListResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.account.AuthStepResponse
 import com.ecom.app.model.account.ChangeContactResponse
 import com.ecom.app.model.account.ChangeNameResponse
 import com.ecom.app.model.account.ChangePasswordResponse
-import com.ecom.app.model.account.PinCodeResponse
+import com.ecom.app.model.account.DeleteAddressResponse
+import com.ecom.app.model.account.PincodeDetailsResponse
 import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.account.SavedAddressResponse
 import com.ecom.app.model.basket.AddToWishlistResponse
 import com.ecom.app.model.basket.BasketCountsResponse
 import com.ecom.app.model.basket.CartDetailResponse
@@ -473,7 +475,7 @@ interface ApiService {
     ): ReturnOrderItemResponse
 
     // ---------------- Wallet ----------------
-    @GET("wallets/")
+    @GET("wallets/wallet_detail/")
     suspend fun getWalletDetail(
         @Query("format")
         format: String = "json"
@@ -505,7 +507,7 @@ interface ApiService {
     suspend fun getAddAddress(
         @Query("format") format: String = "json",
         @Query("from") from: String? = null
-    ): AddressFormResponse
+    ): AddAddressResponse
 
 
     @FormUrlEncoded
@@ -552,7 +554,7 @@ interface ApiService {
 
         @Query("from")
         from: String? = null
-    ): AddressFormResponse
+    ): AddAddressResponse
 
 
     @GET("accounts/edit-address/{addressId}/")
@@ -562,7 +564,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AddressFormResponse
+    ): AddAddressResponse
 
 
     @FormUrlEncoded
@@ -606,14 +608,14 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AddressFormResponse
+    ): AddAddressResponse
 
 
     @GET("accounts/saved-address/")
     suspend fun getSavedAddresses(
         @Query("format")
         format: String = "json"
-    ): AddressFormResponse
+    ): SavedAddressResponse
 
 
     @POST("accounts/delete-address/{addressId}/")
@@ -626,13 +628,13 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AddressFormResponse
+    ): DeleteAddressResponse
 
 
     @GET("accounts/get/pincode/details/")
     suspend fun getPinCodeDetails(
         @Query("pincode")
         pincode: String
-    ): PinCodeResponse
+    ): PincodeDetailsResponse
 
 }

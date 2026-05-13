@@ -27,7 +27,6 @@ fun OrderDetailRoute(
     scope: CoroutineScope,
     context: Context,
     orderToken: String,
-    navigateBack: () -> Unit,
     navigateCancelOrder: (String) -> Unit
 ) {
     var orderDetailResponse by remember(orderToken) {
@@ -60,7 +59,6 @@ fun OrderDetailRoute(
     OrderDetailScreen(
         modifier = Modifier.padding(innerPadding),
         response = orderDetailResponse,
-        onBack = navigateBack,
         onCancelOrderClick = {
             navigateCancelOrder(orderToken)
         },

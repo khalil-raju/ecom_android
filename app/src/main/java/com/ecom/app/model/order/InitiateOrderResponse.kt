@@ -14,5 +14,6 @@ data class InitiateOrderResponse(
     @SerializedName("order_token")
     val orderToken: String?,
 
-    val error: String?
+    @SerializedName("error_msg")
+    val errorMsg: String?
 )

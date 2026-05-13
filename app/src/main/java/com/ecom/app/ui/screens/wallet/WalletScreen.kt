@@ -27,7 +27,6 @@ import com.ecom.app.ui.components.ScreenHeader
 fun WalletScreen(
     modifier: Modifier = Modifier,
     response: WalletResponse?,
-    onBack: () -> Unit
 ) {
     val txns = response?.txns.orEmpty()
 

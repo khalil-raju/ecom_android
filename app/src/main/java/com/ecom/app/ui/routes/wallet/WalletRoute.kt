@@ -7,30 +7,42 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.ecom.app.model.wallet.WalletResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.wallet.WalletScreen
-import kotlinx.coroutines.CoroutineScope
 
 @Composable
 fun WalletRoute(
-    innerPadding: PaddingValues,
-    scope: CoroutineScope,
-    navigateBack: () -> Unit
+    innerPadding: PaddingValues
 ) {
-    var response by remember {
+    var walletResponse by remember {
         mutableStateOf<WalletResponse?>(null)
+    }
+
+    var isLoading by remember {
+        mutableStateOf(true)
     }
 
     LaunchedEffect(Unit) {
         try {
-            response = RetrofitClient.apiService.getWalletDetail()
+            isLoading = true
+
+            val response = RetrofitClient.apiService.getWalletDetail()
+            walletResponse = response
+
         } catch (e: Exception) {
             Log.e("WALLET_GET", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
+    }
+
+    if (isLoading || walletResponse == null) {
+        ScreenLoading(message = "Loading wallet...")
+        return
     }
 
     WalletScreen(
         modifier = Modifier.padding(innerPadding),
-        response = response,
-        onBack = navigateBack
+        response = walletResponse
     )
 }

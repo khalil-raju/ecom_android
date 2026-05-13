@@ -23,7 +23,6 @@ import com.ecom.app.ui.components.ScreenHeader
 fun SavedAddressesScreen(
     modifier: Modifier = Modifier,
     addresses: List<Address>,
-    onBack: () -> Unit,
     onAddAddress: () -> Unit,
     onEditAddress: (Int) -> Unit,
     onDeleteAddress: (Int) -> Unit,

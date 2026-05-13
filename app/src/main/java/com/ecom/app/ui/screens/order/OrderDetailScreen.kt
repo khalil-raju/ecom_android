@@ -40,7 +40,6 @@ private fun fullUrl(path: String?): String? {
 fun OrderDetailScreen(
     modifier: Modifier = Modifier,
     response: OrderDetailResponse?,
-    onBack: () -> Unit,
     onInvoiceClick: () -> Unit,
     onSupportClick: () -> Unit = {},
     onCancelOrderClick: () -> Unit = {}

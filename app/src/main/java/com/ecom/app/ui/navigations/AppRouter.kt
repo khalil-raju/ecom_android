@@ -168,7 +168,6 @@ fun AppRouter(
             scope = scope,
             context = context,
             orderToken = currentScreen.orderToken,
-            navigateBack = { replaceScreenTo(AppScreen.OrderItemHistory) },
             navigateCancelOrder = { setScreenTo(AppScreen.CancelOrder(it)) }
         )
 
@@ -349,45 +348,19 @@ fun AppRouter(
             innerPadding = innerPadding,
             scope = scope,
             addressId = currentScreen.addressId,
-
-            navigateBack = {
-                replaceScreenTo(AppScreen.SavedAddresses)
-            },
-
-            navigateSavedAddresses = {
-                replaceScreenTo(AppScreen.SavedAddresses)
-            },
-
-            navigateCheckout = {
-                replaceScreenTo(AppScreen.Checkout)
-            },
-
-            setCheckoutResponse = {
-                setCheckoutResponse(it)
-            },
-
-            navigateSignupOtp = { contact ->
-                setScreenTo(
-                    AppScreen.OtpVerify(
-                        contact = contact,
-                        purpose = OtpPurpose.SIGNUP
-                    )
-                )
-            }
+            navigateCheckout = { replaceScreenTo(AppScreen.Checkout) },
+            navigateSavedAddresses = { setScreenTo(AppScreen.SavedAddresses) }
         )
 
         AppScreen.SavedAddresses -> SavedAddressesRoute(
             innerPadding = innerPadding,
             scope = scope,
-            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
             navigateEditAddress = { setScreenTo(AppScreen.AddAddress(it)) }
         )
 
         AppScreen.Wallet -> WalletRoute(
             innerPadding = innerPadding,
-            scope = scope,
-            navigateBack = { replaceScreenTo(AppScreen.Profile) }
         )
     }
 }

@@ -54,6 +54,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
             buildConfigField("String", "HERO_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_hero_image_mob.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_white.png\"")
+            buildConfigField("String", "LOGO_SHORT_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_short.png\"")
         }
 
         create("abitomodaProd") {
@@ -66,6 +67,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"https://abitomoda.com/\"")
             buildConfigField("String", "HERO_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_hero_image_mob.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_brand_logo_white.png\"")
+            buildConfigField("String", "LOGO_SHORT_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_short.png\"")
         }
 
         create("steezyfitLocal") {
@@ -78,6 +80,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
             buildConfigField("String", "HERO_IMAGE", "\"http://192.168.64.5/static/cores/media/sf/sf_hero_image.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"http://192.168.64.5/static/cores/media/sf/sf_brand_logo_white.png\"")
+            buildConfigField("String", "LOGO_SHORT_IMAGE", "\"http://192.168.64.5/static/cores/media/sf/sf_brand_logo_short.png\"")
         }
 
         create("steezyfitProd") {
@@ -90,6 +93,7 @@ android {
             buildConfigField("String", "BASE_URL", "\"https://steezyfit.com/\"")
             buildConfigField("String", "HERO_IMAGE", "\"https://steezyfit.com/static/cores/media/sf/sf_hero_image.png\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"https://steezyfit.com/static/cores/media/sf/sf_brand_logo_white.png\"")
+            buildConfigField("String", "LOGO_SHORT_IMAGE", "\"http://192.168.64.5/static/cores/media/sf/sf_brand_logo_short.png\"")
         }
     }
 }
