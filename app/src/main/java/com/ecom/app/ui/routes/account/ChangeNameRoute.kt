@@ -6,8 +6,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import com.ecom.app.model.account.ChangeNameResponse
-import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.account.ChangeNameScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -17,12 +17,14 @@ fun ChangeNameRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
     navigateBack: () -> Unit,
-    navigateProfile: () -> Unit,
-    onProfileUpdated: (ProfileResponse) -> Unit
+    navigateProfile: () -> Unit
 ) {
-
     var response by remember {
         mutableStateOf<ChangeNameResponse?>(null)
+    }
+
+    var isLoading by remember {
+        mutableStateOf(true)
     }
 
     var error by remember {
@@ -31,10 +33,22 @@ fun ChangeNameRoute(
 
     LaunchedEffect(Unit) {
         try {
+            isLoading = true
+            error = null
+
             response = RetrofitClient.apiService.getChangeName()
+
         } catch (e: Exception) {
+            error = e.message ?: "Unable to load name form."
             Log.e("CHANGE_NAME_GET", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
+    }
+
+    if (isLoading || response == null) {
+        ScreenLoading(message = "Loading name form...")
+        return
     }
 
     ChangeNameScreen(
@@ -45,26 +59,26 @@ fun ChangeNameRoute(
         onSubmit = { firstName, lastName ->
             scope.launch {
                 try {
-                    val csrfToken =
-                        RetrofitClient.getCsrfToken() ?: return@launch
+                    error = null
 
-                    val result =
-                        RetrofitClient.apiService.submitChangeName(
-                            csrfToken = csrfToken,
-                            newFirstname = firstName,
-                            newLastname = lastName
-                        )
+                    val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
 
-                    if (result.success) {
-                        val profile = RetrofitClient.apiService.getProfile()
-                        onProfileUpdated(profile)
+                    val result = RetrofitClient.apiService.submitChangeName(
+                        csrfToken = csrfToken,
+                        newFirstname = firstName,
+                        newLastname = lastName
+                    )
+
+                    response = result
+
+                    if (result.success && result.nextStep == "profile") {
                         navigateProfile()
                     } else {
-                        error = result.errorMsg
+                        error = result.errorMsg ?: "Unable to update name."
                     }
 
                 } catch (e: Exception) {
-                    error = e.message
+                    error = e.message ?: "Unable to update name."
                     Log.e("CHANGE_NAME_SUBMIT", "failed: ${e.message}", e)
                 }
             }

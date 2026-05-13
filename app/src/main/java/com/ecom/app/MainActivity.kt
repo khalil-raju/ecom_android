@@ -8,10 +8,8 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.view.WindowCompat
-import com.ecom.app.model.account.ProfileResponse
-import com.ecom.app.model.basket.BasketCountsResponse
+import com.ecom.app.model.account.UserProfileResponse
 import com.ecom.app.model.order.CheckoutResponse
-import com.ecom.app.model.product.ProductLite
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.layouts.AppScaffold
 import com.ecom.app.ui.layouts.DrawerContentType
@@ -73,7 +71,7 @@ class MainActivity : ComponentActivity() {
 
             var cartCount by remember { mutableIntStateOf(0) }
             var isAuthenticated by remember { mutableStateOf(false) }
-            var profileResponse by remember { mutableStateOf<ProfileResponse?>(null) }
+            var profileResponse by remember { mutableStateOf<UserProfileResponse?>(null) }
             var profileError by remember { mutableStateOf<String?>(null) }
             var checkoutResponse by remember { mutableStateOf<CheckoutResponse?>(null) }
 
@@ -155,27 +153,7 @@ class MainActivity : ComponentActivity() {
                 },
 
                 onProfileClick = {
-                    scope.launch {
-                        try {
-                            profileError = null
-
-                            val response = RetrofitClient.apiService.getProfile()
-                            profileResponse = response
-                            isAuthenticated = response.success && response.authenticated
-
-                            setScreenTo(
-                                if (isAuthenticated) {
-                                    AppScreen.Profile
-                                } else {
-                                    AppScreen.LoginContact()
-                                }
-                            )
-
-                        } catch (e: Exception) {
-                            isAuthenticated = false
-                            setScreenTo(AppScreen.LoginContact())
-                        }
-                    }
+                    setScreenTo(AppScreen.Profile)
                 }
             ) { innerPadding ->
 

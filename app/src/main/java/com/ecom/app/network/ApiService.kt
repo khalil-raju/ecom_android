@@ -3,14 +3,14 @@ package com.ecom.app.network
 import com.ecom.app.model.account.AddAddressResponse
 import com.ecom.app.model.product.ProductListResponse
 import com.ecom.app.model.product.ProductDetailResponse
-import com.ecom.app.model.account.AuthStepResponse
+import com.ecom.app.model.account.AuthResponse
 import com.ecom.app.model.account.ChangeContactResponse
 import com.ecom.app.model.account.ChangeNameResponse
 import com.ecom.app.model.account.ChangePasswordResponse
 import com.ecom.app.model.account.DeleteAddressResponse
 import com.ecom.app.model.account.PincodeDetailsResponse
-import com.ecom.app.model.account.ProfileResponse
 import com.ecom.app.model.account.SavedAddressResponse
+import com.ecom.app.model.account.UserProfileResponse
 import com.ecom.app.model.basket.AddToWishlistResponse
 import com.ecom.app.model.basket.BasketCountsResponse
 import com.ecom.app.model.basket.CartDetailResponse
@@ -47,7 +47,7 @@ interface ApiService {
         @Query("format") format: String = "json",
         @Header("X-CSRFToken") csrfToken: String,
         @Field("contact") contact: String
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/login/password/")
@@ -55,13 +55,13 @@ interface ApiService {
         @Query("format") format: String = "json",
         @Header("X-CSRFToken") csrfToken: String,
         @Field("password") password: String
-    ): AuthStepResponse
+    ): AuthResponse
 
     // ---------------- Logout ----------------
     @POST("accounts/logout/")
     suspend fun logout(
         @Query("format") format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     // ---------------- Signup ----------------
     @FormUrlEncoded
@@ -78,13 +78,13 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @GET("accounts/signup/password/")
     suspend fun getSignupPassword(
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/signup/password/")
@@ -100,14 +100,14 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     // ---------------- OTP: Login ----------------
     @GET("accounts/login/otp/")
     suspend fun startLoginOtp(
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @GET("accounts/login/otp/")
     suspend fun resendLoginOtp(
@@ -116,7 +116,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/login/otp/")
@@ -129,7 +129,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
 
     // ---------------- OTP: Signup ----------------
@@ -137,7 +137,7 @@ interface ApiService {
     suspend fun startSignupOtp(
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @GET("accounts/signup/otp/")
     suspend fun resendSignupOtp(
@@ -146,7 +146,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/signup/otp/")
@@ -159,7 +159,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
 
     // ---------------- OTP: Verify Contact ----------------
@@ -170,7 +170,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @GET("accounts/verify/contact/otp")
     suspend fun resendVerifyContactOtp(
@@ -182,7 +182,7 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/verify/contact/otp")
@@ -195,19 +195,19 @@ interface ApiService {
 
         @Query("format")
         format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     // ---------------- OTP: Change Contact ----------------
     @GET("accounts/change/contact/otp")
     suspend fun startChangeContactOtp(
         @Query("format") format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @GET("accounts/change/contact/otp")
     suspend fun resendChangeContactOtp(
         @Query("resend") resend: String = "1",
         @Query("format") format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     @FormUrlEncoded
     @POST("accounts/change/contact/otp")
@@ -215,7 +215,7 @@ interface ApiService {
         @Header("X-CSRFToken") csrfToken: String,
         @Field("otp") otp: String,
         @Query("format") format: String = "json"
-    ): AuthStepResponse
+    ): AuthResponse
 
     // ---------------- Change Password ----------------
     @GET("accounts/change_password/")
@@ -239,7 +239,7 @@ interface ApiService {
     @GET("accounts/profile/")
     suspend fun getProfile(
         @Query("format") format: String = "json"
-    ): ProfileResponse
+    ): UserProfileResponse
 
     @GET("accounts/change_name/")
     suspend fun getChangeName(

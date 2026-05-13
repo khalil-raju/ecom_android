@@ -22,9 +22,7 @@ import com.ecom.app.ui.components.ScreenHeader
 @Composable
 fun ChangePasswordScreen(
     modifier: Modifier = Modifier,
-    response: ChangePasswordResponse?,
     error: String?,
-    onBack: () -> Unit,
     onSubmit: (String, String) -> Unit
 ) {
     var password by remember { mutableStateOf("") }

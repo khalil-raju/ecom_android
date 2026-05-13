@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.*
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.screens.account.SignupContactScreen
+import com.ecom.app.ui.components.ScreenLoading
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -16,6 +17,12 @@ fun SignupContactRoute(
     navigateLogin: () -> Unit
 ) {
     var error by remember { mutableStateOf<String?>(null) }
+    var isSubmitting by remember { mutableStateOf(false) }
+
+    if (isSubmitting) {
+        ScreenLoading(message = "Checking account...")
+        return
+    }
 
     SignupContactScreen(
         error = error,
@@ -24,6 +31,7 @@ fun SignupContactRoute(
         onContinue = { contact, consent ->
             scope.launch {
                 try {
+                    isSubmitting = true
                     error = null
 
                     val csrfToken = RetrofitClient.getCsrfToken()
@@ -59,12 +67,14 @@ fun SignupContactRoute(
                             }
                         }
                     } else {
-                        error = response.error ?: response.errorMsg ?: "Signup failed"
+                        error = response.errorMsg ?: "Signup failed"
                     }
 
                 } catch (e: Exception) {
                     error = e.message ?: "Signup failed"
                     Log.e("SIGNUP_CONTACT", "failed: ${e.message}", e)
+                } finally {
+                    isSubmitting = false
                 }
             }
         }

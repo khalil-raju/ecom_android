@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
-import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.account.UserProfileResponse
 import com.ecom.app.ui.components.ScreenHeader
 
 private data class ProfileActionItem(
@@ -34,9 +34,8 @@ private data class ProfileActionItem(
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
-    profile: ProfileResponse?,
+    profile: UserProfileResponse?,
     error: String?,
-    onBack: () -> Unit,
     onSavedAddressesClick: () -> Unit,
     onAddAddressClick: () -> Unit,
     onChangeNameClick: () -> Unit,

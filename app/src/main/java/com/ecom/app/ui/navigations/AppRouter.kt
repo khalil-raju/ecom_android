@@ -3,7 +3,7 @@ package com.ecom.app.ui.navigations
 import android.content.Context
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.account.UserProfileResponse
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.ui.routes.account.AddAddressRoute
@@ -84,12 +84,12 @@ fun AppRouter(
     replaceScreenTo: (AppScreen) -> Unit,
     scope: CoroutineScope,
     context: Context,
-    profileResponse: ProfileResponse?,
+    profileResponse: UserProfileResponse?,
     profileError: String?,
     setCartCount: (Int) -> Unit,
     setCheckoutResponse: (CheckoutResponse) -> Unit,
     setAuthenticated: (Boolean) -> Unit,
-    setProfileResponse: (ProfileResponse?) -> Unit
+    setProfileResponse: (UserProfileResponse?) -> Unit
 ) {
     when (currentScreen) {
         AppScreen.Home -> ProductListRoute(
@@ -250,17 +250,16 @@ fun AppRouter(
             navigateHome = { replaceScreenTo(AppScreen.Home) },
 
             onVerified = { response ->
-
                 when (currentScreen.purpose) {
 
                     OtpPurpose.LOGIN,
                     OtpPurpose.SIGNUP -> {
-
-                        setAuthenticated(true)
+                        setAuthenticated(response.authenticated)
 
                         when (response.nextStep) {
-
-                            "/orders/checkout/" -> {
+                            "/orders/checkout/",
+                            "orders:checkout",
+                            "checkout" -> {
                                 replaceScreenTo(AppScreen.Checkout)
                             }
 
@@ -272,27 +271,16 @@ fun AppRouter(
 
                     OtpPurpose.CHANGE_PHONE,
                     OtpPurpose.CHANGE_EMAIL -> {
-
                         replaceScreenTo(AppScreen.Profile)
                     }
                 }
-            },
-
-            setCheckoutResponse = {
-                setCheckoutResponse(it)
-            },
-
-            onProfileUpdated = {
-                setProfileResponse(it)
             }
         )
 
         AppScreen.Profile -> ProfileRoute(
             innerPadding = innerPadding,
             scope = scope,
-            profileResponse = profileResponse,
-            profileError = profileError,
-            navigateBack = { replaceScreenTo(AppScreen.Home) },
+            navigateLogin = { setScreenTo(AppScreen.LoginContact()) },
             navigateSavedAddresses = { setScreenTo(AppScreen.SavedAddresses) },
             navigateAddAddress = { setScreenTo(AppScreen.AddAddress()) },
             navigateChangeName = { setScreenTo(AppScreen.ChangeName) },
@@ -314,14 +302,12 @@ fun AppRouter(
             scope = scope,
             navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateProfile = { replaceScreenTo(AppScreen.Profile) },
-            onProfileUpdated = { setProfileResponse(it) }
         )
 
         AppScreen.ChangeEmail -> ChangeContactRoute(
             innerPadding = innerPadding,
             scope = scope,
             type = ContactChangeType.EMAIL,
-            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateOtp = { contact, purpose ->
                 setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
@@ -331,7 +317,6 @@ fun AppRouter(
             innerPadding = innerPadding,
             scope = scope,
             type = ContactChangeType.PHONE,
-            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateOtp = { contact, purpose ->
                 setScreenTo(AppScreen.OtpVerify(contact, purpose))
             }
@@ -340,7 +325,6 @@ fun AppRouter(
         AppScreen.ChangePassword -> ChangePasswordRoute(
             innerPadding = innerPadding,
             scope = scope,
-            navigateBack = { replaceScreenTo(AppScreen.Profile) },
             navigateProfile = { replaceScreenTo(AppScreen.Profile) }
         )
 

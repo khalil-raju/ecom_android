@@ -4,6 +4,7 @@ package com.ecom.app.ui.routes.account
 import android.util.Log
 import androidx.compose.runtime.*
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.account.LoginPasswordScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -25,14 +26,25 @@ fun LoginPasswordRoute(
         mutableStateOf<Int?>(null)
     }
 
+    var isSubmitting by remember(contact) {
+        mutableStateOf(false)
+    }
+
+    if (isSubmitting) {
+        ScreenLoading(message = "Logging in...")
+        return
+    }
+
     LoginPasswordScreen(
         onLogoClick = navigateHome,
         contact = contact,
         error = loginPasswordError,
         attemptsLeft = loginAttemptsLeft,
+
         onLogin = { password ->
             scope.launch {
                 try {
+                    isSubmitting = true
                     loginPasswordError = null
 
                     val csrfToken = RetrofitClient.getCsrfToken()
@@ -46,14 +58,12 @@ fun LoginPasswordRoute(
                         password = password
                     )
 
-                    if (response.success && response.authenticated == true) {
+                    if (response.success && response.authenticated) {
                         loginPasswordError = null
                         loginAttemptsLeft = null
                         onAuthenticated()
                     } else {
-                        loginPasswordError =
-                            response.error ?: response.errorMsg ?: "Login failed"
-
+                        loginPasswordError = response.errorMsg ?: "Login failed"
                         loginAttemptsLeft = response.loginAttemptsLeft
                         onUnauthenticated()
                     }
@@ -62,9 +72,12 @@ fun LoginPasswordRoute(
                     loginPasswordError = e.message ?: "Login failed"
                     onUnauthenticated()
                     Log.e("LOGIN_PASSWORD", "failed: ${e.message}", e)
+                } finally {
+                    isSubmitting = false
                 }
             }
         },
+
         onOtpLogin = navigateOtpLogin
     )
 }

@@ -5,6 +5,7 @@ import androidx.compose.runtime.*
 import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.navigations.OtpPurpose
 import com.ecom.app.ui.screens.account.SignupPasswordScreen
+import com.ecom.app.ui.components.ScreenLoading
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -16,16 +17,29 @@ fun SignupPasswordRoute(
     navigateLogin: () -> Unit,
     navigateOtp: (String, OtpPurpose) -> Unit
 ) {
-    var error by remember(contact) { mutableStateOf<String?>(null) }
+    var error by remember(contact) {
+        mutableStateOf<String?>(null)
+    }
+
+    var isSubmitting by remember(contact) {
+        mutableStateOf(false)
+    }
+
+    if (isSubmitting) {
+        ScreenLoading(message = "Setting up account...")
+        return
+    }
 
     SignupPasswordScreen(
         contact = contact,
         error = error,
         onLogoClick = navigateHome,
         onLoginClick = navigateLogin,
+
         onContinue = { password, confirm ->
             scope.launch {
                 try {
+                    isSubmitting = true
                     error = null
 
                     val csrfToken = RetrofitClient.getCsrfToken()
@@ -40,15 +54,27 @@ fun SignupPasswordRoute(
                         confirm = confirm
                     )
 
-                    if (response.success && response.nextStep == "signup_otp") {
+                    if (
+                        response.success &&
+                        response.nextStep == "signup_otp"
+                    ) {
                         navigateOtp(contact, OtpPurpose.SIGNUP)
+
                     } else {
-                        error = response.error ?: response.errorMsg ?: "Unable to continue."
+                        error = response.errorMsg ?: "Unable to continue."
                     }
 
                 } catch (e: Exception) {
                     error = e.message ?: "Unable to continue."
-                    Log.e("SIGNUP_PASSWORD", "failed: ${e.message}", e)
+
+                    Log.e(
+                        "SIGNUP_PASSWORD",
+                        "failed: ${e.message}",
+                        e
+                    )
+
+                } finally {
+                    isSubmitting = false
                 }
             }
         }

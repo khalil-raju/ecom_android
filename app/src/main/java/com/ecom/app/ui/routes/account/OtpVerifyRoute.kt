@@ -2,10 +2,9 @@ package com.ecom.app.ui.routes.account
 
 import android.util.Log
 import androidx.compose.runtime.*
-import com.ecom.app.model.account.AuthStepResponse
-import com.ecom.app.model.account.ProfileResponse
-import com.ecom.app.model.order.CheckoutResponse
+import com.ecom.app.model.account.AuthResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.navigations.OtpPurpose
 import com.ecom.app.ui.screens.account.OtpVerifyScreen
 import kotlinx.coroutines.CoroutineScope
@@ -17,92 +16,81 @@ fun OtpVerifyRoute(
     contact: String,
     purpose: OtpPurpose,
     navigateHome: () -> Unit,
-    onVerified: (AuthStepResponse) -> Unit,
-    setCheckoutResponse: (CheckoutResponse) -> Unit,
-    onProfileUpdated: (ProfileResponse) -> Unit
+    onVerified: (AuthResponse) -> Unit
 ) {
+    var response by remember(contact, purpose) {
+        mutableStateOf<AuthResponse?>(null)
+    }
+
     var error by remember(contact, purpose) {
         mutableStateOf<String?>(null)
     }
 
+    var isLoading by remember(contact, purpose) {
+        mutableStateOf(true)
+    }
+
+    var isSubmitting by remember(contact, purpose) {
+        mutableStateOf(false)
+    }
+
     LaunchedEffect(contact, purpose) {
         try {
+            isLoading = true
             error = null
 
-            val response = when (purpose) {
-                OtpPurpose.LOGIN -> {
-                    RetrofitClient.apiService.startLoginOtp()
-                }
-
-                OtpPurpose.SIGNUP -> {
-                    RetrofitClient.apiService.startSignupOtp()
-                }
-
+            val result = when (purpose) {
+                OtpPurpose.LOGIN -> RetrofitClient.apiService.startLoginOtp()
+                OtpPurpose.SIGNUP -> RetrofitClient.apiService.startSignupOtp()
                 OtpPurpose.CHANGE_PHONE,
-                OtpPurpose.CHANGE_EMAIL -> {
-                    RetrofitClient.apiService.startChangeContactOtp()
-                }
+                OtpPurpose.CHANGE_EMAIL -> RetrofitClient.apiService.startChangeContactOtp()
             }
 
-            if (!response.success) {
-                error = response.error ?: response.errorMsg ?: "Unable to send OTP"
+            response = result
+
+            if (!result.success) {
+                error = result.errorMsg ?: "Unable to send OTP"
             }
 
         } catch (e: Exception) {
             error = e.message ?: "Unable to send OTP"
             Log.e("OTP_START", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
         }
     }
 
-    fun handleSubmitResponse(response: AuthStepResponse) {
-        if (response.success) {
-            scope.launch {
-                if (
-                    purpose == OtpPurpose.CHANGE_PHONE ||
-                    purpose == OtpPurpose.CHANGE_EMAIL
-                ) {
-                    try {
-                        val profile = RetrofitClient.apiService.getProfile()
-                        onProfileUpdated(profile)
-                    } catch (e: Exception) {
-                        Log.e("OTP_PROFILE_REFRESH", "failed: ${e.message}", e)
-                    }
-                }
+    if (isLoading || response == null) {
+        ScreenLoading(message = "Sending OTP...")
+        return
+    }
 
-                onVerified(response)
-                Log.d(
-                    "OTP_SUBMIT_RESPONSE",
-                    "success=${response.success}, authenticated=${response.authenticated}, nextStep=${response.nextStep}"
-                )
-
-                if (response.nextStep == "/orders/checkout/") {
-                    val checkoutResponse = RetrofitClient.apiService.getCheckout()
-                    if (checkoutResponse.success) {
-                        setCheckoutResponse(checkoutResponse)
-                    }
-                }
-            }
-        } else {
-            error = response.error ?: response.errorMsg ?: "OTP verification failed"
-        }
+    if (isSubmitting) {
+        ScreenLoading(message = "Verifying OTP...")
+        return
     }
 
     OtpVerifyScreen(
         contact = contact,
+
         title = when (purpose) {
             OtpPurpose.LOGIN -> "Welcome"
             OtpPurpose.SIGNUP -> "Verify OTP"
             OtpPurpose.CHANGE_PHONE -> "Verify Phone"
             OtpPurpose.CHANGE_EMAIL -> "Verify Email"
         },
+
         buttonText = if (purpose == OtpPurpose.LOGIN) "Login" else "Verify",
-        resendInitialSeconds = 60,
+
+        resendInitialSeconds = response?.otpRemainingTime ?: 60,
+
         error = error,
         onLogoClick = navigateHome,
 
         onVerifyOtp = { otp ->
             scope.launch {
                 try {
+                    isSubmitting = true
                     error = null
 
                     val csrfToken = RetrofitClient.getCsrfToken()
@@ -111,35 +99,37 @@ fun OtpVerifyRoute(
                         return@launch
                     }
 
-                    val response = when (purpose) {
-                        OtpPurpose.LOGIN -> {
-                            RetrofitClient.apiService.submitLoginOtp(
-                                csrfToken = csrfToken,
-                                otp = otp
-                            )
-                        }
+                    val result = when (purpose) {
+                        OtpPurpose.LOGIN -> RetrofitClient.apiService.submitLoginOtp(
+                            csrfToken = csrfToken,
+                            otp = otp
+                        )
 
-                        OtpPurpose.SIGNUP -> {
-                            RetrofitClient.apiService.submitSignupOtp(
-                                csrfToken = csrfToken,
-                                otp = otp
-                            )
-                        }
+                        OtpPurpose.SIGNUP -> RetrofitClient.apiService.submitSignupOtp(
+                            csrfToken = csrfToken,
+                            otp = otp
+                        )
 
                         OtpPurpose.CHANGE_PHONE,
-                        OtpPurpose.CHANGE_EMAIL -> {
-                            RetrofitClient.apiService.submitChangeContactOtp(
-                                csrfToken = csrfToken,
-                                otp = otp
-                            )
-                        }
+                        OtpPurpose.CHANGE_EMAIL -> RetrofitClient.apiService.submitChangeContactOtp(
+                            csrfToken = csrfToken,
+                            otp = otp
+                        )
                     }
 
-                    handleSubmitResponse(response)
+                    response = result
+
+                    if (result.success) {
+                        onVerified(result)
+                    } else {
+                        error = result.errorMsg ?: "OTP verification failed"
+                    }
 
                 } catch (e: Exception) {
                     error = e.message ?: "OTP verification failed"
                     Log.e("OTP_SUBMIT", "failed: ${e.message}", e)
+                } finally {
+                    isSubmitting = false
                 }
             }
         },
@@ -149,23 +139,17 @@ fun OtpVerifyRoute(
                 try {
                     error = null
 
-                    val response = when (purpose) {
-                        OtpPurpose.LOGIN -> {
-                            RetrofitClient.apiService.resendLoginOtp()
-                        }
-
-                        OtpPurpose.SIGNUP -> {
-                            RetrofitClient.apiService.resendSignupOtp()
-                        }
-
+                    val result = when (purpose) {
+                        OtpPurpose.LOGIN -> RetrofitClient.apiService.resendLoginOtp()
+                        OtpPurpose.SIGNUP -> RetrofitClient.apiService.resendSignupOtp()
                         OtpPurpose.CHANGE_PHONE,
-                        OtpPurpose.CHANGE_EMAIL -> {
-                            RetrofitClient.apiService.resendChangeContactOtp()
-                        }
+                        OtpPurpose.CHANGE_EMAIL -> RetrofitClient.apiService.resendChangeContactOtp()
                     }
 
-                    if (!response.success) {
-                        error = response.error ?: response.errorMsg ?: "Unable to resend OTP"
+                    response = result
+
+                    if (!result.success) {
+                        error = result.errorMsg ?: "Unable to resend OTP"
                     }
 
                 } catch (e: Exception) {

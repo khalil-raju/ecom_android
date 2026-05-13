@@ -1,13 +1,13 @@
-// ui/routes/ProfileRoute.kt
 package com.ecom.app.ui.routes.account
 
 import android.util.Log
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import com.ecom.app.model.account.ProfileResponse
+import com.ecom.app.model.account.UserProfileResponse
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.account.ProfileScreen
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -16,9 +16,7 @@ import kotlinx.coroutines.launch
 fun ProfileRoute(
     innerPadding: PaddingValues,
     scope: CoroutineScope,
-    profileResponse: ProfileResponse?,
-    profileError: String?,
-    navigateBack: () -> Unit,
+    navigateLogin: () -> Unit,
     navigateSavedAddresses: () -> Unit,
     navigateAddAddress: () -> Unit,
     navigateChangeName: () -> Unit,
@@ -30,11 +28,49 @@ fun ProfileRoute(
     navigateCart: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
+    var profileResponse by remember {
+        mutableStateOf<UserProfileResponse?>(null)
+    }
+
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+
+    var profileError by remember {
+        mutableStateOf<String?>(null)
+    }
+
+    LaunchedEffect(Unit) {
+        try {
+            isLoading = true
+            profileError = null
+
+            val response = RetrofitClient.apiService.getProfile()
+
+            if (!response.authenticated) {
+                navigateLogin()
+                return@LaunchedEffect
+            }
+
+            profileResponse = response
+
+        } catch (e: Exception) {
+            profileError = e.message ?: "Unable to load profile."
+            Log.e("PROFILE_GET", "failed: ${e.message}", e)
+        } finally {
+            isLoading = false
+        }
+    }
+
+    if (isLoading || profileResponse == null) {
+        ScreenLoading(message = "Loading profile...")
+        return
+    }
+
     ProfileScreen(
         modifier = Modifier.padding(innerPadding),
         profile = profileResponse,
         error = profileError,
-        onBack = navigateBack,
         onSavedAddressesClick = navigateSavedAddresses,
         onAddAddressClick = navigateAddAddress,
         onChangeNameClick = navigateChangeName,
