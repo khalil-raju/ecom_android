@@ -27,29 +27,36 @@ fun CartRoute(
     navigateProductDetail: (ProductDetailResponse) -> Unit,
     navigateCheckout: () -> Unit,
 ) {
-    var isLoading by remember { mutableStateOf(false) }
+    var isInitialLoading by remember { mutableStateOf(true) }
+    var isUpdatingCart by remember { mutableStateOf(false) }
     var cartDetailResponse by remember { mutableStateOf<CartDetailResponse?>(null) }
 
-    fun refreshCart() {
+    fun refreshCart(showFullLoading: Boolean = false) {
         scope.launch {
             try {
-                isLoading = true
+                if (showFullLoading) {
+                    isInitialLoading = true
+                }
+
                 val response = RetrofitClient.apiService.getCartDetail()
                 cartDetailResponse = response
                 setCartCount(response.cartCount)
+
             } catch (e: Exception) {
                 Log.e("CART_REFRESH", "failed: ${e.message}", e)
             } finally {
-                isLoading = false
+                if (showFullLoading) {
+                    isInitialLoading = false
+                }
             }
         }
     }
 
     LaunchedEffect(Unit) {
-        refreshCart()
+        refreshCart(showFullLoading = true)
     }
 
-    if (isLoading || cartDetailResponse == null) {
+    if (isInitialLoading || cartDetailResponse == null) {
         ScreenLoading(message = "Loading cart...")
         return
     }
@@ -57,7 +64,8 @@ fun CartRoute(
     CartScreen(
         modifier = Modifier.padding(innerPadding),
         cartDetailResponse = cartDetailResponse,
-        isLoading = isLoading,
+        isLoading = isUpdatingCart,
+
         onNavigateToProduct = { variantId, slug ->
             scope.launch {
                 try {
@@ -65,7 +73,9 @@ fun CartRoute(
                         variantId = variantId,
                         slug = slug
                     )
+
                     navigateProductDetail(detail)
+
                 } catch (e: Exception) {
                     Log.e("CART_PRODUCT", "failed: ${e.message}", e)
                 }
@@ -75,20 +85,28 @@ fun CartRoute(
         onQuantityChange = { basketItem, quantity ->
             scope.launch {
                 try {
+                    isUpdatingCart = true
+
                     val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
                     val variantId = basketItem.variantId ?: return@launch
 
-                    val response = RetrofitClient.apiService.updateToCart(
+                    val updateResponse = RetrofitClient.apiService.updateToCart(
                         csrfToken = csrfToken,
                         productId = basketItem.productId,
                         variantId = variantId,
                         quantity = quantity
                     )
 
-                    setCartCount(response.cartCount)
-                    refreshCart()
+                    setCartCount(updateResponse.cartCount)
+
+                    val refreshedCart = RetrofitClient.apiService.getCartDetail()
+                    cartDetailResponse = refreshedCart
+                    setCartCount(refreshedCart.cartCount)
+
                 } catch (e: Exception) {
                     Log.e("CART_QTY", "failed: ${e.message}", e)
+                } finally {
+                    isUpdatingCart = false
                 }
             }
         },

@@ -74,7 +74,7 @@ fun ProductListScreen(
             modifier = modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularProgressIndicator()
+            ScreenLoading(message = "Loading...")
         }
         return
     }

@@ -149,8 +149,12 @@ fun AppRouter(
 
         AppScreen.OrderItemHistory -> OrderItemHistoryRoute(
             innerPadding = innerPadding,
-            navigateBack = { replaceScreenTo(AppScreen.Home) },
-            navigateOrderItemDetail = { setScreenTo(AppScreen.OrderItemDetail(it)) }
+            navigateLogin = {
+                replaceScreenTo(AppScreen.LoginContact())
+            },
+            navigateOrderItemDetail = {
+                setScreenTo(AppScreen.OrderItemDetail(it))
+            }
         )
 
         is AppScreen.OrderItemDetail -> OrderItemDetailRoute(
