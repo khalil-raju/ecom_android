@@ -43,6 +43,7 @@ fun ProfileScreen(
     onChangeEmailClick: () -> Unit,
     onChangePasswordClick: () -> Unit,
     onCartClick: () -> Unit,
+    onWishlistClick: () -> Unit,
     onViewOrderClick: () -> Unit,
     onViewWalletClick: () -> Unit,
     onLogout: () -> Unit
@@ -150,7 +151,8 @@ fun ProfileScreen(
                         ProfileActionItem(
                             "♡",
                             "View Wishlist",
-                            "Items you saved for later"
+                            "Items you saved for later",
+                            onClick = onWishlistClick
                         ),
                         ProfileActionItem(
                             "🛍",

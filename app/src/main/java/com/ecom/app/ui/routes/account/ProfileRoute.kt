@@ -26,6 +26,7 @@ fun ProfileRoute(
     navigateOrderItemHistory: () -> Unit,
     navigateWallet: () -> Unit,
     navigateCart: () -> Unit,
+    navigateWishlist: () -> Unit,
     onLoggedOut: () -> Unit
 ) {
     var profileResponse by remember {
@@ -78,13 +79,20 @@ fun ProfileRoute(
         onChangePhoneClick = navigateChangePhone,
         onChangePasswordClick = navigateChangePassword,
         onCartClick = navigateCart,
+        onWishlistClick = navigateWishlist,
         onViewOrderClick = navigateOrderItemHistory,
         onViewWalletClick = navigateWallet,
         onLogout = {
             scope.launch {
                 try {
-                    RetrofitClient.apiService.logout()
+                    val csrfToken = RetrofitClient.getCsrfToken() ?: return@launch
+
+                    RetrofitClient.apiService.logout(
+                        csrfToken = csrfToken
+                    )
+
                     onLoggedOut()
+
                 } catch (e: Exception) {
                     Log.e("PROFILE_LOGOUT", "failed: ${e.message}", e)
                 }

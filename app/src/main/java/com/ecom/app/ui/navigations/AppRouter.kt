@@ -292,6 +292,7 @@ fun AppRouter(
             navigateChangePhone = { setScreenTo(AppScreen.ChangePhone) },
             navigateChangePassword = { setScreenTo(AppScreen.ChangePassword) },
             navigateCart = { setScreenTo(AppScreen.Cart) },
+            navigateWishlist = { setScreenTo(AppScreen.Wishlist) },
             navigateOrderItemHistory = { setScreenTo(AppScreen.OrderItemHistory) },
             navigateWallet = { setScreenTo(AppScreen.Wallet) },
             onLoggedOut = {

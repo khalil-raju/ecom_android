@@ -60,6 +60,7 @@ interface ApiService {
     // ---------------- Logout ----------------
     @POST("accounts/logout/")
     suspend fun logout(
+        @Header("X-CSRFToken") csrfToken: String,
         @Query("format") format: String = "json"
     ): AuthResponse
 
