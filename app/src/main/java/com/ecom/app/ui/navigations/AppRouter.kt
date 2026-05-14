@@ -26,7 +26,7 @@ import com.ecom.app.ui.routes.order.OrderDetailRoute
 import com.ecom.app.ui.routes.order.OrderItemDetailRoute
 import com.ecom.app.ui.routes.order.OrderItemHistoryRoute
 import com.ecom.app.ui.routes.order.ReturnOrderItemRoute
-import com.ecom.app.ui.routes.payment.PaymentWebRoute
+import com.ecom.app.ui.routes.payment.PaymentWebViewRoute
 import com.ecom.app.ui.routes.product.ProductDetailRoute
 import com.ecom.app.ui.routes.product.ProductListRoute
 import com.ecom.app.ui.routes.review.ReviewOrderItemRoute
@@ -141,7 +141,7 @@ fun AppRouter(
             }
         )
 
-        is AppScreen.PaymentWeb -> PaymentWebRoute(
+        is AppScreen.PaymentWeb -> PaymentWebViewRoute(
             url = currentScreen.url,
             onPaymentSuccess = { replaceScreenTo(AppScreen.OrderDetail(it)) },
             onPaymentFailed = { replaceScreenTo(AppScreen.Cart) }

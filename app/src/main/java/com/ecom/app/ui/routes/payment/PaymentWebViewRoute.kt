@@ -1,11 +1,11 @@
-// ui/routes/PaymentWebRoute.kt
+// ui/routes/PaymentWebViewRoute.kt
 package com.ecom.app.ui.routes.payment
 
 import androidx.compose.runtime.Composable
 import com.ecom.app.ui.screens.payment.PaymentWebViewScreen
 
 @Composable
-fun PaymentWebRoute(
+fun PaymentWebViewRoute(
     url: String,
     onPaymentSuccess: (orderToken: String) -> Unit,
     onPaymentFailed: () -> Unit
