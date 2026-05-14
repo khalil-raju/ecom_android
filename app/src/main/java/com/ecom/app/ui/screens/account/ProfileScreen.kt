@@ -363,7 +363,11 @@ private fun ProfileRow(item: ProfileActionItem) {
 
         Spacer(Modifier.width(14.dp))
 
-        Column(modifier = Modifier.weight(1f)) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .padding(end = 12.dp)
+        ) {
             Text(
                 text = item.title,
                 fontSize = 16.sp,
@@ -377,14 +381,15 @@ private fun ProfileRow(item: ProfileActionItem) {
                 Text(
                     text = item.subtitle,
                     fontSize = 14.sp,
-                    color = Color.DarkGray
+                    color = Color.DarkGray,
+                    modifier = Modifier.fillMaxWidth()
                 )
             }
-        }
 
-        if (item.verified) {
-            VerifiedBadge()
-            Spacer(Modifier.width(10.dp))
+            if (item.verified) {
+                Spacer(Modifier.height(8.dp))
+                VerifiedBadge()
+            }
         }
 
         if (!item.actionText.isNullOrBlank()) {
@@ -392,7 +397,8 @@ private fun ProfileRow(item: ProfileActionItem) {
                 text = item.actionText,
                 fontSize = 14.sp,
                 color = Color(0xFF0018D4),
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1
             )
 
             Spacer(Modifier.width(8.dp))
