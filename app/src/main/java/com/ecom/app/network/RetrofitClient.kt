@@ -16,6 +16,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.io.IOException
 import java.net.SocketTimeoutException
 import java.util.concurrent.TimeUnit
+import java.net.ConnectException
+import java.net.NoRouteToHostException
+import java.net.UnknownHostException
+import javax.net.ssl.SSLException
 
 object RetrofitClient {
 
@@ -56,12 +60,7 @@ object RetrofitClient {
     ) : Interceptor {
 
         private val retryStatusCodes = setOf(
-            408, // Request Timeout
-            429, // Too Many Requests
-            500,
-            502,
-            503,
-            504
+            408, 429, 500, 502, 503, 504
         )
 
         override fun intercept(chain: Interceptor.Chain): Response {
@@ -78,32 +77,40 @@ object RetrofitClient {
                 try {
                     val response = chain.proceed(request)
 
-                    if (
-                        response.isSuccessful ||
-                        response.code !in retryStatusCodes
-                    ) {
+                    if (response.isSuccessful || response.code !in retryStatusCodes) {
                         return response
                     }
+
+                    Log.w(
+                        "API_RETRY",
+                        "Retryable HTTP ${response.code} for ${request.url}"
+                    )
 
                     response.close()
 
                 } catch (e: SocketTimeoutException) {
                     lastException = e
+                    Log.e("API_RETRY", "Timeout for ${request.url}", e)
 
-                    Log.e(
-                        "API_RETRY",
-                        "Socket timeout for ${request.url}",
-                        e
-                    )
+                } catch (e: UnknownHostException) {
+                    lastException = e
+                    Log.e("API_RETRY", "No internet / DNS failed for ${request.url}", e)
+
+                } catch (e: ConnectException) {
+                    lastException = e
+                    Log.e("API_RETRY", "Cannot connect to server for ${request.url}", e)
+
+                } catch (e: NoRouteToHostException) {
+                    lastException = e
+                    Log.e("API_RETRY", "No route to host for ${request.url}", e)
+
+                } catch (e: SSLException) {
+                    Log.e("API_RETRY", "SSL error, not retrying ${request.url}", e)
+                    throw e
 
                 } catch (e: IOException) {
                     lastException = e
-
-                    Log.e(
-                        "API_RETRY",
-                        "IO failure for ${request.url}",
-                        e
-                    )
+                    Log.e("API_RETRY", "IO failure for ${request.url}", e)
                 }
 
                 attempt++
@@ -111,7 +118,7 @@ object RetrofitClient {
                 if (attempt <= maxRetries) {
                     Log.w(
                         "API_RETRY",
-                        "Retry ${attempt}/$maxRetries for ${request.url}"
+                        "Retry ${attempt}/$maxRetries after ${retryDelayMs}ms for ${request.url}"
                     )
 
                     Thread.sleep(retryDelayMs)
