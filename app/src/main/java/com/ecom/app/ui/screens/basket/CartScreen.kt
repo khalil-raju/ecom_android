@@ -21,6 +21,7 @@ import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.model.basket.BasketItem
 import com.ecom.app.model.basket.CartDetailResponse
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -92,7 +93,7 @@ fun CartScreen(
                 }
 
                 item {
-                    Spacer(modifier = Modifier.height(12.dp))
+                    ScreenFooter()
                 }
             }
         }

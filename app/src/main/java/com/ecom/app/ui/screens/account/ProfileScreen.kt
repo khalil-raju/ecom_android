@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.UserProfileResponse
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private data class ProfileActionItem(
@@ -200,7 +201,7 @@ fun ProfileScreen(
             }
 
             item {
-                Spacer(Modifier.height(12.dp))
+                ScreenFooter()
             }
         }
     }

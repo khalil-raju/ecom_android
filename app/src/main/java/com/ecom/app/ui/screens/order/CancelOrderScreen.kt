@@ -22,6 +22,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.CancelOrderResponse
 import com.ecom.app.model.order.OrderItem
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -137,6 +138,10 @@ fun CancelOrderScreen(
                         onConfirmCancel(reason, refundAccount)
                     }
                 )
+            }
+
+            item {
+                ScreenFooter()
             }
         }
     }

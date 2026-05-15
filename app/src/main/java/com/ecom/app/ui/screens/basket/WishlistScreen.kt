@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
 import com.ecom.app.model.basket.BasketItem
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -78,6 +79,10 @@ fun WishlistScreen(
                 onRemoveWishlist = { onRemoveWishlist(item) },
                 onAddToCart = { onAddToCart(item) }
             )
+        }
+
+        item {
+            ScreenFooter()
         }
     }
 }

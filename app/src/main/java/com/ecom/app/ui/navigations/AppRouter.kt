@@ -76,6 +76,7 @@ sealed interface AppScreen {
     data class AddAddress(val addressId: Int? = null) : AppScreen
     data object Wallet : AppScreen
 }
+
 @Composable
 fun AppRouter(
     innerPadding: PaddingValues,

@@ -25,6 +25,7 @@ import com.ecom.app.model.order.OrderDetailResponse
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.account.Address
 import com.ecom.app.model.payment.Payment
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -119,7 +120,7 @@ fun OrderDetailScreen(
             }
 
             item {
-                Spacer(Modifier.height(20.dp))
+                ScreenFooter()
             }
         }
     }

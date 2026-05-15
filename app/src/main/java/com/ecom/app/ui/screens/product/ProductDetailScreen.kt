@@ -39,6 +39,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.model.product.ProductDetailResponse
 import com.ecom.app.model.product.Variant
 import com.ecom.app.network.RetrofitClient
+import com.ecom.app.ui.components.ScreenFooter
 
 
 private fun fullUrl(path: String?): String? {
@@ -76,6 +77,11 @@ fun ProductDetailScreen(
     LazyColumn(
         modifier = modifier.fillMaxSize()
     ) {
+
+        item {
+            Spacer(modifier = Modifier.height(100.dp))
+        }
+
         item {
             ZoomableImage(
                 images = selectedVariant?.images.orEmpty(),
@@ -190,6 +196,10 @@ fun ProductDetailScreen(
                     }
                 )
             }
+        }
+
+        item {
+            ScreenFooter()
         }
     }
 }

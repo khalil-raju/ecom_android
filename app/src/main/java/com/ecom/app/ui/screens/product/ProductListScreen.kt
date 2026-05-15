@@ -123,6 +123,10 @@ fun ProductListScreen(
                     }
                 }
             }
+
+            item {
+                Spacer(Modifier.height(110.dp))
+            }
         }
 
         if (!isHeroLoaded) {

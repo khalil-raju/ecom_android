@@ -20,6 +20,7 @@ import com.ecom.app.R
 import com.ecom.app.model.account.AddAddressResponse
 import com.ecom.app.model.account.PincodeDetailsResponse
 import com.ecom.app.model.account.RegionState
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
@@ -252,6 +253,8 @@ fun AddAddressScreen(
                     )
                 }
             }
+
+            ScreenFooter()
         }
     }
 }

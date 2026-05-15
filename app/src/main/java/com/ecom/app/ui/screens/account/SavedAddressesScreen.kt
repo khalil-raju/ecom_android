@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.account.Address
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
@@ -81,6 +82,10 @@ fun SavedAddressesScreen(
                     AddAddressButton(
                         onClick = onAddAddress
                     )
+                }
+
+                item {
+                    ScreenFooter()
                 }
             }
         }

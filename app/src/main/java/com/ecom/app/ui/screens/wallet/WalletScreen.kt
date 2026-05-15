@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.sp
 import com.ecom.app.R
 import com.ecom.app.model.wallet.WalletResponse
 import com.ecom.app.model.wallet.WalletTxn
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 @Composable
@@ -73,7 +74,7 @@ fun WalletScreen(
             }
 
             item {
-                Spacer(Modifier.height(20.dp))
+                ScreenFooter()
             }
         }
     }

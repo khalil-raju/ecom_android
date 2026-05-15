@@ -2,16 +2,18 @@ package com.ecom.app.ui.components
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Badge
 import androidx.compose.material3.BadgedBox
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -28,20 +30,25 @@ fun BottomMenu(
     onOrdersClick: () -> Unit,
     onWishlistClick: () -> Unit,
     onCartClick: () -> Unit,
-    onProfileClick: () -> Unit
+    onProfileClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = Modifier
+    Box(
+        modifier = modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .navigationBarsPadding()
+            .padding(horizontal = 18.dp, vertical = 12.dp)
+            .height(78.dp)
+            .clip(RoundedCornerShape(36.dp))
+            .background(Color.Black.copy(alpha = 0.22f))
+            .border(
+                width = 1.dp,
+                color = Color.White.copy(alpha = 0.30f),
+                shape = RoundedCornerShape(36.dp)
+            )
     ) {
-        HorizontalDivider(color = Color(0xFFE5E5E5))
-
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .height(64.dp),
+            modifier = Modifier.fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             BottomMenuItem(
@@ -66,7 +73,7 @@ fun BottomMenu(
                 selectedIcon = R.drawable.ic_wishlist_selected,
                 unselectedIcon = R.drawable.ic_wishlist_unselected,
                 label = "Wishlist",
-                selected = false,
+                selected = currentScreen == AppScreen.Wishlist,
                 onClick = onWishlistClick,
                 modifier = Modifier.weight(1f)
             )
@@ -103,7 +110,11 @@ private fun BottomMenuItem(
     badgeCount: Int = 0,
     onClick: () -> Unit
 ) {
-    val color = if (selected) Color.Black else Color(0xFF777777)
+    val color = if (selected) {
+        Color.White
+    } else {
+        Color.White.copy(alpha = 0.72f)
+    }
 
     Column(
         modifier = modifier
@@ -133,7 +144,7 @@ private fun BottomMenuItem(
                     id = if (selected) selectedIcon else unselectedIcon
                 ),
                 contentDescription = label,
-                tint = Color.Unspecified,
+                tint = color,
                 modifier = Modifier.size(24.dp)
             )
         }

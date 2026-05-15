@@ -28,6 +28,7 @@ import com.ecom.app.model.account.Address
 import com.ecom.app.model.order.CheckoutResponse
 import com.ecom.app.model.order.Order
 import com.ecom.app.model.order.OrderItem
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -138,7 +139,7 @@ fun CheckoutScreen(
             }
 
             item {
-                Spacer(Modifier.height(12.dp))
+                ScreenFooter()
             }
         }
     }

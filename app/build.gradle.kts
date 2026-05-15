@@ -52,7 +52,7 @@ android {
             resValue("string", "app_name", "ABITOMODA_L")
             buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"http://192.168.64.5/\"")
-            buildConfigField("String", "HERO_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_hero_image_mob.webp\"")
+            buildConfigField("String", "HERO_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_hero_image_mob_2.webp\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_white.png\"")
             buildConfigField("String", "LOGO_SHORT_IMAGE", "\"http://192.168.64.5/static/cores/media/am/am_brand_logo_short.png\"")
         }
@@ -65,7 +65,7 @@ android {
             resValue("string", "app_name", "ABITOMODA")
             buildConfigField("String", "BRAND_NAME", "\"ABITOMODA\"")
             buildConfigField("String", "BASE_URL", "\"https://abitomoda.com/\"")
-            buildConfigField("String", "HERO_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_hero_image_mob.webp\"")
+            buildConfigField("String", "HERO_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_hero_image_mob_2.webp\"")
             buildConfigField("String", "LOGO_FULL_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_brand_logo_white.png\"")
             buildConfigField("String", "LOGO_SHORT_IMAGE", "\"https://abitomoda.com/static/cores/media/am/am_brand_logo_short.png\"")
         }

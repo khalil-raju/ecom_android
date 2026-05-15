@@ -23,6 +23,7 @@ import com.ecom.app.BuildConfig
 import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.order.OrderItemDetailResponse
+import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -110,7 +111,7 @@ fun OrderItemDetailScreen(
             }
 
             item {
-                Spacer(Modifier.height(20.dp))
+                ScreenFooter()
             }
         }
     }

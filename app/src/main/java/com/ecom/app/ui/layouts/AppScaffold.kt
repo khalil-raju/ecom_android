@@ -7,11 +7,9 @@ import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.safeDrawingPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,37 +42,29 @@ fun AppScaffold(
     content: @Composable (PaddingValues) -> Unit
 ) {
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .safeDrawingPadding()
+        modifier = Modifier.fillMaxSize()
     ) {
-        Scaffold(
-            containerColor = Color.White,
-            topBar = {
-                if (!currentScreen.isFullScreen()) {
-                    TopMenu(
-                        showBackButton = currentScreen != AppScreen.Home,
-                        onBackClick = onBackClick,
-                        onSearchClick = onSearchClick,
-                        onLogoClick = onLogoClick
-                    )
-                }
-            },
-            bottomBar = {
-                if (!currentScreen.isFullScreen()) {
-                    BottomMenu(
-                        currentScreen = currentScreen,
-                        cartCount = cartCount,
-                        onHomeClick = onHomeClick,
-                        onOrdersClick = onOrdersClick,
-                        onWishlistClick = onWishlistClick,
-                        onCartClick = onCartClick,
-                        onProfileClick = onProfileClick
-                    )
-                }
-            }
-        ) { innerPadding ->
-            content(innerPadding)
+        content(PaddingValues(0.dp))
+
+        if (!currentScreen.isFullScreen()) {
+            TopMenu(
+                showBackButton = currentScreen != AppScreen.Home,
+                onBackClick = onBackClick,
+                onSearchClick = onSearchClick,
+                onLogoClick = onLogoClick,
+                modifier = Modifier.align(Alignment.TopCenter)
+            )
+
+            BottomMenu(
+                currentScreen = currentScreen,
+                cartCount = cartCount,
+                onHomeClick = onHomeClick,
+                onOrdersClick = onOrdersClick,
+                onWishlistClick = onWishlistClick,
+                onCartClick = onCartClick,
+                onProfileClick = onProfileClick,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
 
         Box(
