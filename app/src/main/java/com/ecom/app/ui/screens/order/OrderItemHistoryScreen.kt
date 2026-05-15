@@ -4,28 +4,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.ecom.app.BuildConfig
-import com.ecom.app.R
 import com.ecom.app.model.order.OrderItem
-import com.ecom.app.model.order.OrderItemHistoryResponse
 import com.ecom.app.ui.components.ScreenHeader
 
 private fun fullUrl(path: String?): String? {
@@ -38,17 +34,17 @@ private fun fullUrl(path: String?): String? {
 @Composable
 fun OrderItemHistoryScreen(
     modifier: Modifier = Modifier,
-    response: OrderItemHistoryResponse?,
+    items: List<OrderItem>,
+    isLoadingMore: Boolean,
+    hasMore: Boolean,
+    onLoadMore: () -> Unit,
     onItemClick: (OrderItem) -> Unit
 ) {
-    val items = response?.orderItems.orEmpty()
-
     Column(
         modifier = modifier
             .fillMaxSize()
             .background(Color(0xFFF7F7F7))
     ) {
-
         ScreenHeader(
             title = "My Orders",
             subtitle = "View your order history"
@@ -58,15 +54,29 @@ fun OrderItemHistoryScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-
             if (items.isEmpty()) {
                 item {
                     EmptyCard()
                 }
             } else {
-                items(items) { item ->
+                itemsIndexed(
+                    items = items,
+                    key = { _, item -> item.itemToken }
+                ) { index, item ->
+
+                    if (
+                        index == items.lastIndex &&
+                        hasMore &&
+                        !isLoadingMore
+                    ) {
+                        LaunchedEffect(item.itemToken) {
+                            onLoadMore()
+                        }
+                    }
+
                     OrderItemHistoryCard(
                         item = item,
                         onClick = {
@@ -76,36 +86,21 @@ fun OrderItemHistoryScreen(
                         }
                     )
                 }
+
+                if (isLoadingMore) {
+                    item {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(24.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }
+                }
             }
         }
-    }
-}
-
-@Composable
-private fun OrderItemHistoryHeader(onBack: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color.White)
-            .padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            painter = painterResource(id = R.drawable.ic_back),
-            contentDescription = "Back",
-            tint = Color.Black,
-            modifier = Modifier
-                .size(28.dp)
-                .clickable { onBack() }
-        )
-
-        Spacer(modifier = Modifier.width(18.dp))
-
-        Text(
-            text = "My Order History",
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
@@ -139,16 +134,15 @@ private fun OrderItemHistoryCard(
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                // Product Name
                 Text(
                     text = item.variantName,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold
                 )
 
-                // Order ID
                 item.orderId.takeIf { it.isNotBlank() }?.let {
                     Spacer(modifier = Modifier.height(6.dp))
+
                     Text(
                         text = "Order ID: $it",
                         fontSize = 14.sp,
@@ -158,15 +152,12 @@ private fun OrderItemHistoryCard(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Status
-                item.statusSummary.let {
-                    Text(
-                        text = it,
-                        fontSize = 16.sp,
-                        color = statusColor(it),
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = item.statusSummary,
+                    fontSize = 16.sp,
+                    color = statusColor(item.statusSummary),
+                    fontWeight = FontWeight.SemiBold
+                )
             }
 
             if (item.canShowDetails) {
@@ -208,27 +199,10 @@ private fun EmptyCard() {
     }
 }
 
-private fun buildMeta(item: OrderItem): String {
-    val parts = mutableListOf<String>()
-
-    item.variantSize?.takeIf { it.isNotBlank() }?.let {
-        parts.add("Size: $it")
-    }
-
-    parts.add("Qty: ${item.quantity}")
-
-    return parts.joinToString("  •  ")
-}
-
 private fun statusColor(status: String): Color {
     return when {
         status.contains("cancel", ignoreCase = true) -> Color.Red
         status.contains("delivered", ignoreCase = true) -> Color(0xFF0B8F3A)
         else -> Color.DarkGray
     }
-}
-
-private fun formatAmount(value: Double): String {
-    return if (value % 1.0 == 0.0) value.toInt().toString()
-    else "%.2f".format(value)
 }

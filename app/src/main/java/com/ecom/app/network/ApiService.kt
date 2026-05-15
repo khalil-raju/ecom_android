@@ -419,7 +419,9 @@ interface ApiService {
 
     @GET("orders/order/item/history/")
     suspend fun getOrderItemHistory(
-        @Query("format") format: String = "json"
+        @Query("format") format: String = "json",
+        @Query("limit") limit: Int = 10,
+        @Query("offset") offset: Int = 0
     ): OrderItemHistoryResponse
 
     @GET("orders/order/item/details/{itemToken}/")

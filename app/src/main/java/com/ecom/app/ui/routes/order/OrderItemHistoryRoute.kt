@@ -1,25 +1,19 @@
 package com.ecom.app.ui.routes.order
 
 import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.ecom.app.model.order.OrderItem
+import com.ecom.app.network.RetrofitClient
 import com.ecom.app.ui.components.ScreenLoading
 import com.ecom.app.ui.screens.order.OrderItemHistoryScreen
-import com.ecom.app.model.order.OrderItemHistoryResponse
-import com.ecom.app.network.RetrofitClient
-
+import kotlinx.coroutines.launch
 
 @Composable
 fun OrderItemHistoryRoute(
@@ -27,34 +21,81 @@ fun OrderItemHistoryRoute(
     navigateLogin: () -> Unit,
     navigateOrderItemDetail: (String) -> Unit
 ) {
-    var orderItemHistoryResponse by remember {
-        mutableStateOf<OrderItemHistoryResponse?>(null)
+    val scope = rememberCoroutineScope()
+
+    var orderItems by remember {
+        mutableStateOf<List<OrderItem>>(emptyList())
+    }
+
+    var nextOffset by remember {
+        mutableIntStateOf(0)
+    }
+
+    var hasMore by remember {
+        mutableStateOf(true)
     }
 
     var isLoading by remember {
         mutableStateOf(true)
     }
 
+    var isLoadingMore by remember {
+        mutableStateOf(false)
+    }
+
     var showLoginRequired by remember {
         mutableStateOf(false)
     }
 
-    LaunchedEffect(Unit) {
-        try {
-            isLoading = true
+    fun loadHistory(reset: Boolean = false) {
+        if (isLoadingMore) return
+        if (!reset && !hasMore) return
 
-            val response = RetrofitClient.apiService.getOrderItemHistory()
+        scope.launch {
+            try {
+                if (reset) {
+                    isLoading = true
+                    showLoginRequired = false
+                    orderItems = emptyList()
+                    nextOffset = 0
+                    hasMore = true
+                } else {
+                    isLoadingMore = true
+                }
 
-            orderItemHistoryResponse = response
+                val offsetToLoad = if (reset) 0 else nextOffset
+                val limitToLoad = 10
 
-        } catch (e: Exception) {
-            Log.e("ORDER_ITEM_HISTORY", "failed: ${e.message}", e)
+                val response = RetrofitClient.apiService.getOrderItemHistory(
+                    limit = limitToLoad,
+                    offset = offsetToLoad
+                )
 
-            showLoginRequired = true
+                orderItems = if (reset) {
+                    response.orderItems
+                } else {
+                    orderItems + response.orderItems
+                }
 
-        } finally {
-            isLoading = false
+                nextOffset = offsetToLoad + response.orderItems.size
+                hasMore = response.hasMore
+
+            } catch (e: Exception) {
+                Log.e("ORDER_ITEM_HISTORY", "failed: ${e.message}", e)
+
+                if (reset) {
+                    showLoginRequired = true
+                }
+
+            } finally {
+                isLoading = false
+                isLoadingMore = false
+            }
         }
+    }
+
+    LaunchedEffect(Unit) {
+        loadHistory(reset = true)
     }
 
     if (isLoading) {
@@ -63,18 +104,15 @@ fun OrderItemHistoryRoute(
     }
 
     if (showLoginRequired) {
-
         Box(
             modifier = Modifier
                 .padding(innerPadding)
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
                 Text(
                     text = "Please login to see your order history.",
                     fontSize = 16.sp
@@ -93,14 +131,14 @@ fun OrderItemHistoryRoute(
         return
     }
 
-    if (orderItemHistoryResponse == null) {
-        return
-    }
-
     OrderItemHistoryScreen(
         modifier = Modifier.padding(innerPadding),
-        response = orderItemHistoryResponse,
-
+        items = orderItems,
+        isLoadingMore = isLoadingMore,
+        hasMore = hasMore,
+        onLoadMore = {
+            loadHistory(reset = false)
+        },
         onItemClick = { item ->
             navigateOrderItemDetail(item.itemToken)
         }
