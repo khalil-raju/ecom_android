@@ -16,7 +16,7 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun ScreenFooter(
-    padding: Int = 80,
+    padding: Int = 100,
 ) {
     Column(
         modifier = Modifier
