@@ -22,6 +22,8 @@ import com.ecom.app.model.order.OrderItem
 import com.ecom.app.model.order.ReturnOrderItemResponse
 import com.ecom.app.ui.components.ScreenFooter
 import com.ecom.app.ui.components.ScreenHeader
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 private fun fullUrl(path: String?): String? {
     return path?.let {
@@ -169,11 +171,11 @@ private fun OrderInfoCard(
             }
 
             if (!placedAt.isNullOrBlank()) {
-                DetailRow("Order Placed", placedAt)
+                DetailRow("Order Placed", formatDateOnly(placedAt))
             }
 
             if (!cancelledAt.isNullOrBlank()) {
-                DetailRow("Order Cancelled", cancelledAt)
+                DetailRow("Order Cancelled", formatDateOnly(cancelledAt))
             }
         }
     }
@@ -513,4 +515,19 @@ private fun statusColor(status: String): Color {
 private fun formatAmount(value: Double): String {
     return if (value % 1.0 == 0.0) value.toInt().toString()
     else "%.2f".format(value)
+}
+
+private fun formatDateOnly(value: String?): String {
+    if (value.isNullOrBlank()) return ""
+
+    return try {
+        val cleaned = value.replace(Regex("\\.\\d+"), "")
+        val input = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.ENGLISH)
+        val output = SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH)
+
+        val date = input.parse(cleaned)
+        if (date != null) output.format(date) else value
+    } catch (e: Exception) {
+        value
+    }
 }
