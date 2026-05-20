@@ -94,14 +94,14 @@ fun ProfileScreen(
                     title = "Personal Information",
                     items = listOf(
                         ProfileActionItem(
-                            iconText = "👤",
+                            iconText = "\uD83D\uDC64",
                             title = "Name",
                             subtitle = fullName,
                             actionText = "Change Name",
                             onClick = onChangeNameClick
                         ),
                         ProfileActionItem(
-                            iconText = "☎",
+                            iconText = "\uD83D\uDCDE",
                             title = "Phone",
                             subtitle = user?.phone?.takeIf { it.isNotBlank() } ?: "Not added",
                             actionText = "Change Phone",
@@ -109,7 +109,7 @@ fun ProfileScreen(
                             onClick = onChangePhoneClick
                         ),
                         ProfileActionItem(
-                            iconText = "✉",
+                            iconText = "\uD83D\uDCE7",
                             title = "Email",
                             subtitle = user?.email?.takeIf { it.isNotBlank() } ?: "Not added",
                             actionText = "Change Email",
@@ -117,8 +117,9 @@ fun ProfileScreen(
                             onClick = onChangeEmailClick
                         ),
                         ProfileActionItem(
-                            iconText = "🔒",
+                            iconText = "\uD83D\uDD12",
                             title = "Change Password",
+                            subtitle = "********",
                             onClick = onChangePasswordClick
                         )
                     )
@@ -130,13 +131,13 @@ fun ProfileScreen(
                     title = "Addresses",
                     items = listOf(
                         ProfileActionItem(
-                            iconText = "⌂",
+                            iconText = "\uD83C\uDFE1",
                             title = "Saved Addresses",
                             subtitle = "View and manage your saved addresses",
                             onClick = onSavedAddressesClick
                         ),
                         ProfileActionItem(
-                            iconText = "+",
+                            iconText = "➕",
                             title = "Add Address",
                             subtitle = "Add a new delivery address",
                             onClick = onAddAddressClick
@@ -150,15 +151,15 @@ fun ProfileScreen(
                     title = "Basket",
                     items = listOf(
                         ProfileActionItem(
-                            "♡",
+                            "\uD83E\uDE76",
                             "View Wishlist",
                             "Items you saved for later",
                             onClick = onWishlistClick
                         ),
                         ProfileActionItem(
-                            "🛍",
+                            "\uD83D\uDECD\uFE0F",
                             "View Shopping Bag",
-                            "Items in your cart",
+                            "Items in your shopping bag",
                             onClick = onCartClick
                         )
                     )
@@ -170,13 +171,13 @@ fun ProfileScreen(
                     title = "Order & Wallet",
                     items = listOf(
                         ProfileActionItem(
-                            "▣",
+                            "\uD83D\uDCE6",
                             "View Orders",
                             "Track and view your orders",
                             onClick = onViewOrderClick
                         ),
                         ProfileActionItem(
-                            "▰",
+                            "\uD83D\uDCB0",
                             "Wallet",
                             "View balance and transactions",
                             onClick = onViewWalletClick
@@ -187,14 +188,21 @@ fun ProfileScreen(
 
             item {
                 ProfileSectionCard(
-                    title = null,
+                    title = "Account",
                     items = listOf(
                         ProfileActionItem(
-                            iconText = "↪",
+                            iconText = "\uD83D\uDEAA",
                             title = "Logout",
                             subtitle = "Sign out from your account",
                             danger = true,
                             onClick = onLogout
+                        ),
+                        ProfileActionItem(
+                            iconText = "❌",
+                            title = "Delete Account",
+                            subtitle = "Permanently delete your account",
+                            danger = true,
+                            onClick = {}
                         )
                     )
                 )
